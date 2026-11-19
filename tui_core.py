@@ -10,6 +10,7 @@ import importlib.metadata
 import json
 import re
 import shutil
+import sys
 import time
 
 
@@ -114,6 +115,13 @@ def validate_step(step: int) -> int:
 
 def command_for_step(step: int, repo: Path, shell: str | None = None) -> list[str]:
     validate_step(step)
+    if sys.platform == "darwin":
+        if step not in (0, 1):
+            raise ValueError("macOS only supports read-only Steps 0 and 1")
+        runner = repo / "macos_runner.py"
+        if not runner.is_file():
+            raise FileNotFoundError("macos_runner.py is missing from the project directory")
+        return [sys.executable, str(runner), "--step", str(step)]
     executable = shell or shutil.which("powershell.exe") or shutil.which("pwsh")
     if not executable:
         raise RuntimeError("PowerShell was not found. Install PowerShell or run on Windows.")
