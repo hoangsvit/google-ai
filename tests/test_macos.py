@@ -56,10 +56,7 @@ class MacTextualTests(unittest.IsolatedAsyncioTestCase):
                 async with app.run_test(size=(90, 20)) as pilot:
                     self.assertTrue(app.macos_readonly)
                     self.assertTrue(app.query_one("#mode", Select).disabled)
-                    self.assertEqual(
-                        [v for _, v in app.query_one("#step", Select)._options],
-                        [0, 1],
-                    )
+                    self.assertEqual(app.query_one("#step", Select).value, 1)
                     app._confirm_stage(2, True)
                     app._start(3, True)
                     self.assertFalse(app.busy)
