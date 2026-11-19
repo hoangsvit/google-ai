@@ -24,7 +24,9 @@ class DocumentationNavigationTests(unittest.TestCase):
             with self.subTest(locale=lang):
                 short = ROOT / f"README.{lang}.md"
                 detailed = DOCS / "i18n" / f"README.{lang}.md"
-                self.assertLess(short.stat().st_size, 3000)
+                # UTF-8 translated text uses more bytes than English for the same length.
+                # Keep practical installation steps visible while preventing README bloat.
+                self.assertLess(short.stat().st_size, 4000)
                 self.assertGreater(detailed.stat().st_size, short.stat().st_size)
                 self.assertIn(
                     f"(docs/i18n/README.{lang}.md)",
