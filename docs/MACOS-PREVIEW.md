@@ -36,6 +36,23 @@ bypass for Mac.
 - The launcher installs pinned Textual and Frida 16.5.9 into the local .venv;
   it does not install Android or configure a Mac emulator automatically.
 
+## Install from GitHub
+
+Install Python 3.10+ and Android Platform-Tools first, and connect an authorized
+rooted Android device. Then clone the project in Terminal:
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+sh run-macos.sh
+```
+
+**Branch availability:** If `run-macos.sh` is not found, your cloned version
+predates the Mac port. Switch to the development branch with `git switch dev`
+and run `sh run-macos.sh` again. **Once this port is promoted to `main`,
+the normal clone above works without switching branches.** For an older
+GitHub Release, download a version that actually contains the Mac launcher.
+
 ## Start from the downloaded Mac source bundle
 
 The CI workflow produces a macOS ZIP source bundle after its tests succeed.

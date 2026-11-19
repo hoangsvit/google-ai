@@ -43,7 +43,7 @@ Documentation and terminal usability fixes are welcome. Preserve attribution to 
 
 ## Documentation changes
 
-- Keep root README files as short overviews. Move procedures, diagnostics and legacy references to the [documentation hub](docs/README.md).
+- Keep root README files as short overviews. Move procedures, diagnostics and legacy references to the [documentation hub](docs/README.md). Root overviews must still show direct, parallel Windows and macOS setup steps; keep branch-specific preview guidance in [the Mac guide](docs/MACOS-PREVIEW.md).
 - Update the English topic page first, then review the translated detailed guides in `docs/i18n/` if the change affects user-facing instructions. Each root language README links to its detailed guide.
 - Always preserve billing warnings and verification requirements. Do not confuse a Google Play offer listing, submitted checkout or authorization hold with successful subscription activation.
 - Before submitting a PR, run `python -m unittest discover -s tests -p 'test_readme_locales.py' -v` and `python -m unittest discover -s tests -p 'test_docs_navigation.py' -v` to check links and README size.

@@ -9,9 +9,11 @@ Outil de terminal **non officiel** pour consulter les offres Google AI Pro sur A
 > [!CAUTION]
 > **Des frais réels peuvent être engagés.** Les **étapes 2–5** peuvent ouvrir le paiement Google Play et appuyer automatiquement sur Subscribe. Une offre affichée ou un prix initial nul **ne prouvent pas** la gratuité, l'activation ou la prolongation. Vérifiez le compte, le prix du jour, les tarifs futurs et la date de renouvellement dans Google Play. La configuration peut aussi modifier Android, Frida ou le réseau.
 
-## Quick start
+## Installation sous Windows
 
-**Windows :** installez [MuMuPlayer](https://www.mumuplayer.com/download/) séparément, préparez ADB/root et Google Play/Google One, puis lancez PowerShell :
+1. Installez **Python 3.10+**, PowerShell 5.1+ et [MuMuPlayer pour Windows](https://www.mumuplayer.com/download/).
+2. Démarrez Android, activez **root et le débogage ADB**, puis connectez-vous à **Google Play Store** et **Google One**.
+3. Ouvrez **PowerShell** et exécutez :
 
 ```powershell
 git clone https://github.com/hoangsvit/google-ai.git
@@ -19,14 +21,23 @@ cd google-ai
 .\run-all.ps1
 ```
 
-**macOS en développement :** nécessite Python 3.10+, ADB et Android avec root. Le paiement n'a pas été vérifié sur un véritable Mac/MuMu :
+## Installation sous macOS
+
+1. Installez **Python 3.10+** et **Android SDK Platform-Tools (ADB)**. Avec Homebrew : `brew install android-platform-tools`.
+2. Connectez un Android rooté avec Google Play Store/Google One ou un émulateur compatible. **MuMuPlayer Pro sur Mac nécessite Apple Silicon** ; les Mac Intel demandent une autre configuration Android.
+3. Ouvrez le **Terminal** et exécutez :
 
 ```sh
 git clone https://github.com/hoangsvit/google-ai.git
 cd google-ai
-git switch dev
 sh run-macos.sh
 ```
+
+Le lanceur crée `.venv`. Les étapes 0–5 sont implémentées, mais les paiements sur un **véritable Mac/MuMu restent non vérifiés**. Voir [le guide Mac](docs/MACOS-PREVIEW.md).
+
+## Première utilisation (sur les deux systèmes)
+
+Cliquez sur **Check Device & Offers** pour consulter les offres (étape 1, sans achat). L'étape 0 peut modifier ADB/Frida/Android. **Les étapes 2–5 peuvent entraîner des frais réels** ; vérifiez les conditions dans Google Play.
 
 ## Documentation
 

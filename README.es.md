@@ -9,9 +9,11 @@ Herramienta de terminal **no oficial** para consultar ofertas de Google AI Pro e
 > [!CAUTION]
 > **Pueden producirse cargos reales.** Los **pasos 2–5** pueden abrir el pago de Google Play y pulsar Subscribe automáticamente. Una oferta o un importe inicial de 0 **no demuestran** gratuidad, activación ni renovación. Revisa la cuenta, el cobro de hoy, los precios futuros y la fecha de renovación directamente en Google Play. La preparación puede alterar Android/Frida/red.
 
-## Quick start
+## Instalar en Windows
 
-**Windows:** instala [MuMuPlayer](https://www.mumuplayer.com/download/) por separado, configura ADB/root y Google Play/Google One y ejecuta PowerShell:
+1. Instala **Python 3.10+**, PowerShell 5.1+ y [MuMuPlayer para Windows](https://www.mumuplayer.com/download/).
+2. Inicia Android, activa **root y depuración ADB**, e inicia sesión en **Google Play Store** y **Google One**.
+3. Abre **PowerShell** y ejecuta:
 
 ```powershell
 git clone https://github.com/hoangsvit/google-ai.git
@@ -19,16 +21,25 @@ cd google-ai
 .\run-all.ps1
 ```
 
-**macOS en desarrollo:** requiere Python 3.10+, ADB y Android con root. Los pagos reales no se han verificado con Mac/MuMu:
+## Instalar en macOS
+
+1. Instala **Python 3.10+** y **Android SDK Platform-Tools (ADB)**. Con Homebrew: `brew install android-platform-tools`.
+2. Conecta un Android con root, Google Play Store y Google One, o un emulador compatible. **MuMuPlayer Pro para Mac requiere Apple Silicon**; un Mac Intel necesita otro entorno Android.
+3. Abre **Terminal** y ejecuta:
 
 ```sh
 git clone https://github.com/hoangsvit/google-ai.git
 cd google-ai
-git switch dev
 sh run-macos.sh
 ```
 
-## Documentation
+El lanzador Mac instala las dependencias Python en `.venv`. Los pasos 0–5 están implementados, pero **los pagos no se han verificado en un Mac/MuMu real**. Consulta [la instalación para Mac](docs/MACOS-PREVIEW.md).
+
+## Primer uso (ambos sistemas)
+
+Pulsa **Check Device & Offers** para consultar ofertas (paso 1, sin pago). El paso 0 puede cambiar la configuración ADB/Frida/Android. **Los pasos 2–5 pueden generar cargos reales**: verifica las condiciones en Google Play.
+
+## Documentación
 
 [Guía completa en español](docs/i18n/README.es.md) · [Centro de documentación](docs/README.md) · [Instalación](docs/INSTALLATION.md) · [Guía para Mac](docs/MACOS-PREVIEW.md) · [Seguridad de pagos](docs/SAFETY.md)
 

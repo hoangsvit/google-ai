@@ -37,7 +37,7 @@ cd google-ai
 sh run-macos.sh
 ```
 
-The Mac launcher installs Python dependencies in a local `.venv`. **macOS Steps 0–5 are implemented, but real Mac/MuMu and billing compatibility are not verified.** The Mac port is currently on the `dev` integration branch; see [macOS installation and current branch instructions](docs/MACOS-PREVIEW.md).
+The Mac launcher installs dependencies in a local `.venv`. **Steps 0–5 are implemented, but actual Mac/MuMu and billing compatibility have not been verified.** See [Mac installation and branch availability](docs/MACOS-PREVIEW.md).
 
 ## First run (both platforms)
 

@@ -61,6 +61,29 @@ class DocumentationNavigationTests(unittest.TestCase):
                 with self.subTest(source=str(source.relative_to(ROOT)), link=relative):
                     self.assertTrue((source.parent / relative).is_file())
 
+    def test_windows_and_mac_installation_both_work_from_project_root(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("### Windows", readme)
+        self.assertIn("### macOS", readme)
+        self.assertEqual(readme.count("git clone https://github.com/hoangsvit/google-ai.git"), 2)
+        self.assertIn(".\\run-all.ps1", readme)
+        self.assertIn("sh run-macos.sh", readme)
+        self.assertIn("brew install android-platform-tools", readme)
+        self.assertIn("MuMuPlayer Pro", readme)
+        self.assertNotIn("git switch dev", readme)  # Branch instructions belong in the Mac guide.
+        mac = (DOCS / "MACOS-PREVIEW.md").read_text(encoding="utf-8")
+        self.assertIn("git switch dev", mac)
+        self.assertIn("Once this port is promoted", mac)
+        for lang in LOCALIZED:
+            with self.subTest(locale=lang):
+                text = (ROOT / f"README.{lang}.md").read_text(encoding="utf-8")
+                self.assertIn("Windows", text)
+                self.assertIn("macOS", text)
+                self.assertIn("sh run-macos.sh", text)
+                self.assertIn(".\\run-all.ps1", text)
+                self.assertEqual(text.count("git clone https://github.com/hoangsvit/google-ai.git"), 2)
+                self.assertNotIn("git switch dev", text)
+
     def test_no_duplicate_full_guides_in_root(self):
         overview = (ROOT / "README.md").read_text(encoding="utf-8")
         self.assertIn("(docs/README.md)", overview)
