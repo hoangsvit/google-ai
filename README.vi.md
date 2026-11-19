@@ -11,7 +11,7 @@ Bộ công cụ terminal **không chính thức** để kiểm tra ưu đãi Goo
 
 ## Cài đặt trên Windows
 
-1. Cài **Python 3.10+**, PowerShell 5.1+ và [MuMuPlayer cho Windows](https://www.mumuplayer.com/download/).
+1. Cài **Python 3.10+**, **Git**, PowerShell 5.1+ và [MuMuPlayer cho Windows](https://www.mumuplayer.com/download/).
 2. Mở máy Android trong MuMu, bật **root/ADB debugging** và đăng nhập **Google Play Store** cùng **Google One**.
 3. Mở **PowerShell** rồi chạy:
 
@@ -23,7 +23,7 @@ cd google-ai
 
 ## Cài đặt trên macOS
 
-1. Cài **Python 3.10+** và **Android SDK Platform-Tools (ADB)**. Nếu có Homebrew, chạy `brew install android-platform-tools`.
+1. Cài **Python 3.10+**, **Git** và **Android SDK Platform-Tools (ADB)**. Nếu có Homebrew, chạy `brew install android-platform-tools`.
 2. Kết nối thiết bị Android có root, Google Play Store và Google One, hoặc trình giả lập tương thích. **MuMuPlayer Pro trên Mac hỗ trợ Apple Silicon**; Mac Intel cần thiết bị/giả lập Android khác.
 3. Mở **Terminal** rồi chạy:
 

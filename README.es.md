@@ -11,7 +11,7 @@ Herramienta de terminal **no oficial** para consultar ofertas de Google AI Pro e
 
 ## Instalar en Windows
 
-1. Instala **Python 3.10+**, PowerShell 5.1+ y [MuMuPlayer para Windows](https://www.mumuplayer.com/download/).
+1. Instala **Python 3.10+**, **Git**, PowerShell 5.1+ y [MuMuPlayer para Windows](https://www.mumuplayer.com/download/).
 2. Inicia Android, activa **root y depuración ADB**, e inicia sesión en **Google Play Store** y **Google One**.
 3. Abre **PowerShell** y ejecuta:
 
@@ -23,7 +23,7 @@ cd google-ai
 
 ## Instalar en macOS
 
-1. Instala **Python 3.10+** y **Android SDK Platform-Tools (ADB)**. Con Homebrew: `brew install android-platform-tools`.
+1. Instala **Python 3.10+**, **Git** y **Android SDK Platform-Tools (ADB)**. Con Homebrew: `brew install android-platform-tools`.
 2. Conecta un Android con root, Google Play Store y Google One, o un emulador compatible. **MuMuPlayer Pro para Mac requiere Apple Silicon**; un Mac Intel necesita otro entorno Android.
 3. Abre **Terminal** y ejecuta:
 

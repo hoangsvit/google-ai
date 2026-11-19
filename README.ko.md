@@ -11,7 +11,7 @@ Android, ADB, Frida, Google Play를 통해 Google AI Pro 혜택을 확인하는 
 
 ## Windows 설치
 
-1. **Python 3.10+**, PowerShell 5.1+, [Windows용 MuMuPlayer](https://www.mumuplayer.com/download/)를 설치합니다.
+1. **Python 3.10+**, **Git**, PowerShell 5.1+, [Windows용 MuMuPlayer](https://www.mumuplayer.com/download/)를 설치합니다.
 2. Android 인스턴스를 실행하고 **root/ADB 디버깅**을 켠 뒤 **Google Play Store**와 **Google One**에 로그인합니다.
 3. **PowerShell**을 열어 실행:
 
@@ -23,7 +23,7 @@ cd google-ai
 
 ## macOS 설치
 
-1. **Python 3.10+**와 **Android SDK Platform-Tools (ADB)**를 설치합니다. Homebrew 사용 시 `brew install android-platform-tools`.
+1. **Python 3.10+**, **Git**, **Android SDK Platform-Tools (ADB)**를 설치합니다. Homebrew 사용 시 `brew install android-platform-tools`.
 2. 루팅된 Android 기기 또는 Google Play Store/Google One이 있는 호환 에뮬레이터를 연결합니다. Mac용 **MuMuPlayer Pro는 Apple Silicon 전용**입니다. Intel Mac은 다른 Android 환경이 필요합니다.
 3. **Terminal**에서 실행:
 

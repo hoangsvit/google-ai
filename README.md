@@ -13,7 +13,7 @@ A terminal toolkit to inspect Google AI Pro offers and manage the original Andro
 
 ### Windows
 
-1. Install **Python 3.10+** and [MuMuPlayer for Windows](https://www.mumuplayer.com/download/). PowerShell 5.1+ is required.
+1. Install **Python 3.10+**, **Git** and [MuMuPlayer for Windows](https://www.mumuplayer.com/download/). PowerShell 5.1+ is required.
 2. Start an Android instance with **root and ADB debugging** enabled. Install/open **Google Play Store** and **Google One**, signed in to the intended account.
 3. Open **PowerShell** and run:
 
@@ -27,7 +27,7 @@ The launcher prepares required tools when needed. [Windows installation details]
 
 ### macOS
 
-1. Install **Python 3.10+** and **Android SDK Platform-Tools (ADB)**. With Homebrew: `brew install android-platform-tools`.
+1. Install **Python 3.10+**, **Git** and **Android SDK Platform-Tools (ADB)**. With Homebrew: `brew install android-platform-tools`.
 2. Connect a **rooted Android device** with Google Play Store and Google One, or use a compatible rooted emulator. **MuMuPlayer Pro for Mac is for Apple Silicon**; Intel Macs need another compatible Android setup.
 3. Open **Terminal** and run:
 

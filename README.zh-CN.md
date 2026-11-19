@@ -11,7 +11,7 @@
 
 ## Windows 安装
 
-1. 安装 **Python 3.10+**、PowerShell 5.1+ 和 [Windows 版 MuMuPlayer](https://www.mumuplayer.com/download/)。
+1. 安装 **Python 3.10+**、**Git**、PowerShell 5.1+ 和 [Windows 版 MuMuPlayer](https://www.mumuplayer.com/download/)。
 2. 启动 Android 实例并开启 **root/ADB 调试**，登录 **Google Play Store** 和 **Google One**。
 3. 打开 **PowerShell** 执行：
 
@@ -23,7 +23,7 @@ cd google-ai
 
 ## macOS 安装
 
-1. 安装 **Python 3.10+** 和 **Android SDK Platform-Tools (ADB)**。Homebrew 用户可运行 `brew install android-platform-tools`。
+1. 安装 **Python 3.10+**、**Git** 和 **Android SDK Platform-Tools (ADB)**。Homebrew 用户可运行 `brew install android-platform-tools`。
 2. 连接带 root、Google Play Store 与 Google One 的 Android 设备或兼容模拟器。Mac 版 **MuMuPlayer Pro 支持 Apple Silicon**；Intel Mac 需要其他兼容设备/模拟器。
 3. 打开 **Terminal** 执行：
 
