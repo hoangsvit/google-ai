@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 title Pro 12 months - step 1
-cd /d "%~dp0"
+cd /d "%~dp0..\.."
 set PYTHONIOENCODING=utf-8
 echo ============================================
 echo   Google AI Pro 5TB - 12-month offer (eligibility not guaranteed) (step 1)

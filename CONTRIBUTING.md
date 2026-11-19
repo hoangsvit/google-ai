@@ -6,9 +6,16 @@ Thanks for helping improve this Windows/MuMu adaptation. The original implementa
 
 Use [GitHub Issues](https://github.com/hoangsvit/google-ai/issues) and include the command, Windows/Android version, relevant non-sensitive errors, and steps to reproduce. **Redact** Google account emails, passwords, payment details, offer/purchase tokens, device identifiers, and local credentials.
 
+## Branches and releases
+
+- **`main`** is the stable release branch; do not push features or documentation changes directly to it.
+- **`dev`** is the integration branch. Branch from `dev` and open each feature/fix PR **against `dev`**, not `main`.
+- After review and green CI, a separate reviewed PR promotes `dev` into `main`. Releases are created only from `main`.
+- This routing is checked by GitHub Actions; repository admins should additionally make the branch-policy check required in branch protection / rulesets for both `main` and `dev`.
+
 ## Propose a change
 
-Open a [pull request](https://github.com/hoangsvit/google-ai/pulls) with one focused improvement. Keep the original step mappings intact, explain any behavior change, and add mock tests for fixes. Do not run live subscription checkout in CI.
+Open a [pull request](https://github.com/hoangsvit/google-ai/pulls) targeting `dev` with one focused improvement. Keep the original step mappings intact, explain any behavior change, and add mock tests for fixes. Do not run live subscription checkout in CI.
 
 Before opening the PR, prepare the **test-only Textual dependency** and run the Python suite (no Android device or purchase required):
 

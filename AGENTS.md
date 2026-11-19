@@ -10,7 +10,7 @@ Instructions for coding agents working in this repository. Read this file, `READ
 - **`tui.py`** — Textual dashboard, user confirmations, subprocess orchestration, live output and safe Stop/Exit handling.
 - **`tui_core.py`** — stage mapping, command construction, setup requirements, fresh-report validation and outcome interpretation.
 - **`ultra0.py`** — upstream-derived Android/Frida/Google Play integration; treat changes here as high risk.
-- **`setup_env.py`**, `scripts/`, `setup-environment.bat` — environment detection, setup and compatibility.
+- **`setup_env.py`**, `scripts/`, `tools/windows/setup-environment.bat` — environment detection, setup and compatibility. Historical `legacy/windows/*.bat` shortcuts are not the supported entrypoint; preserve their relative paths and explicitly flag their `--force` risk.
 - **`tests/`** — offline regression checks. Test with mocks instead of connecting to real Google accounts or buying subscriptions.
 - **`README.md`**, `docs/`, `SECURITY.md`, `THIRD_PARTY_NOTICES.md` — public guidance, provenance and safety constraints.
 
@@ -39,6 +39,13 @@ The UI is for everyday users, not just developers:
 - Design and test terminal widths/heights around **90×20 and 110×35**; also handle narrower terminals without hiding the primary action or status behind an unscrollable panel.
 - Do not hide actionable error information solely inside Debug. User-facing error summaries should explain what failed and what is safe to do next; technical details may include sanitized diagnostics.
 
+## Branch routing and integration
+
+- `main` is the production/release branch. Never develop new features or reorganize files directly on `main`.
+- `dev` is the shared integration branch. Create feature/fix branches **from `dev`** and open Draft PRs **targeting `dev`**; run relevant Linux and Windows checks before integration.
+- After validation, promote **`dev` → `main`** through a separate reviewed PR. Only publish a release from tested `main`. Do not merge feature branches straight into `main`.
+- Keep active Windows entrypoints and imported Python modules at their current paths until tests prove a separate migration safe; move legacy installers/shortcuts with path updates and documentation.
+
 ## Development workflow
 
 1. Inspect the latest target branch, existing PRs/issues and relevant code. Do not base a new change on an unrelated unmerged PR or overwrite concurrent work.
@@ -54,7 +61,7 @@ The UI is for everyday users, not just developers:
    Also run repository CI/static checks and any targeted test files affected by the patch. For layout changes, verify widget visibility, geometry, focus and scrollability at both compact and normal terminal sizes.
 5. Review UI change impact on Step 1 and on the Step 2–5 approval gates. Verify disabled buttons are disabled in **logic as well as appearance**.
 6. Update `README.md` and relevant docs when commands, labels, run modes, safety behavior, prerequisites or screenshots change. Avoid shipping code and outdated documentation together.
-7. Open a focused **Draft PR** with: problem, affected files, behavioral changes, tests/results, any unverified Windows/MuMu assumptions, and billing-risk implications. Do not merge or push directly to `main` without explicit authorization. A green CI run is not proof of real-device compatibility.
+7. Open a focused **Draft PR targeting `dev`** with: problem, affected files, behavioral changes, tests/results, any unverified Windows/MuMu assumptions, and billing-risk implications. Do not merge or push directly to `main` without explicit authorization. A green CI run is not proof of real-device compatibility.
 
 ## Change-specific checklists
 

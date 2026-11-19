@@ -137,7 +137,7 @@ The dashboard and the CLI reuse the same PowerShell/Python engine. Explicit comm
 
 Local technical logs are stored under `logs/`, while fresh offer and stage reports are under `ultra0-report/`. **Do not share raw logs or full reports** without removing account identifiers and sensitive billing/purchase tokens.
 
-The standalone `setup_env.py` and `setup-environment.bat` remain troubleshooting/repair tools, not mandatory steps before launching the dashboard.
+The standalone `setup_env.py` and [`tools/windows/setup-environment.bat`](tools/windows/setup-environment.bat) remain troubleshooting/repair tools, not mandatory steps before launching the dashboard.
 
 ### Checkout commands — may charge money
 
@@ -190,6 +190,21 @@ Verify subscription, payment amount, currency and renewal terms under **[Google 
 If you need help installing or using ePlus AI Toolkit, see the [ePlus Telegram support/discussion post](https://t.me/eplus_news/29) to get in touch and exchange troubleshooting tips with the community. You can also [open a GitHub Issue](https://github.com/hoangsvit/google-ai/issues) for reproducible bugs. **Never post passwords, 2FA codes, purchase/offer tokens, full unredacted logs, or payment-card details.** Community support is not an official Google support channel.
 
 **Can't access the Google AI Pro offer?** You may also explore [Muse Invite Hub](https://github.com/ePlus-DEV/muse-invite-hub) ([browse or share Muse invite codes](https://muse.eplus.dev/)), another ePlus.DEV community project. Muse invite codes are for a **separate service**, are not a substitute for Google AI Pro subscriptions, and do **not** unlock or guarantee Google AI Pro access. Muse code availability and eligibility may vary.
+
+## Repository structure
+
+Only the current launcher and the modules it invokes stay at the repository root. **Use `run-all.ps1` for the maintained Windows workflow.**
+
+| Location | Purpose |
+| --- | --- |
+| `run-all.ps1` | Main entrypoint (Textual dashboard and guided CLI) |
+| `tui.py`, `tui_core.py`, `ultra0.py`, `setup_env.py`, `device_selector.py`, `query_sku.py` | Active Python runtime and supporting tools; kept in place for compatibility |
+| [`tools/windows/`](tools/windows/README.md) | Optional manual Windows setup shortcut; not required for normal launch |
+| [`legacy/windows/`](legacy/windows/README.md) | Historical batch shortcuts; some bypass account checks with `--force` and may initiate a **real charge**. Use the maintained launcher instead |
+| `scripts/`, `assets/` | Runtime helpers and bundled Android/Frida assets |
+| `tests/`, `.github/workflows/`, `docs/` | Offline regression tests, CI and reference documentation |
+
+**Branch policy:** Features and maintenance changes target [`dev`](https://github.com/hoangsvit/google-ai/tree/dev) first. After validation, merge `dev` into `main` through a reviewed PR. Production releases are built from `main`; reorganizing files must not trigger a release.
 
 ## Documentation and contributing
 

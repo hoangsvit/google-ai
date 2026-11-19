@@ -6,7 +6,7 @@
 
 Use a compatible rooted Android emulator with the Google Play Store and Google One installed. Sign in to the desired Google account. Install Python 3.10+, Android platform-tools and the Frida version required by this repository. Verify the account and payment conditions in Google Play.
 
-Run `setup-environment.bat` to invoke the original setup helper, or use the maintained `run-all.ps1 -SetupOnly` command. Setup may install dependencies, restart Frida, and modify emulator network settings.
+Run `tools/windows/setup-environment.bat` from the repository root (or double-click it) to invoke the original setup helper, or use the maintained `run-all.ps1 -SetupOnly` command. Setup may install dependencies, restart Frida, and modify emulator network settings.
 
 ## Guided PowerShell commands aligned with the author's steps
 
@@ -49,14 +49,14 @@ For the **Step 3–5** subscription replacement, the revised code rejects missin
 
 | Action | Filename | Description |
 | --- | --- | --- |
-| Check environment | `00-environment-check.bat` | Checks ADB, Frida and required Android packages |
-| Read available offers | `01-list-offers.bat` | Queries offers; no checkout |
-| Original stage 1 | `02-pro-12-months.bat` | Claimed one-year promotional flow; **possible purchase** |
-| Original stage 2 | `03-pro-add-6-months.bat` | Claimed subscription replacement with `--stack`; **possible purchase** |
-| Original stage 3 | `04-pro-add-6-months-again.bat` | Additional claimed `--stack` flow; **possible purchase** |
-| Alternate stage | `05-pro-alternative-6-months.bat` | Claimed alternative offer; **possible purchase** |
+| Check environment | `legacy/windows/00-environment-check.bat` | Checks ADB, Frida and required Android packages |
+| Read available offers | `legacy/windows/01-list-offers.bat` | Queries offers; no checkout |
+| Original stage 1 | `legacy/windows/02-pro-12-months.bat` | Claimed one-year promotional flow; **possible purchase** |
+| Original stage 2 | `legacy/windows/03-pro-add-6-months.bat` | Claimed subscription replacement with `--stack`; **possible purchase** |
+| Original stage 3 | `legacy/windows/04-pro-add-6-months-again.bat` | Additional claimed `--stack` flow; **possible purchase** |
+| Alternate stage | `legacy/windows/05-pro-alternative-6-months.bat` | Claimed alternative offer; **possible purchase** |
 
-These legacy-compatible batch files preserve the original `--force` option and **do not verify the Play account**. The guided `run-all.ps1 -AllStages` includes optional Step 5 and checks the account by default. Add `-Force` only to mirror the author's deliberate account-check bypass; you must confirm that choice. In the guided `-AllStages` flow, prompts use numeric approvals and users must independently verify the Google Play subscription. **Standalone `-Step 2..5` does not prompt for a second PowerShell approval** and can initiate a real checkout.
+All batch paths above are relative to the repository root. These legacy-compatible batch files preserve the original `--force` option and **do not verify the Play account**. The guided `run-all.ps1 -AllStages` includes optional Step 5 and checks the account by default. Add `-Force` only to mirror the author's deliberate account-check bypass; you must confirm that choice. In the guided `-AllStages` flow, prompts use numeric approvals and users must independently verify the Google Play subscription. **Standalone `-Step 2..5` does not prompt for a second PowerShell approval** and can initiate a real checkout.
 
 ## What the original script attempts
 
