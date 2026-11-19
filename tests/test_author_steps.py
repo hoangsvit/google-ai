@@ -51,7 +51,10 @@ class OriginalProStageTests(unittest.TestCase):
         self.assertIn("payment_security_blocked", helper)
         self.assertIn('if ($ShowDebug -or ($Step -eq 1 -and -not $AllStages))', ps)
         self.assertIn("Run-Command $Python $args", ps)
-        self.assertIn("-Debug", readme)
+        # Advanced CLI examples live in the full usage guide, not the short overview.
+        usage = (ROOT / "docs/USAGE.md").read_text(encoding="utf-8")
+        self.assertIn("-Debug", usage)
+        self.assertIn("(docs/USAGE.md)", readme)
         self.assertIn("https://eplus.dev", ps)
         self.assertIn("https://eplus.dev", readme)
 
