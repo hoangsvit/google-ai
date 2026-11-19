@@ -72,10 +72,11 @@ class DocumentationNavigationTests(unittest.TestCase):
         self.assertIn("sh run-macos.sh", readme)
         self.assertIn("brew install android-platform-tools", readme)
         self.assertIn("MuMuPlayer Pro", readme)
-        self.assertNotIn("git switch dev", readme)  # Branch instructions belong in the Mac guide.
+        self.assertNotIn("git switch dev", readme)
         mac = (DOCS / "MACOS-PREVIEW.md").read_text(encoding="utf-8")
-        self.assertIn("git switch dev", mac)
-        self.assertIn("Once this port is promoted", mac)
+        self.assertNotIn("git switch dev", mac)
+        self.assertIn("Version availability", mac)
+        self.assertIn("run-macos.sh", mac)
         for lang in LOCALIZED:
             with self.subTest(locale=lang):
                 text = (ROOT / f"README.{lang}.md").read_text(encoding="utf-8")

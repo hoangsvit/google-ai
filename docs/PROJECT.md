@@ -4,11 +4,12 @@
 
 ## Repository structure
 
-Only the current launcher and the modules it invokes stay at the repository root. **Use `run-all.ps1` for the maintained Windows workflow.**
+Keep the active platform launchers and imported Python modules at the repository root. **Use `run-all.ps1` on Windows or `run-macos.sh` on macOS.**
 
 | Location | Purpose |
 | --- | --- |
-| `run-all.ps1` | Main entrypoint (Textual dashboard and guided CLI) |
+| `run-all.ps1` | Windows entrypoint (Textual dashboard and guided CLI) |
+| `run-macos.sh`, `ePlus-AI-Toolkit.command`, `macos_runner.py` | macOS launcher and adapter (Steps 0–5; real-device checkout unverified) |
 | `tui.py`, `tui_core.py`, `ultra0.py`, `setup_env.py`, `device_selector.py`, `query_sku.py` | Active Python runtime and supporting tools; kept in place for compatibility |
 | [`tools/windows/`](../tools/windows/README.md) | Optional manual Windows setup shortcut; not required for normal launch |
 | [`legacy/windows/`](../legacy/windows/README.md) | Historical batch shortcuts; some bypass account checks with `--force` and may initiate a **real charge**. Use the maintained launcher instead |

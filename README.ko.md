@@ -2,7 +2,7 @@
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · **한국어** · [Español](README.es.md) · [Français](README.fr.md)
 
-Android, ADB, Frida, Google Play를 통해 Google AI Pro 혜택을 확인하는 비공식 터미널 도구입니다. Windows는 유지 관리되는 안정 버전이며, macOS 0–5단계 버전은 `dev`에서 개발 중입니다.
+Android, ADB, Frida, Google Play를 통해 Google AI Pro 혜택을 확인하는 비공식 터미널 도구입니다. Windows와 macOS 모두 실행 방법을 제공합니다. Mac 버전은 0–5단계를 구현했지만 실제 기기 결제는 아직 검증되지 않았습니다.
 
 ![ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
 

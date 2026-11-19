@@ -2,7 +2,7 @@
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · **简体中文** · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
-非官方终端工具，使用 Android、ADB、Frida 和 Google Play 查看 Google AI Pro 优惠。Windows 是维护中的稳定版本；macOS 版本已实现步骤 0–5，仍在 `dev` 分支开发。
+非官方终端工具，使用 Android、ADB、Frida 和 Google Play 查看 Google AI Pro 优惠。Windows 和 macOS 均提供安装与启动方式；Mac 版实现了步骤 0–5，但尚未通过真实设备验证支付。
 
 ![ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
 

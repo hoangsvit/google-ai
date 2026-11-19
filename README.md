@@ -37,7 +37,7 @@ cd google-ai
 sh run-macos.sh
 ```
 
-The Mac launcher installs dependencies in a local `.venv`. **Steps 0–5 are implemented, but actual Mac/MuMu and billing compatibility have not been verified.** See [Mac installation and branch availability](docs/MACOS-PREVIEW.md).
+The Mac launcher installs dependencies in a local `.venv`. **Steps 0–5 are implemented, but actual Mac/MuMu and billing compatibility have not been verified.** See [Mac installation and compatibility](docs/MACOS-PREVIEW.md).
 
 ## First run (both platforms)
 

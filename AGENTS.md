@@ -8,7 +8,7 @@ Instructions for coding agents working in this repository. Read this file, `READ
 - Do not bypass stage confirmation, current Google Play account lookup, exact offer ID or zero-price introductory phase validation. The Mac adapter intentionally does **not** support `--force` or automatic account switching.
 - Steps 2–5 may initiate real charges. Every stage requires a separate TUI approval, and continuing a sequence requires user verification of the subscription and renewal date in Google Play. The native CLI requires explicit authorization flags.
 - macOS CI is restricted to unit and integration mocks; never run a real checkout in CI, and never claim that a successful host run verifies actual Mac/MuMu billing.
-- Keep Mac workflow targeting `dev` until hardware testing, and preserve Windows behavior.
+- Follow the existing dev-first PR workflow, but treat real Mac/Android hardware validation and publication as separate release gates. Preserve Windows behavior.
 
 
 ## Project purpose and boundaries
@@ -94,7 +94,7 @@ The UI is for everyday users, not just developers:
 
 ## Documentation source of truth
 
-Keep the repository root `README.md` and six translated root READMEs short (intro, platform commands, billing warning, documentation links). Present Windows and macOS installation as matching step-by-step sections (requirements, Android setup, exact launcher command); keep branch-switch instructions inside the Mac guide so the root quick start stays valid after promotion to `main`. The canonical topic pages are `docs/README.md`, `docs/INSTALLATION.md`, `docs/USAGE.md`, `docs/SAFETY.md`, `docs/TROUBLESHOOTING.md`, `docs/PROJECT.md` and `docs/MACOS-PREVIEW.md`. Full translated usage text is retained in `docs/i18n/README.<locale>.md`; root locale files are quick overviews.
+Keep the repository root `README.md` and six translated root READMEs short (intro, platform commands, billing warning, documentation links). Present Windows and macOS installation as matching step-by-step sections (requirements, Android setup, exact launcher command); do not put branch switching in any user installation guide; describe source/release compatibility instead. The canonical topic pages are `docs/README.md`, `docs/INSTALLATION.md`, `docs/USAGE.md`, `docs/SAFETY.md`, `docs/TROUBLESHOOTING.md`, `docs/PROJECT.md` and `docs/MACOS-PREVIEW.md`. Full translated usage text is retained in `docs/i18n/README.<locale>.md`; root locale files are quick overviews.
 
 When moving or changing guidance, keep original safety, billing and credit statements accurate, fix relative links from the document's new directory, and update `tests/test_readme_locales.py` and `tests/test_docs_navigation.py`. Do not reintroduce long procedures in the root README, duplicate stale claims or claim Mac hardware compatibility based on CI.
 

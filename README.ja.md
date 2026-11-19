@@ -2,7 +2,7 @@
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · **日本語** · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
-Android・ADB・Frida・Google Play を使って Google AI Pro のオファーを確認する非公式ターミナルツールです。Windows が安定版、macOS ではステップ 0–5 を備えた開発版を `dev` で提供しています。
+Android・ADB・Frida・Google Play を使って Google AI Pro のオファーを確認する非公式ターミナルツールです。Windows と macOS の両方に専用ランチャーがあります。Mac 版のステップ 0–5 は実装済みですが、実機決済は未検証です。
 
 ![ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
 

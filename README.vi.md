@@ -2,7 +2,7 @@
 
 [English](README.md) · **Tiếng Việt** · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
-Bộ công cụ terminal **không chính thức** để kiểm tra ưu đãi Google AI Pro trên Android bằng ADB, Frida và Google Play. Windows là bản phát hành ổn định; phiên bản macOS đủ Steps 0–5 đang phát triển trên `dev`.
+Bộ công cụ terminal **không chính thức** để kiểm tra ưu đãi Google AI Pro trên Android bằng ADB, Frida và Google Play. Windows và macOS có hướng dẫn cài đặt riêng. Bản Mac có Steps 0–5 nhưng chưa xác minh thanh toán trên thiết bị thực tế.
 
 ![ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
 
@@ -33,7 +33,7 @@ cd google-ai
 sh run-macos.sh
 ```
 
-Launcher Mac tự cài thư viện Python vào `.venv`. Đã có code cho Steps 0–5 nhưng **chưa xác minh thanh toán trên Mac/MuMu thật**. Xem [hướng dẫn Mac và kiểm tra nhánh](docs/MACOS-PREVIEW.md).
+Launcher Mac tự cài thư viện Python vào `.venv`. Đã có code cho Steps 0–5 nhưng **chưa xác minh thanh toán trên Mac/MuMu thật**. Xem [hướng dẫn cài đặt Mac](docs/MACOS-PREVIEW.md).
 
 ## Sử dụng lần đầu (cả hai hệ điều hành)
 

@@ -2,7 +2,7 @@
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · **Français**
 
-Outil de terminal **non officiel** pour consulter les offres Google AI Pro sur Android avec ADB, Frida et Google Play. Windows est la version stable ; le port macOS comprenant les étapes 0–5 est développé sur `dev`.
+Outil de terminal **non officiel** pour consulter les offres Google AI Pro sur Android avec ADB, Frida et Google Play. Windows et macOS disposent de procédures d'installation distinctes. La version Mac implémente les étapes 0–5, mais les paiements réels restent non vérifiés.
 
 ![ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
 

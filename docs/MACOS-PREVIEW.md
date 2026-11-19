@@ -47,11 +47,12 @@ cd google-ai
 sh run-macos.sh
 ```
 
-**Branch availability:** If `run-macos.sh` is not found, your cloned version
-predates the Mac port. Switch to the development branch with `git switch dev`
-and run `sh run-macos.sh` again. **Once this port is promoted to `main`,
-the normal clone above works without switching branches.** For an older
-GitHub Release, download a version that actually contains the Mac launcher.
+**Version availability:** Use a repository revision that contains `run-macos.sh`
+and `macos_runner.py`. GitHub Releases created before the macOS port
+(for example, v1.0.1) may not include either file. For those versions,
+choose a newer release explicitly listing macOS support or clone the current
+repository source as shown above. No branch switching is required in the
+standard installation instructions.
 
 ## Start from the downloaded Mac source bundle
 
