@@ -10,6 +10,10 @@ if ! command -v python3 >/dev/null 2>&1; then
   printf '%s\n' "Python 3.10+ is required. Install Python and try again." >&2
   exit 2
 fi
+if ! python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)'; then
+  printf '%s\n' "Python 3.10+ is required. Upgrade Python and try again." >&2
+  exit 2
+fi
 if ! command -v adb >/dev/null 2>&1; then
   printf '%s\n' "ADB is required. Install Android SDK Platform-Tools (brew install android-platform-tools)." >&2
   exit 2
