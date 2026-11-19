@@ -43,9 +43,11 @@ class RepositoryLayoutTests(unittest.TestCase):
 
     def test_new_docs_explain_historical_checkout_risks(self):
         root_readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        project_guide = (ROOT / "docs/PROJECT.md").read_text(encoding="utf-8")
         legacy = (ROOT / "legacy/windows/README.md").read_text(encoding="utf-8")
-        self.assertIn("legacy/windows/README.md", root_readme)
-        self.assertIn("tools/windows/README.md", root_readme)
+        self.assertIn("(docs/PROJECT.md)", root_readme)
+        self.assertIn("legacy/windows/README.md", project_guide)
+        self.assertIn("tools/windows/README.md", project_guide)
         self.assertIn("--force", legacy)
         self.assertIn("real Google Play", legacy)
         self.assertIn("dev", (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8"))
