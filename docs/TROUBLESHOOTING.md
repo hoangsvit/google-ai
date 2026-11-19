@@ -17,7 +17,7 @@
 
 Verify subscription, payment amount, currency and renewal terms under **[Google Play Subscriptions](https://play.google.com/store/account/subscriptions)**. For developer-facing status codes and advanced platform/Frida problems, see [Detailed setup and troubleshooting](DETAILED-GUIDE.md).
 
-**Platform support:** This README focuses on the maintained Windows workflow. A full-feature macOS development port is available on the `dev` integration track. CI checks do not establish real-device compatibility or payment success on macOS; see [Mac preview guide](MACOS-PREVIEW.md).
+**Platform support:** The repository contains Windows and macOS launchers. Mac host CI does not establish real Android/MuMu compatibility or Google Play payment success; see the [Mac setup and limitations](MACOS-PREVIEW.md).
 
 ## Community support and related projects
 

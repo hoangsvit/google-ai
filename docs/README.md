@@ -2,7 +2,7 @@
 
 [← Project overview](../README.md) · [Security](../SECURITY.md) · [GitHub Releases](https://github.com/hoangsvit/google-ai/releases)
 
-This is the **version-controlled documentation hub** for the Windows toolkit and the macOS development port. Start with the platform guide, then follow only the instructions relevant to your goal. The repository README stays intentionally short.
+This is the **version-controlled documentation hub** for the Windows and macOS toolkit. Start with the platform guide, then follow only the instructions relevant to your goal. The repository README stays intentionally short.
 
 > [!CAUTION]
 > **Unofficial project. Steps 2–5 can initiate real Google Play charges.** A listed offer or a $0 introductory price does not prove subscription eligibility, activation or renewal. Review the current account, today's charge, later prices and subscription details directly in Google Play. See [Safety & billing](SAFETY.md).
@@ -13,7 +13,7 @@ This is the **version-controlled documentation hub** for the Windows toolkit and
 | --- | --- |
 | Install Windows, MuMuPlayer, Python and ADB | [Installation & prerequisites](INSTALLATION.md) |
 | Start the dashboard and use the guided steps | [Dashboard & PowerShell CLI](USAGE.md) |
-| Use the macOS development build (Steps 0–5) | [macOS guide](MACOS-PREVIEW.md) |
+| Install and use the macOS version (Steps 0–5) | [macOS guide](MACOS-PREVIEW.md) |
 | Diagnose ADB, Frida, account or billing errors | [Troubleshooting & results](TROUBLESHOOTING.md) |
 | Deep dive into setup and compatibility | [Advanced technical guide](DETAILED-GUIDE.md) |
 | Understand charge risks and limitations | [Safety & billing](SAFETY.md) · [Security policy](../SECURITY.md) |

@@ -86,6 +86,25 @@ class DocumentationNavigationTests(unittest.TestCase):
                 self.assertEqual(text.count("git clone https://github.com/hoangsvit/google-ai.git"), 2)
                 self.assertNotIn("git switch dev", text)
 
+    def test_user_install_guides_never_require_switching_to_dev(self):
+        pages = [
+            ROOT / "README.md", ROOT / "README.en.md",
+            DOCS / "README.md", DOCS / "INSTALLATION.md",
+            DOCS / "MACOS-PREVIEW.md", DOCS / "TROUBLESHOOTING.md",
+        ]
+        pages.extend(ROOT / f"README.{lang}.md" for lang in LOCALIZED)
+        pages.extend(DOCS / "i18n" / f"README.{lang}.md" for lang in LOCALIZED)
+        for page in pages:
+            with self.subTest(page=str(page.relative_to(ROOT))):
+                text = page.read_text(encoding="utf-8")
+                self.assertNotIn("git switch dev", text)
+                self.assertNotIn("checkout dev", text)
+                if page.name.startswith("README") and page.parent == ROOT:
+                    self.assertNotIn("`dev`", text)
+        project = (DOCS / "PROJECT.md").read_text(encoding="utf-8")
+        self.assertIn("run-macos.sh", project)
+        self.assertIn("run-all.ps1", project)
+
     def test_no_duplicate_full_guides_in_root(self):
         overview = (ROOT / "README.md").read_text(encoding="utf-8")
         self.assertIn("(docs/README.md)", overview)
