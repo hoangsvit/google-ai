@@ -405,6 +405,9 @@ class GoogleAITUI(App[None]):
     def selected_pressed(self) -> None:
         if self.busy:
             return
+        if self.macos_readonly:
+            self._confirm_stage(self._selected(), False)
+            return
         mode = self.query_one("#mode", Select).value
         if mode == "all":
             self._confirm_stage(2, True)
@@ -419,6 +422,9 @@ class GoogleAITUI(App[None]):
 
     @on(Button.Pressed, "#sequence")
     def sequence_pressed(self) -> None:
+        if self.macos_readonly:
+            self._set_message("Subscription sequences are disabled on macOS.")
+            return
         step = self._selected()
         if step < 2:
             self._set_message("Choose Step 2, 3, 4 or 5 to start the subscription sequence.")
@@ -427,6 +433,8 @@ class GoogleAITUI(App[None]):
 
     @on(Button.Pressed, "#next")
     def next_pressed(self) -> None:
+        if self.macos_readonly:
+            return
         if self.busy or not self.sequence or self.current_step is None:
             return
         if self._last_outcome is None or not self._last_outcome.can_review:
@@ -522,6 +530,9 @@ class GoogleAITUI(App[None]):
             self.query_one("#exit", Button).disabled = True
 
     def _start(self, step: int, sequence: bool) -> None:
+        if self.macos_readonly and step not in (0, 1):
+            self._set_message("macOS supports read-only Steps 0 and 1 only.")
+            return
         if self.busy:
             return
         self.busy = True
@@ -713,6 +724,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         selected = validate_step(args.step)
+        if is_macos_platform() and selected > 1:
+            raise ValueError("macOS supports read-only Steps 0 and 1 only")
+        if is_macos_platform() and args.sequence:
+            raise ValueError("Subscription sequences are unavailable on macOS")
     except ValueError as exc:
         parser.error(str(exc))
     GoogleAITUI(repo=Path(__file__).resolve().parent, selected_step=selected,
