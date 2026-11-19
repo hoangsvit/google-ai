@@ -7,6 +7,7 @@ Instructions for coding agents working in this repository. Read this file, `READ
 **ePlus AI Toolkit** is a Windows/PowerShell + Python application for inspecting Google AI Pro offers on Android/MuMu. The Textual UI must remain an interface to the existing engine, not a second implementation of Android, Frida, account, offer, or Google Play Billing logic.
 
 - **`run-all.ps1`** — main entrypoint. No parameters launches the Textual dashboard; explicit `-Step N`, `-Cli`, or `-AllStages` use the CLI path. Read the real parameter and approval logic before changing an option.
+- **`run-macos.sh` / `macos_runner.py`** — macOS preview entrypoint and native Python read-only bridge (Steps **0–1 only**). Never expose checkout/Run All on Mac until genuine device and security validation exists. Keep macOS setup separate from Windows `setup_env.py`.
 - **`tui.py`** — Textual dashboard, user confirmations, subprocess orchestration, live output and safe Stop/Exit handling.
 - **`tui_core.py`** — stage mapping, command construction, setup requirements, fresh-report validation and outcome interpretation.
 - **`ultra0.py`** — upstream-derived Android/Frida/Google Play integration; treat changes here as high risk.
