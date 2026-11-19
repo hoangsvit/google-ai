@@ -1,6 +1,6 @@
 # ePlus AI Toolkit
 
-**ePlus AI Toolkit** is a Windows-focused, interactive terminal interface for inspecting Google AI Pro offers on an Android emulator (including MuMu). It uses the upstream Python/ADB/Frida/Google Play workflow rather than replacing or bypassing those checks.
+**ePlus AI Toolkit** is a Windows-focused terminal toolkit with a read-only macOS preview for inspecting Google AI Pro offers on an Android emulator (including MuMu). It uses the upstream Python/ADB/Frida/Google Play workflow rather than replacing or bypassing those checks.
 
 > **Important:** This is not an official Google product. Displaying an offer, a price of 0, or a checkout request does **not** prove that an account is eligible or that a subscription has been activated. Steps 2–5 may open Google Play checkout and automatically press **Subscribe**, potentially incurring charges. Confirm the Google Play account, the amount due today, recurring price and renewal date before starting any checkout.
 
@@ -9,6 +9,36 @@
 - Windows with PowerShell 5.1+, Python 3.10+, and a running rooted MuMu emulator with ADB enabled.
 - Google Play Store and Google One installed; sign in to the intended Google account.
 - For a checkout stage, prepare a valid payment method in Google Play. The script does not make trial eligibility guarantees.
+
+## macOS preview — read-only Android diagnostics
+
+A separate macOS launcher is available for **Intel and Apple Silicon Macs**. This is an **early read-only preview** (Steps 0 and 1 only), **not yet feature-parity with the Windows subscription workflow**.
+
+Requirements: macOS 11+ (recommended), Python 3.10+, Android SDK Platform-Tools (`adb`) on your PATH, and an **Android device or emulator with root, Google Play Store and Google One**. MuMu for Windows is not a Mac prerequisite. Standard non-root Google Play emulator images may not satisfy the existing Frida/root checks. The original Android engine may repair Frida or modify emulator/network settings even during diagnostics.
+
+Install ADB using Homebrew or the [official Android Platform-Tools for Mac](https://developer.android.com/tools/releases/platform-tools):
+
+```bash
+brew install android-platform-tools
+adb devices
+```
+
+Start the macOS dashboard from the repository directory:
+
+```bash
+sh run-macos.sh
+```
+
+The launcher creates a local ignored `.venv` if needed and installs pinned **Textual** and **Frida 16.5.9** there. Frida 16.5.9 has a macOS ARM64 wheel, but actual emulator compatibility varies. Run the standalone CLI check instead of TUI with:
+
+```bash
+sh run-macos.sh --check   # Step 0: root/ADB/Frida preflight; may adjust emulator setup
+sh run-macos.sh --list    # Step 1: read available offers; no checkout
+```
+
+On macOS the TUI only offers Steps **0 (Environment)** and **1 (Available offers)**. **Checkout Steps 2–5, Run All and resume-from-step are deliberately blocked**, including through keyboard/argument entrypoints. Do not use `run-all.ps1` or Windows-only `setup_env.py` as macOS setup scripts; the native launcher and `macos_runner.py` take the read-only path.
+
+**Validation status:** Offline tests on a macOS CI runner verify the launcher syntax, stage routing and checkout guards. Actual ADB, rooted Android hardware, Frida injection and Google Play behavior require manual testing and are **not guaranteed** by CI. The macOS build does not promise a successful subscription or eligibility.
 
 ## Get started: interactive dashboard
 
