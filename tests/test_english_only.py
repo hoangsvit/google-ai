@@ -35,8 +35,10 @@ class EnglishOnlyTest(unittest.TestCase):
                 continue
             if any(part in SKIP_DIRS for part in file.relative_to(ROOT).parts):
                 continue
-            if file.parent == ROOT and file.name in LOCALIZED_READMES:
-                continue  # Explicitly localized guides; source and other docs stay English-only.
+            if file.name in LOCALIZED_READMES and file.parent in (
+                ROOT, ROOT / "docs" / "i18n"
+            ):
+                continue  # Intentionally translated overviews and detailed guides.
             content = file.read_text(encoding="utf-8")
             if file.parent == ROOT and file.name == "README.md":
                 # Allow native-language names only in the English README switcher.

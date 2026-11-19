@@ -38,6 +38,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_release_workflow.py' -v
       - name: Maintainer and release documentation checks (offline)
         run: python -m unittest discover -s tests -p 'test_maintainer_docs.py' -v
+      - name: Documentation hub and concise overviews (offline)
+        run: python -m unittest discover -s tests -p 'test_docs_navigation.py' -v
       - name: Multilingual README links and safety text
         run: python -m unittest discover -s tests -p 'test_readme_locales.py' -v
       - name: English-only filenames and source checks

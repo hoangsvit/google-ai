@@ -1,5 +1,7 @@
 # Notes from the original author's README (translated and qualified)
 
+[Documentation home](README.md) · [Project overview](../README.md)
+
 > **Historical claims, not verified guidance.** The original Chinese README advertised a 12-month Google AI Ultra promotion, claimed certain accounts could obtain 20 TB or 30 TB offers, and described the possibility of renewing or cancelling after an introductory period. These claims were written by the original author and should not be read as Google policy or proof of any current promotional entitlement.
 
 ## Original implementation overview

@@ -1,5 +1,7 @@
 # Windows + MuMu pre-release smoke test (manual)
 
+[Documentation home](README.md) · [Project overview](../README.md)
+
 This is the reusable hardware validation checklist for **any ePlus AI Toolkit release**. GitHub Actions cannot perform it because CI does not have a rooted MuMu/Android instance or a real Google Play account. **Do not test billing Steps 2–5** for release verification.
 
 ## Before starting

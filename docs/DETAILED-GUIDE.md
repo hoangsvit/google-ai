@@ -1,5 +1,7 @@
 # Detailed setup, operations, and troubleshooting
 
+[Documentation home](README.md) · [Project overview](../README.md)
+
 This guide describes the maintained **Python + ADB + Frida** workflow. The Playwright wrapper was removed because it only delegated to the same Python script and added an unnecessary Node.js dependency. The optional **pure JavaScript test** for the Frida hook still uses Node.js in CI; end users do **not** need Node.js.
 
 [Back to README](../README.md) · [Security precautions](../SECURITY.md) · [Original stage reference (English)](ORIGINAL-STEPS.md)

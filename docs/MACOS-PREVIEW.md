@@ -1,5 +1,7 @@
 # ePlus AI Toolkit for macOS — full-stage development build
 
+[Documentation home](README.md) · [Project overview](../README.md)
+
 This macOS port exposes the full 6-stage Textual interface and uses the same
 Android/Frida engine as Windows. It is **not** a macOS production release:
 no real Mac/MuMu/Google Play Billing transaction has been tested. Passing CI

@@ -92,6 +92,12 @@ The UI is for everyday users, not just developers:
 - Keep error codes and account masking consistent.
 - Do not infer free months, subscription activation, future billing or eligibility from offer metadata or UI prompts.
 
+## Documentation source of truth
+
+Keep the repository root `README.md` and six translated root READMEs short (intro, platform commands, billing warning, documentation links). The canonical topic pages are `docs/README.md`, `docs/INSTALLATION.md`, `docs/USAGE.md`, `docs/SAFETY.md`, `docs/TROUBLESHOOTING.md`, `docs/PROJECT.md` and `docs/MACOS-PREVIEW.md`. Full translated usage text is retained in `docs/i18n/README.<locale>.md`; root locale files are quick overviews.
+
+When moving or changing guidance, keep original safety, billing and credit statements accurate, fix relative links from the document's new directory, and update `tests/test_readme_locales.py` and `tests/test_docs_navigation.py`. Do not reintroduce long procedures in the root README, duplicate stale claims or claim Mac hardware compatibility based on CI.
+
 ## Source of truth and reporting
 
 When instructions conflict, follow security restrictions first; then the current code and tests; then `SECURITY.md`, `CONTRIBUTING.md` and the user documentation. If the implementation disagrees with a user-facing claim, fix or report the discrepancy rather than repeating the claim.

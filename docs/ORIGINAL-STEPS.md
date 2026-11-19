@@ -1,5 +1,7 @@
 # Historical Google AI Pro stage reference (English)
 
+[Documentation home](README.md) · [Project overview](../README.md)
+
 > The original author claimed the following promotional sequence existed. The alleged 12 + 6 + 6 + optional 6 month stacking is **unverified** and may be ineligible, unavailable, paid, or rejected by Google Play. This is a translation of the procedure's intent, **not a promise of free service**.
 
 ## Environment

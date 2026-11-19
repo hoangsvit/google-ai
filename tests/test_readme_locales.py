@@ -1,99 +1,100 @@
-"""Offline coverage for multilingual README navigation and safety-critical guidance."""
+"""Readme overviews stay short while full translated guidance remains in docs."""
 from pathlib import Path
-import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 LANGUAGES = ("vi", "zh-CN", "ja", "ko", "es", "fr")
-DOCS = ("README.md",) + tuple(f"README.{locale}.md" for locale in LANGUAGES)
-
-REQUIRED_REFERENCES = (
-    "README.md",
-    "README.vi.md",
-    "README.zh-CN.md",
-    "README.ja.md",
-    "README.ko.md",
-    "README.es.md",
-    "README.fr.md",
+OVERVIEWS = ("README.md",) + tuple(f"README.{lang}.md" for lang in LANGUAGES)
+NAVIGATION = ("README.md",) + tuple(f"README.{lang}.md" for lang in LANGUAGES)
+ENGLISH_GUIDES = (
+    "docs/SAFETY.md", "docs/INSTALLATION.md", "docs/USAGE.md",
+    "docs/TROUBLESHOOTING.md", "docs/PROJECT.md",
 )
-REQUIRED_LINKS = ("DISCLAIMER.md", "SECURITY.md", "CONTRIBUTING.md",
-                  "https://github.com/hoangsvit/google-ai/releases",
-                  "THIRD_PARTY_NOTICES.md", "docs/DETAILED-GUIDE.md",
-                  "https://www.mumuplayer.com/download/",
-                  "https://github.com/hoangsvit/google-ai/wiki/Install")
-REQUIRED_COMMANDS = (".\\run-all.ps1", "-Step 1", "-Step 2", "-Step 3",
-                     "-Step 4", "-Step 5", "-AllStages", "-StartStep 3")
-REQUIRED_IDENTIFIERS = ("Frida 16.5.9", "Google Play", "MuMuPlayer",
-                        "Verified in Google Play", "David Nguyen (@hoangsvit)")
+
+
+def content(path: str) -> str:
+    return (ROOT / path).read_text(encoding="utf-8")
+
+
+def detailed_path(overview: str) -> str:
+    return "docs/i18n/" + overview if overview != "README.md" else ""
+
+
+def detailed_content(overview: str) -> str:
+    if overview == "README.md":
+        return "\n".join(content(path) for path in ENGLISH_GUIDES)
+    return content(detailed_path(overview))
 
 
 class ReadmeLocalesTests(unittest.TestCase):
-    def test_language_switcher_points_to_every_existing_readme(self):
-        for path in DOCS:
-            with self.subTest(file=path):
-                text = (ROOT / path).read_text(encoding="utf-8")
-                for reference in REQUIRED_REFERENCES:
-                    if reference != path:
-                        self.assertIn(f"({reference})", text)
-                self.assertEqual(text.count("```") % 2, 0, path)
+    def test_language_switcher_and_detailed_guide_links(self):
+        for overview in OVERVIEWS:
+            with self.subTest(file=overview):
+                text = content(overview)
+                for ref in NAVIGATION:
+                    if ref != overview:
+                        self.assertIn(f"({ref})", text)
+                self.assertIn("(docs/README.md)", text)
+                if overview != "README.md":
+                    self.assertIn(f"(docs/i18n/{overview})", text)
+                    self.assertIn(f"(../../{overview})", detailed_content(overview))
+                self.assertEqual(text.count("```") % 2, 0)
 
-    def test_important_safety_and_operational_details_are_present(self):
-        for path in DOCS:
-            with self.subTest(file=path):
-                text = (ROOT / path).read_text(encoding="utf-8")
-                for reference in REQUIRED_LINKS + REQUIRED_COMMANDS + REQUIRED_IDENTIFIERS:
-                    self.assertIn(reference, text)
-
-    def test_card_verification_hold_note_in_every_language(self):
-        # All locales must explain a possible ~US$3 pending authorization
-        # without turning it into a guaranteed fee or subscription payment.
-        official_url = "https://support.google.com/googleplay/answer/6224192?hl=en"
-        for path in DOCS:
-            with self.subTest(file=path):
-                text = (ROOT / path).read_text(encoding="utf-8")
-                self.assertIn("> [!NOTE]", text)
-                self.assertIn(official_url, text)
-                self.assertIn("3", text)
-                self.assertIn("14", text)
-
-    def test_published_release_fallback_preserves_safety_requirements(self):
-        for path in DOCS:
-            with self.subTest(file=path):
-                text = (ROOT / path).read_text(encoding="utf-8")
-                self.assertIn("Source code (zip)", text)
-                self.assertIn("`.exe`", text)
+    def test_short_overviews_link_safety_and_platform_guidance(self):
+        for overview in OVERVIEWS:
+            with self.subTest(file=overview):
+                text = content(overview)
+                self.assertIn("[!CAUTION]", text)
+                self.assertIn("2–5", text)
+                self.assertIn("Google Play", text)
                 self.assertIn("MuMuPlayer", text)
-                self.assertIn("ADB/Frida", text)
+                self.assertIn(".\\run-all.ps1", text)
+                self.assertIn("sh run-macos.sh", text)
+                self.assertIn("(docs/MACOS-PREVIEW.md)", text)
+                self.assertIn("(docs/SAFETY.md)", text)
+                self.assertIn("(DISCLAIMER.md)", text)
 
-    def test_community_support_and_related_muse_project(self):
-        # Support is a community link, not an official Google help desk.
-        # Muse invite codes belong to another service, never Google AI Pro.
-        urls = (
-            "https://t.me/eplus_news/29",
-            "https://github.com/hoangsvit/google-ai/issues",
-            "https://github.com/ePlus-DEV/muse-invite-hub",
-            "https://muse.eplus.dev/",
+    def test_original_commands_and_account_checks_remain_in_full_guides(self):
+        commands = (
+            ".\\run-all.ps1", "-Step 1", "-Step 2", "-Step 3",
+            "-Step 4", "-Step 5", "-AllStages", "-StartStep 3",
         )
-        for path in DOCS:
-            with self.subTest(file=path):
-                text = (ROOT / path).read_text(encoding="utf-8")
-                for url in urls:
-                    self.assertIn(url, text)
-                self.assertIn("Muse", text)
-                self.assertIn("Google AI Pro", text)
-                self.assertIn("2FA", text)
+        labels = ("Frida 16.5.9", "Google Play", "MuMuPlayer",
+                  "Verified in Google Play", "David Nguyen (@hoangsvit)")
+        for overview in OVERVIEWS:
+            with self.subTest(file=overview):
+                guide = detailed_content(overview)
+                for item in commands + labels:
+                    self.assertIn(item, guide)
+                self.assertIn("https://github.com/hoangsvit/google-ai/wiki/Install", guide)
+                self.assertIn("https://www.mumuplayer.com/download/", guide)
 
-    def test_local_markdown_links_resolve(self):
-        for path in DOCS:
-            source = ROOT / path
-            text = source.read_text(encoding="utf-8")
-            links = re.findall(r"(?<!!)\[[^]]+\]\(([^)]+)\)", text)
-            for target in links:
-                if target.startswith(("https://", "http://", "mailto:", "#")):
-                    continue
-                clean = target.split("#", 1)[0]
-                with self.subTest(file=path, link=clean):
-                    self.assertTrue((source.parent / clean).is_file())
+    def test_card_hold_and_release_notes_remain_in_detailed_guides(self):
+        official = "https://support.google.com/googleplay/answer/6224192?hl=en"
+        for overview in OVERVIEWS:
+            with self.subTest(file=overview):
+                guide = detailed_content(overview)
+                self.assertIn("> [!NOTE]", guide)
+                self.assertIn(official, guide)
+                self.assertIn("3", guide)
+                self.assertIn("14", guide)
+                for item in ("Source code (zip)", "`.exe`", "ADB/Frida"):
+                    self.assertIn(item, guide)
+
+    def test_support_and_muse_distinction_remains_in_detailed_guides(self):
+        for overview in OVERVIEWS:
+            with self.subTest(file=overview):
+                guide = detailed_content(overview)
+                for url in (
+                    "https://t.me/eplus_news/29",
+                    "https://github.com/hoangsvit/google-ai/issues",
+                    "https://github.com/ePlus-DEV/muse-invite-hub",
+                    "https://muse.eplus.dev/",
+                ):
+                    self.assertIn(url, guide)
+                self.assertIn("Muse", guide)
+                self.assertIn("Google AI Pro", guide)
+                self.assertIn("2FA", guide)
 
 
 if __name__ == "__main__":

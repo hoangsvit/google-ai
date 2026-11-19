@@ -41,6 +41,13 @@ On Windows PowerShell 5.1, you can use `powershell -File` instead of `pwsh -File
 
 Documentation and terminal usability fixes are welcome. Preserve attribution to upstream authors and retain their MIT notice.
 
+## Documentation changes
+
+- Keep root README files as short overviews. Move procedures, diagnostics and legacy references to the [documentation hub](docs/README.md).
+- Update the English topic page first, then review the translated detailed guides in `docs/i18n/` if the change affects user-facing instructions. Each root language README links to its detailed guide.
+- Always preserve billing warnings and verification requirements. Do not confuse a Google Play offer listing, submitted checkout or authorization hold with successful subscription activation.
+- Before submitting a PR, run `python -m unittest discover -s tests -p 'test_readme_locales.py' -v` and `python -m unittest discover -s tests -p 'test_docs_navigation.py' -v` to check links and README size.
+
 ## Translations
 
 The root [English README](README.md) is the maintained reference. Translated guides are [Vietnamese](README.vi.md), [Simplified Chinese](README.zh-CN.md), [Japanese](README.ja.md), [Korean](README.ko.md), [Spanish](README.es.md), and [French](README.fr.md).
