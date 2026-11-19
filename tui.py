@@ -59,6 +59,10 @@ class Approval(ModalScreen[bool]):
         self.dismiss(event.button.id == "approve")
 
 
+def is_macos_platform() -> bool:
+    return sys.platform == "darwin"
+
+
 class GoogleAITUI(App[None]):
     TITLE = "ePlus AI Toolkit"
     SUB_TITLE = "ePlus.DEV"
@@ -168,6 +172,9 @@ class GoogleAITUI(App[None]):
         super().__init__()
         self.repo = repo.resolve()
         self.initial_step = validate_step(selected_step)
+        self.macos_readonly = is_macos_platform()
+        if self.macos_readonly and self.initial_step > 1:
+            raise ValueError("macOS supports read-only Steps 0 and 1 only")
         self.start_sequence = start_sequence
         self.debug_visible = initial_debug
         self.busy = False
@@ -228,7 +235,7 @@ class GoogleAITUI(App[None]):
                                     yield Static("Step", id="advanced_label")
                                     yield Select(
                                         [(f"{stage.number}. {stage.label}", stage.number)
-                                         for stage in STAGES],
+                                         for stage in (STAGES[:2] if self.macos_readonly else STAGES)],
                                         value=self.initial_step, id="step", allow_blank=False)
                             with Horizontal(id="run_row"):
                                 yield Button("Run selected step", id="run", variant="primary")
@@ -507,7 +514,7 @@ class GoogleAITUI(App[None]):
         self._started_at = time.monotonic()
         self._last_activity_at = self._started_at
         self.query_one("#elapsed", Static).update("Elapsed: 00:00")
-        self.query_one("#activity", Static).update("Connecting to MuMu and preparing tools...")
+        self.query_one("#activity", Static).update("Connecting to Android and preparing tools...")
         self.query_one("#quickstart", Button).disabled = True
         self.query_one("#run", Button).disabled = True
         self.query_one("#sequence", Button).disabled = True
@@ -520,7 +527,7 @@ class GoogleAITUI(App[None]):
         self.query_one("#next", Button).display = False
         self.query_one("#step_result", Static).update(f"Step {step} · {STAGES[step].label}")
         self._set_workflow(step, "running")
-        self._set_status("Running — check MuMu if prompted")
+        self._set_status("Running — check Android if prompted")
         self._set_message("Preparing tools and checking Google Play. Missing dependencies are installed automatically.")
         self.run_stage(step)
 
@@ -552,7 +559,7 @@ class GoogleAITUI(App[None]):
     @work(thread=True, exclusive=True)
     def run_stage(self, step: int) -> None:
         try:
-            if needs_setup():
+            if not self.macos_readonly and needs_setup():
                 self.call_from_thread(self._set_status, "Setting up...")
                 self.call_from_thread(self._set_message,
                                       "Preparing Frida and ADB. You do not need a separate setup command.")
