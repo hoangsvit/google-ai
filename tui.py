@@ -280,6 +280,17 @@ class GoogleAITUI(App[None]):
 
     def on_mount(self) -> None:
         self.set_interval(1, self._refresh_elapsed)
+        if self.macos_readonly:
+            self.query_one("#mode_field", Vertical).display = False
+            self.query_one("#mode", Select).disabled = True
+            self.query_one("#quick_hint", Static).update(
+                "Read-only Google Play diagnostics on macOS. No checkout."
+            )
+            self.query_one("#advanced_toggle", Button).label = "Advanced: Step 0 or 1  +"
+            self.query_one("#device", Static).update("ANDROID DEVICE\nADB discovery pending")
+            self.query_one("#read_only", Static).update(
+                "macOS preview: Steps 2–5 disabled until device support is validated."
+            )
         self.query_one("#debug_log", RichLog).display = self.debug_visible
         self.query_one("#debug", Button).label = "Hide technical details" if self.debug_visible else "Show technical details"
         if self.start_sequence:
@@ -309,6 +320,13 @@ class GoogleAITUI(App[None]):
             return
         mode = self.query_one("#mode", Select).value
         step = self.query_one("#step", Select).value
+        if self.macos_readonly:
+            self.query_one("#step", Select).disabled = False
+            self.query_one("#run", Button).label = "Run read-only step"
+            self.query_one("#mode_hint", Static).update(
+                "Only environment and offer checks are available on Mac."
+            )
+            return
         if mode == "all":
             self.query_one("#step", Select).disabled = True
             self.query_one("#run", Button).label = "Run all: Steps 2-5"
@@ -357,6 +375,9 @@ class GoogleAITUI(App[None]):
     def _confirm_stage(self, step: int, sequence: bool,
                        previous_verified: bool = False) -> None:
         if self.busy:
+            return
+        if self.macos_readonly and step > 1:
+            self._set_message("Checkout Steps 2–5 are unavailable on macOS.")
             return
         if step == 2:
             title = "Start initial 12-month checkout?"
