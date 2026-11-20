@@ -410,19 +410,22 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                             self.assertFalse(notice.display)
                             self.assertTrue(compact.display)
                             wording = str(compact.render())
-                            self.assertIn("3 x US$1", wording)
-                            self.assertIn("NOT one US$3", wording)
-                            self.assertIn("24mo not guaranteed", wording)
+                            self.assertIn("3 separate US$1 checks", wording)
+                            self.assertIn("not one US$3", wording)
+                            self.assertIn("24 months not guaranteed", wording)
                             self.assertGreater(app.query_one("#status_panel").region.height, 3)
                         else:
                             self.assertTrue(notice.display)
                             self.assertFalse(compact.display)
                             wording = str(notice.render())
-                            self.assertIn("3 separate US$1", wording)
-                            self.assertIn("US$3 available", wording)
-                            self.assertIn("NOT a single US$3 charge", wording)
-                            self.assertIn("not guaranteed", wording)
-                            self.assertIn("Step 5 is optional", wording)
+                            self.assertIn("Step 2 (12 months)", wording)
+                            self.assertIn("Step 3 (6)", wording)
+                            self.assertIn("Step 4 (6)", wording)
+                            self.assertIn("at least US$3 available", wording)
+                            self.assertIn("3 separate US$1 card checks", wording)
+                            self.assertIn("not one US$3 payment", wording)
+                            self.assertIn("temporary holds", wording)
+                            self.assertIn("24 months is not guaranteed", wording)
                         self.assertTrue(app.query_one("#quickstart").display)
                     launch.assert_not_called()
 
@@ -430,7 +433,7 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
         from textual.widgets import Static
         from tui import Approval, GoogleAITUI
 
-        for step, expected in ((2, "first"), (3, "second"), (4, "third"), (5, None)):
+        for step, expected in ((2, "1"), (3, "2"), (4, "3"), (5, None)):
             with self.subTest(step=step), tempfile.TemporaryDirectory() as directory:
                 app = GoogleAITUI(repo=Path(directory))
                 with patch("tui.subprocess.Popen") as launch:
@@ -440,12 +443,13 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                         self.assertIsInstance(app.screen, Approval)
                         wording = str(app.screen.query_one("#approval_message", Static).render())
                         if expected:
-                            self.assertIn(expected + " of three separate US$1", wording)
-                            self.assertIn("NOT one US$3 charge", wording)
-                            self.assertIn("NOT guaranteed", wording)
+                            self.assertIn("Card check " + expected + " of 3", wording)
+                            self.assertIn("NOT one US$3 payment", wording)
+                            self.assertIn("temporary hold", wording)
+                            self.assertIn("not guaranteed", wording)
                         else:
                             self.assertIn("Step 5 is optional", wording)
-                            self.assertIn("NOT included", wording)
+                            self.assertIn("outside the 3 x US$1", wording)
                         await pilot.click("#cancel")
                         await pilot.pause()
                     launch.assert_not_called()
