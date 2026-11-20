@@ -141,6 +141,25 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(GoogleAITUI.TITLE, "ePlus AI Toolkit")
         self.assertEqual(GoogleAITUI.SUB_TITLE, "ePlus.DEV")
 
+    async def test_telegram_support_channel_is_clickable(self):
+        from textual.widgets import Link, Static
+        from tui import GoogleAITUI
+
+        for size in ((110, 35), (90, 20)):
+            with self.subTest(size=size), tempfile.TemporaryDirectory() as directory:
+                app = GoogleAITUI(repo=Path(directory))
+                with patch("tui.subprocess.Popen") as launch:
+                    async with app.run_test(size=size) as pilot:
+                        await pilot.pause()
+                        channel = app.query_one("#support_link", Link)
+                        self.assertEqual(channel.url, "https://t.me/eplus_news")
+                        self.assertTrue(channel.display)
+                        self.assertGreater(channel.region.width, 8)
+                        self.assertIn(
+                            "Support:", str(app.query_one("#support_label", Static).render())
+                        )
+                    launch.assert_not_called()
+
     async def test_github_credits_are_clickable_links(self):
         from textual.widgets import Link
         from tui import GoogleAITUI
