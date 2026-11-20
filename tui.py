@@ -237,8 +237,8 @@ class GoogleAITUI(App[None]):
                         yield Button("Advanced: Run by step  +", id="advanced_toggle")
                         yield Static(
                             "REPORTED EXAMPLE (not guaranteed): Step 2 = 12 months, "
-                            "Step 3 = +6, Step 4 = +6 (24 months if verified).\\n"
-                            "3 separate US$1 card events (US$3 available), NOT a single US$3 charge.\\n"
+                            "Step 3 = +6, Step 4 = +6 (24 months if verified).\n"
+                            "3 separate US$1 card events (US$3 available), NOT a single US$3 charge.\n"
                             "May be temporary holds; confirm actual charges and renewal in Google Play. "
                             "Step 5 is optional and not included.",
                             id="payment_notice",
@@ -441,7 +441,7 @@ class GoogleAITUI(App[None]):
         if step in (2, 3, 4):
             ordinal = {2: "first", 3: "second", 4: "third"}[step]
             message += (
-                f"\\n\\nReported example: {ordinal} of three separate US$1 "
+                f"\n\nReported example: {ordinal} of three separate US$1 "
                 "verification/payment events (US$3 available total, NOT one US$3 charge). "
                 "This may be a temporary card hold rather than a completed charge. "
                 "The 24-month outcome is NOT guaranteed. Check the exact amount and "
@@ -449,7 +449,7 @@ class GoogleAITUI(App[None]):
             )
         elif step == 5:
             message += (
-                "\\n\\nStep 5 is optional and is NOT included in the reported "
+                "\n\nStep 5 is optional and is NOT included in the reported "
                 "three US$1 events / 24-month example. Check the actual Google Play "
                 "amount and renewal terms before proceeding."
             )
