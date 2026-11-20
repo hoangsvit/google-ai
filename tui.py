@@ -114,6 +114,11 @@ class GoogleAITUI(App[None]):
     }
     #welcome { color: #91e3ff; text-style: bold; height: 1; }
     #quick_hint { color: #afcce3; height: auto; margin: 0 0 1 0; }
+    #payment_notice {
+        height: auto; margin: 1 0 0 0; padding: 0 1;
+        color: #ffe0a0; background: #283047; border-left: solid #d6a34f;
+    }
+    #payment_notice_compact { display: none; }
     #read_only { color: #81c6df; height: auto; margin-top: 1; }
     #workflow_actions { height: auto; }
     #form_row { height: auto; }
@@ -150,6 +155,13 @@ class GoogleAITUI(App[None]):
     Screen.compact #device, Screen.compact #account { height: 1; border: none; }
     Screen.compact #welcome_panel { padding: 0 1; }
     Screen.compact #quick_hint, Screen.compact #read_only { display: none; }
+    Screen.compact #welcome_panel { padding: 0 1; }
+    Screen.compact #welcome { display: none; }
+    Screen.compact #payment_notice { display: none; }
+    Screen.compact #payment_notice_compact {
+        display: block; height: 1; margin: 0;
+        color: #ffe0a0; background: #283047;
+    }
     Screen.compact #welcome_panel { padding: 0 1; }
     Screen.compact #quickstart, Screen.compact #advanced_toggle { height: 3; }
     Screen.narrow #form_row { layout: vertical; }
@@ -245,6 +257,18 @@ class GoogleAITUI(App[None]):
                                          id="next", disabled=True)
                             yield Button("Stop after current step", id="stop", disabled=True)
                             yield Static("Steps 2–5 can open checkout and require confirmation.", id="read_only")
+                        yield Static(
+                            "REPORTED EXAMPLE (not guaranteed): Step 2 = 12 months, "
+                            "Step 3 = +6, Step 4 = +6 (24 months if verified).\n"
+                            "3 separate US$1 card events (US$3 available), NOT a single US$3 charge.\n"
+                            "May be temporary holds; confirm actual charges and renewal in Google Play. "
+                            "Step 5 is optional and not included.",
+                            id="payment_notice",
+                        )
+                        yield Static(
+                            "Reported: 3 x US$1 (NOT one US$3); 24mo not guaranteed.",
+                            id="payment_notice_compact",
+                        )
                     with Vertical(id="status_panel"):
                         yield Static("LIVE STATUS", classes="section")
                         yield Static("Ready — no check started", id="state")
@@ -377,6 +401,21 @@ class GoogleAITUI(App[None]):
         else:
             self._start(step, sequence)
             return
+        if step in (2, 3, 4):
+            ordinal = {2: "first", 3: "second", 4: "third"}[step]
+            message += (
+                f"\n\nReported example: {ordinal} of three separate US$1 "
+                "verification/payment events (US$3 available total, NOT one US$3 charge). "
+                "This may be a temporary card hold rather than a completed charge. "
+                "The 24-month outcome is NOT guaranteed. Check the exact amount and "
+                "renewal date in Google Play."
+            )
+        elif step == 5:
+            message += (
+                "\n\nStep 5 is optional and is NOT included in the reported "
+                "three US$1 events / 24-month example. Check the actual Google Play "
+                "amount and renewal terms before proceeding."
+            )
         if previous_verified:
             message = ("Confirm the previous stage ACTUALLY changed the Google Play "
                        "subscription/renewal date. " + message)

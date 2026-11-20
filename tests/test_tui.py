@@ -394,6 +394,62 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                 app.advanced_pressed()
                 self.assertFalse(app.query_one("#workflow_actions").display)
 
+    async def test_reported_payment_notice_is_visible_without_checkout(self):
+        from textual.widgets import Static
+        from tui import GoogleAITUI
+
+        for size in ((110, 35), (90, 20)):
+            with self.subTest(size=size), tempfile.TemporaryDirectory() as directory:
+                app = GoogleAITUI(repo=Path(directory))
+                with patch("tui.subprocess.Popen") as launch:
+                    async with app.run_test(size=size) as pilot:
+                        await pilot.pause()
+                        notice = app.query_one("#payment_notice", Static)
+                        compact = app.query_one("#payment_notice_compact", Static)
+                        if size[1] < 27:
+                            self.assertFalse(notice.display)
+                            self.assertTrue(compact.display)
+                            wording = str(compact.render())
+                            self.assertIn("3 x US$1", wording)
+                            self.assertIn("NOT one US$3", wording)
+                            self.assertIn("24mo not guaranteed", wording)
+                            self.assertGreater(app.query_one("#status_panel").region.height, 3)
+                        else:
+                            self.assertTrue(notice.display)
+                            self.assertFalse(compact.display)
+                            wording = str(notice.render())
+                            self.assertIn("3 separate US$1", wording)
+                            self.assertIn("US$3 available", wording)
+                            self.assertIn("NOT a single US$3 charge", wording)
+                            self.assertIn("not guaranteed", wording)
+                            self.assertIn("Step 5 is optional", wording)
+                        self.assertTrue(app.query_one("#quickstart").display)
+                    launch.assert_not_called()
+
+    async def test_checkout_confirmations_explain_each_one_dollar_event(self):
+        from textual.widgets import Static
+        from tui import Approval, GoogleAITUI
+
+        for step, expected in ((2, "first"), (3, "second"), (4, "third"), (5, None)):
+            with self.subTest(step=step), tempfile.TemporaryDirectory() as directory:
+                app = GoogleAITUI(repo=Path(directory))
+                with patch("tui.subprocess.Popen") as launch:
+                    async with app.run_test(size=(110, 35)) as pilot:
+                        app._confirm_stage(step, False)
+                        await pilot.pause()
+                        self.assertIsInstance(app.screen, Approval)
+                        wording = str(app.screen.query_one("#approval_message", Static).render())
+                        if expected:
+                            self.assertIn(expected + " of three separate US$1", wording)
+                            self.assertIn("NOT one US$3 charge", wording)
+                            self.assertIn("NOT guaranteed", wording)
+                        else:
+                            self.assertIn("Step 5 is optional", wording)
+                            self.assertIn("NOT included", wording)
+                        await pilot.click("#cancel")
+                        await pilot.pause()
+                    launch.assert_not_called()
+
     async def test_step_click_requires_approval_before_subprocess(self):
         from tui import GoogleAITUI, Approval
 
