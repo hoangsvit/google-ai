@@ -162,6 +162,7 @@ class GoogleAITUI(App[None]):
     Screen.compact #device, Screen.compact #account { height: 1; border: none; }
     Screen.compact #welcome_panel { padding: 0 1; }
     Screen.compact #quick_hint, Screen.compact #read_only { display: none; }
+    Screen.compact #welcome { display: none; }
     Screen.compact #payment_notice { display: none; }
     Screen.compact #payment_notice_compact {
         display: block; height: 1; margin: 0;
@@ -240,18 +241,6 @@ class GoogleAITUI(App[None]):
                         yield Static("Check MuMu connection and Google AI offers without opening checkout.", id="quick_hint")
                         yield Button("Check Device & Offers", id="quickstart", variant="success")
                         yield Button("Advanced: Run by step  +", id="advanced_toggle")
-                        yield Static(
-                            "REPORTED EXAMPLE (not guaranteed): Step 2 = 12 months, "
-                            "Step 3 = +6, Step 4 = +6 (24 months if verified).\n"
-                            "3 separate US$1 card events (US$3 available), NOT a single US$3 charge.\n"
-                            "May be temporary holds; confirm actual charges and renewal in Google Play. "
-                            "Step 5 is optional and not included.",
-                            id="payment_notice",
-                        )
-                        yield Static(
-                            "Reported: 3 x US$1 (NOT one US$3); 24mo not guaranteed.",
-                            id="payment_notice_compact",
-                        )
                         with Vertical(id="workflow_actions"):
                             with Horizontal(id="form_row"):
                                 with Vertical(classes="field", id="mode_field"):
@@ -276,6 +265,18 @@ class GoogleAITUI(App[None]):
                                          id="next", disabled=True)
                             yield Button("Stop after current step", id="stop", disabled=True)
                             yield Static("Steps 2–5 can open checkout and require confirmation.", id="read_only")
+                        yield Static(
+                            "REPORTED EXAMPLE (not guaranteed): Step 2 = 12 months, "
+                            "Step 3 = +6, Step 4 = +6 (24 months if verified).\n"
+                            "3 separate US$1 card events (US$3 available), NOT a single US$3 charge.\n"
+                            "May be temporary holds; confirm actual charges and renewal in Google Play. "
+                            "Step 5 is optional and not included.",
+                            id="payment_notice",
+                        )
+                        yield Static(
+                            "Reported: 3 x US$1 (NOT one US$3); 24mo not guaranteed.",
+                            id="payment_notice_compact",
+                        )
                     with Vertical(id="status_panel"):
                         yield Static("LIVE STATUS", classes="section")
                         yield Static("Ready — no check started", id="state")
