@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Tiếng Việt
 
-<!-- Source README.md git-blob: daf5a76837f9cefab213a3faf18f71653641888a -->
+<!-- Source README.md git-blob: fd33739d3dfce6447a54761f8ad3f682634de172 -->
 
 [English](README.md) · **Tiếng Việt** · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -15,7 +15,7 @@
 > **Đây không phải công cụ chính thức của Google và có thể phát sinh chi phí.** Ở các bước **2–5**, công cụ có thể mở trang thanh toán Google Play và tự nhấn **Subscribe**. Ưu đãi xuất hiện trong danh sách, mức giá đầu tiên bằng 0 hoặc thông báo đã gửi yêu cầu thanh toán **không có nghĩa là** bạn đủ điều kiện, được dùng miễn phí hay đã gia hạn thành công. Trước khi thực hiện, hãy kiểm tra đúng tài khoản, khoản tiền phải trả ngay, mức phí những kỳ sau và ngày gia hạn trong **Google Play**. Dừng công cụ không hủy được giao dịch đã gửi.
 
 > [!NOTE]
-> **Xác thực thẻ có thể tạm giữ tiền dù hóa đơn Google Play hiển thị 0 USD.** Bạn có thể thấy khoản **giữ tiền chờ xử lý khoảng 3 USD** (hoặc mức khác) để xác thực thẻ. **3 USD chỉ là mức tham khảo, không phải phí cố định của Google hoặc bằng chứng đã thanh toán gói đăng ký.** Khoản tạm giữ có thể làm giảm số dư khả dụng; theo Google, lệnh xác thực này không phải giao dịch mua hàng và thường được giải tỏa trong **1–14 ngày làm việc**, tùy ngân hàng. Nếu tiền được hạch toán thành khoản trừ thực tế hoặc lệnh giữ tiền còn tồn tại sau 14 ngày làm việc, hãy liên hệ ngân hàng và Google Payments. [Nguồn chính thức của Google Play](https://support.google.com/googleplay/answer/6224192?hl=en).
+> **Cần có tối thiểu 3 USD khả dụng cho 3 giao dịch riêng biệt, mỗi giao dịch 1 USD — không phải một lần trừ 3 USD.** Theo quy trình **24 tháng** đã được người dùng báo cáo, Step 2 (dùng thử 12 tháng), Step 3 (gia hạn thêm 6 tháng) và Step 4 (gia hạn thêm 6 tháng) tương ứng với **ba lần xác minh thẻ/thanh toán, mỗi lần 1 USD**: **3 × US$1 = US$3**. Tùy trạng thái ngân hàng và Google Play, khoản 1 USD có thể chỉ là **tạm giữ để xác thực**, không phải phí đã trừ chính thức; số tiền thực tế cũng có thể khác. **3 USD là mức số dư tối thiểu cho ví dụ này, không phải mức phí cố định hoặc bảo đảm mọi tài khoản đều đủ điều kiện.** Khoản tạm giữ có thể làm giảm số dư khả dụng và thường được giải tỏa trong **1–14 ngày làm việc**, tùy ngân hàng. Sau từng bước, hãy tự kiểm tra trạng thái giao dịch và ngày gia hạn tại Google Play. Step 5 là tùy chọn, **không tính trong ba giao dịch trên**. [Giải thích chính thức của Google Play](https://support.google.com/googleplay/answer/6224192?hl=en).
 
 ## Tuyên bố miễn trừ trách nhiệm
 
@@ -129,6 +129,17 @@ Mục **Advanced: Run by step** gồm:
 | **3 — Pro +6 months** | Thử cập nhật gói | **Có thể thanh toán thật** |
 | **4 — Pro +6 months (second)** | Thử cập nhật lần tiếp | **Có thể thanh toán thật** |
 | **5 — Optional +6 months** | Thử ưu đãi tùy chọn | **Có thể thanh toán thật** |
+
+**Ví dụ đã được báo cáo: 24 tháng qua ba giao dịch riêng (cần xác minh trên Google Play):**
+
+| Bước | Thời hạn nếu áp dụng thành công | Giao dịch riêng biệt |
+| --- | --- | --- |
+| **2 — Pro 12 months** | **12 tháng** đầu tiên | **1 USD** (lần 1) |
+| **3 — Pro +6 months** | Tổng cộng **18 tháng** | **1 USD** (lần 2) |
+| **4 — Pro +6 months (second)** | Tổng cộng **24 tháng** | **1 USD** (lần 3) |
+| **Tổng đến Step 4** | **24 tháng nếu đã xác minh** | **3 × US$1 = US$3**; không phải một lần trừ 3 USD |
+
+**Step 5 là tùy chọn, không thuộc ba giao dịch trên.** Thời hạn hiển thị và việc xác minh thẻ không tự chứng minh gia hạn thành công; cần kiểm tra gói đăng ký và ngày gia hạn trong Google Play sau từng bước.
 
 Tên 12/6 tháng là **tên lịch sử của các bước**, không phải cam kết được cộng thêm thời hạn. Nếu đã có gói đang hoạt động, **không chạy lại Step 2**.
 

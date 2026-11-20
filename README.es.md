@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Español
 
-<!-- Source README.md git-blob: daf5a76837f9cefab213a3faf18f71653641888a -->
+<!-- Source README.md git-blob: fd33739d3dfce6447a54761f8ad3f682634de172 -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · **Español** · [Français](README.fr.md)
 
@@ -16,7 +16,7 @@
 > **Proyecto no oficial; pueden producirse cargos reales.** Los **pasos 2–5** pueden abrir un proceso de pago real de Google Play y pulsar **Subscribe** automáticamente. Encontrar una oferta, ver un precio inicial de cero o recibir un mensaje de envío del pago **no demuestra** que la cuenta cumpla los requisitos, que la suscripción sea gratuita, que esté activa ni que se haya ampliado. Antes de cada pago, comprueba en Google Play la cuenta, el importe de hoy, el precio de renovación y la siguiente fecha de cobro. Detener el programa no deshace una transacción enviada.
 
 > [!NOTE]
-> **La verificación de la tarjeta puede retener fondos temporalmente aunque Google Play muestre un total de 0 USD.** Podrías ver una **preautorización pendiente de unos 3 USD** (o de otro importe). **Los 3 USD son un ejemplo, no una tarifa fija de Google ni un cargo de suscripción confirmado.** La retención puede reducir temporalmente el saldo disponible. Según Google, las autorizaciones no son compras y normalmente se liberan en **1–14 días laborables**, según el banco. Si el importe se contabiliza como cargo definitivo o sigue retenido pasados 14 días laborables, contacta con tu banco y Google Payments. [Información oficial de Google Play](https://support.google.com/googleplay/answer/6224192?hl=en).
+> **Ten al menos 3 USD disponibles para tres operaciones separadas de 1 USD; no es un único cargo de 3 USD.** En el caso comunicado de **24 meses**, el paso 2 (12 meses iniciales), el paso 3 (+6 meses) y el paso 4 (+6 meses) corresponden a **tres operaciones de verificación de tarjeta o pago de 1 USD cada una**: **3 × US$1 = US$3**. Una operación puede ser una retención temporal de autorización y no un cargo definitivo; Google Play o el banco pueden aplicar importes distintos. **Los 3 USD son el saldo mínimo del ejemplo, no una tarifa fija ni una garantía de que cualquier cuenta obtenga los 24 meses.** Las preautorizaciones pueden reducir el saldo disponible y suelen liberarse en **1–14 días laborables**, según el banco. Comprueba tras cada paso la operación y la fecha de renovación en Google Play. El paso 5 es opcional y **no forma parte de estas tres operaciones**. [Información oficial de Google Play](https://support.google.com/googleplay/answer/6224192?hl=en).
 
 ## Descargo de responsabilidad
 
@@ -129,6 +129,17 @@ En **Advanced: Run by step**:
 | **3 — Pro +6 months** | Actualización de suscripción original | **Posible cargo real** |
 | **4 — Pro +6 months (second)** | Segunda actualización de suscripción | **Posible cargo real** |
 | **5 — Optional +6 months** | Actualización adicional opcional | **Posible cargo real** |
+
+**Ejemplo comunicado de 24 meses (debe confirmarse en Google Play):**
+
+| Paso | Duración si se aplica | Operación independiente |
+| --- | --- | --- |
+| **2 — Pro 12 months** | **12 meses** iniciales | **1 USD** (primera operación) |
+| **3 — Pro +6 months** | **18 meses** en total | **1 USD** (segunda operación) |
+| **4 — Pro +6 months (second)** | **24 meses** en total | **1 USD** (tercera operación) |
+| **Total hasta el paso 4** | **24 meses, si se confirma** | **3 × US$1 = US$3**; no un pago único de 3 USD |
+
+**El paso 5 es opcional y no se incluye en estas tres operaciones.** El plazo anunciado o una preautorización no demuestran que la ampliación se haya completado: verifica la suscripción y su renovación después de cada paso.
 
 Los meses son **nombres históricos de los pasos**, no una garantía de ampliación. Si ya tienes una suscripción activa, **no repitas el paso 2**.
 

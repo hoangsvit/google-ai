@@ -10,7 +10,7 @@ A terminal toolkit for **Windows and macOS** to inspect Google AI Pro offers thr
 > **Unofficial project. Potential billing charges.** Steps **2–5** can open a real Google Play checkout and may automatically tap **Subscribe**. An offer appearing in a list, a displayed first-phase price of zero, or a message indicating that the Subscribe action was attempted does **not** establish eligibility, an active subscription, a free subscription, or a changed renewal date. Verify the exact account, today's charge, future pricing and renewal date directly in Google Play before any checkout.
 
 > [!NOTE]
-> **Card verification can temporarily reserve funds even if the Google Play checkout shows $0.** You may see a **pending authorization hold of around US$3** (or a different amount) to validate your payment card. **US$3 is an example, not a fixed Google fee or a confirmed subscription charge.** A hold may temporarily reduce your available balance; Google says authorizations are not purchases and typically clear within **1–14 business days**, depending on your bank. If the amount is posted as a completed charge, or a pending hold remains after 14 business days, check with your card issuer and Google Payments. See [Google Play: Fees, charges & authorizations](https://support.google.com/googleplay/answer/6224192?hl=en).
+> **At least US$3 available for three separate US$1 transactions—not one US$3 charge.** In the currently reported **24-month** sequence, Step 2 (initial 12 months), Step 3 (first +6 months) and Step 4 (second +6 months) each involve a **US$1 card-verification/payment event**: **3 × US$1 = US$3** across three transactions. An event may be a temporary authorization hold rather than a settled charge; the actual amount can differ by bank, account or Google Play. US$3 is the minimum balance for this reported example, **not a universal Google fee or a guarantee that US$3 will always suffice**. Pending holds may reduce the available balance; according to Google, authorizations are not purchases and typically clear in **1–14 business days**, depending on the bank. Verify transaction status and subscription/renewal dates directly in Google Play after each stage. Step 5 is optional and is **not** part of this three-transaction example. [Google Play: Fees, charges & authorizations](https://support.google.com/googleplay/answer/6224192?hl=en).
 
 ## Disclaimer
 
@@ -134,6 +134,17 @@ The sidebar lists the six stages. Android Device / Google Account cards update f
 | **One step only** | Runs only the selected Step **0–5**. |
 | **From selected step** | Begins a guided checkout sequence at the chosen Step **2–5**, without replaying earlier checkout steps. |
 | **All: Steps 2–5** | Begins the guided checkout sequence at **Step 2**. Step **5** is optional. |
+
+**Reported 24-month example (subject to Google Play confirmation):**
+
+| Step | Duration if applied | Separate card event |
+| --- | --- | --- |
+| **2 — Pro 12 months** | Initial **12 months** | **US$1** (first transaction) |
+| **3 — Pro +6 months** | **18 months total** | **US$1** (second transaction) |
+| **4 — Pro +6 months (second)** | **24 months total** | **US$1** (third transaction) |
+| **Total through Step 4** | **24 months if verified** | **3 × US$1 = US$3**, not one US$3 charge |
+
+**Step 5 is optional and excluded from this three-transaction example.** No listed duration or authorization proves that an extension succeeded; check the subscription and renewal date in Google Play after each checkout.
 
 All checkout stages on the dashboard require **explicit approval per stage**. After a stage reports that it attempted to submit checkout, check the real Google Play subscription and renewal date. The tool cannot independently confirm a successful activation or extension. Only press **Verified in Google Play → Next** if the change has actually been verified. The next stage still requires separate approval. Failed or ambiguous results do not authorize advancing.
 

@@ -81,6 +81,18 @@ class ReadmeSourceParityTests(unittest.TestCase):
                     "Screenshot differs from README.md; sync the image and source marker",
                 )
 
+    def test_three_separate_one_dollar_transactions_documented(self):
+        """Do not regress to calling three $1 events a single $3 charge."""
+        english = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("three separate US$1 transactions", english)
+        self.assertNotIn("hold of around US$3", english)
+        for locale in LOCALES:
+            with self.subTest(locale=locale):
+                localized = (ROOT / ("README." + locale + ".md")).read_text(encoding="utf-8")
+                self.assertIn("3 × US$1 = US$3", localized)
+                self.assertIn("24", localized)
+                self.assertIn("Step 5", localized)
+
     def test_english_alias_links_to_root_source(self):
         self.assertIn("(README.md)", (ROOT / "README.en.md").read_text(encoding="utf-8"))
 

@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Français
 
-<!-- Source README.md git-blob: daf5a76837f9cefab213a3faf18f71653641888a -->
+<!-- Source README.md git-blob: fd33739d3dfce6447a54761f8ad3f682634de172 -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · **Français**
 
@@ -16,7 +16,7 @@
 > **Outil non officiel ; des frais réels peuvent être facturés.** Les **étapes 2 à 5** peuvent ouvrir un véritable paiement Google Play et appuyer automatiquement sur **Subscribe (S'abonner)**. L'affichage d'une offre, d'un prix initial nul ou d'un message indiquant qu'un paiement a été demandé **ne prouve pas** l'éligibilité, la gratuité, l'activation ni la prolongation de l'abonnement. Avant toute opération, vérifiez dans Google Play le compte, le montant dû aujourd'hui, le prix de renouvellement et la date de facturation. Arrêter l'outil n'annule pas une transaction déjà envoyée.
 
 > [!NOTE]
-> **Une vérification de carte peut bloquer temporairement des fonds même si le paiement Google Play indique 0 USD.** Une **préautorisation en attente d'environ 3 USD** (ou d'un autre montant) peut apparaître. **Les 3 USD sont un exemple, pas des frais fixes de Google ni une facturation d'abonnement confirmée.** Cette retenue peut réduire provisoirement le solde disponible. Selon Google, une autorisation n'est pas un achat et disparaît généralement sous **1 à 14 jours ouvrés**, selon la banque. Si la somme devient un débit définitif ou reste bloquée après 14 jours ouvrés, contactez votre banque et Google Payments. [Documentation officielle de Google Play](https://support.google.com/googleplay/answer/6224192?hl=en).
+> **Prévoyez au moins 3 USD de solde disponible pour trois opérations distinctes de 1 USD, et non un seul débit de 3 USD.** Dans le parcours de **24 mois** signalé, l'étape 2 (12 mois initiaux), l'étape 3 (+6 mois) et l'étape 4 (+6 mois) correspondent à **trois opérations de vérification de carte ou de paiement de 1 USD chacune** : **3 × US$1 = US$3**. Une opération peut n'être qu'une préautorisation temporaire, et non un débit définitif ; le montant peut varier selon la banque, le compte et Google Play. **Les 3 USD représentent le solde minimal de cet exemple, pas des frais fixes ni une garantie d'obtenir 24 mois.** Une préautorisation peut réduire le solde disponible et est généralement levée sous **1 à 14 jours ouvrés**, selon la banque. Vérifiez après chaque étape l'opération et la date de renouvellement dans Google Play. L'étape 5 est facultative et **ne fait pas partie de ces trois opérations**. [Documentation officielle de Google Play](https://support.google.com/googleplay/answer/6224192?hl=en).
 
 ## Avertissement et responsabilité
 
@@ -129,6 +129,17 @@ Dans **Advanced: Run by step** :
 | **3 — Pro +6 months** | Mise à jour de l'abonnement d'origine | **Paiement réel possible** |
 | **4 — Pro +6 months (second)** | Seconde mise à jour de l'abonnement | **Paiement réel possible** |
 | **5 — Optional +6 months** | Mise à jour facultative | **Paiement réel possible** |
+
+**Exemple signalé sur 24 mois (à vérifier dans Google Play) :**
+
+| Étape | Durée si l'opération aboutit | Opération distincte |
+| --- | --- | --- |
+| **2 — Pro 12 months** | **12 mois** initiaux | **1 USD** (1re opération) |
+| **3 — Pro +6 months** | **18 mois** au total | **1 USD** (2e opération) |
+| **4 — Pro +6 months (second)** | **24 mois** au total | **1 USD** (3e opération) |
+| **Total jusqu'à l'étape 4** | **24 mois après vérification** | **3 × US$1 = US$3**, et non un paiement unique de 3 USD |
+
+**L'étape 5 est facultative et exclue de ces trois opérations.** Ni la durée affichée ni une préautorisation ne prouvent que l'abonnement a bien été prolongé ; contrôlez l'abonnement et sa date de renouvellement après chaque étape.
 
 Les durées sont les **anciens noms des étapes** et ne garantissent aucune prolongation. Si vous avez déjà un abonnement actif, **ne relancez pas l'étape 2**.
 
