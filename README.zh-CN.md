@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — 简体中文
 
-<!-- Source README.md git-blob: 316959a6394912b5bdeb0cf2d235ea299e62e5ba -->
+<!-- Source README.md git-blob: daf5a76837f9cefab213a3faf18f71653641888a -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · **简体中文** · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -9,7 +9,7 @@
 
 **ePlus AI Toolkit** 用于查看 Android 设备上的 Google One 和 Google Play 提供的 Google AI Pro 优惠。它支持 **Windows 和 macOS**：Windows 用户通过 PowerShell 启动，Mac 用户则使用 Terminal（zsh/bash）。Textual 图形化终端界面与命令行模式共用 Python、ADB 和 Frida 执行引擎。
 
-![ePlus AI Toolkit 界面](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
+![ePlus AI Toolkit 界面](https://github.com/user-attachments/assets/fc27278f-7833-4484-9770-33e46bf10005)
 
 > [!CAUTION]
 > **非官方工具，可能产生真实费用。** **Step 2–5** 可能打开 Google Play 的真实结账页面，并自动点击 **Subscribe（订阅）**。发现优惠、看到首期价格为 0，或收到“已提交结账”的消息，**均不代表**账户有资格、订阅免费、已激活或续期成功。每次操作前，请在 Google Play 上核实账户、本次收费、后续价格和续订日期。停止工具不能撤销已经提交的交易。

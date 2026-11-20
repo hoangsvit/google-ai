@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Español
 
-<!-- Source README.md git-blob: 316959a6394912b5bdeb0cf2d235ea299e62e5ba -->
+<!-- Source README.md git-blob: daf5a76837f9cefab213a3faf18f71653641888a -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · **Español** · [Français](README.fr.md)
 
@@ -10,7 +10,7 @@
 
 **ePlus AI Toolkit** permite consultar las ofertas de Google AI Pro disponibles a través de Google One y Google Play en un dispositivo Android. Funciona en **Windows y macOS**: en Windows se inicia desde PowerShell y en Mac desde Terminal (zsh/bash). Tanto la interfaz Textual como los comandos de terminal utilizan el mismo motor basado en Python, ADB y Frida.
 
-![Interfaz de ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
+![Interfaz de ePlus AI Toolkit](https://github.com/user-attachments/assets/fc27278f-7833-4484-9770-33e46bf10005)
 
 > [!CAUTION]
 > **Proyecto no oficial; pueden producirse cargos reales.** Los **pasos 2–5** pueden abrir un proceso de pago real de Google Play y pulsar **Subscribe** automáticamente. Encontrar una oferta, ver un precio inicial de cero o recibir un mensaje de envío del pago **no demuestra** que la cuenta cumpla los requisitos, que la suscripción sea gratuita, que esté activa ni que se haya ampliado. Antes de cada pago, comprueba en Google Play la cuenta, el importe de hoy, el precio de renovación y la siguiente fecha de cobro. Detener el programa no deshace una transacción enviada.

@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Français
 
-<!-- Source README.md git-blob: 316959a6394912b5bdeb0cf2d235ea299e62e5ba -->
+<!-- Source README.md git-blob: daf5a76837f9cefab213a3faf18f71653641888a -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · **Français**
 
@@ -10,7 +10,7 @@
 
 **ePlus AI Toolkit** permet de consulter les offres Google AI Pro accessibles via Google One et Google Play sur un appareil Android. L'outil fonctionne sous **Windows et macOS** : vous le lancez depuis PowerShell sur Windows, ou Terminal (zsh/bash) sur Mac. L'interface Textual et les commandes utilisent le même moteur Python, ADB et Frida.
 
-![Interface ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
+![Interface ePlus AI Toolkit](https://github.com/user-attachments/assets/fc27278f-7833-4484-9770-33e46bf10005)
 
 > [!CAUTION]
 > **Outil non officiel ; des frais réels peuvent être facturés.** Les **étapes 2 à 5** peuvent ouvrir un véritable paiement Google Play et appuyer automatiquement sur **Subscribe (S'abonner)**. L'affichage d'une offre, d'un prix initial nul ou d'un message indiquant qu'un paiement a été demandé **ne prouve pas** l'éligibilité, la gratuité, l'activation ni la prolongation de l'abonnement. Avant toute opération, vérifiez dans Google Play le compte, le montant dû aujourd'hui, le prix de renouvellement et la date de facturation. Arrêter l'outil n'annule pas une transaction déjà envoyée.

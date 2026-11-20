@@ -61,6 +61,26 @@ class ReadmeSourceParityTests(unittest.TestCase):
                 self.assertIn("## 4.", localized)
                 self.assertIn("## 5.", localized)
 
+    def test_localized_screenshot_matches_canonical_readme(self):
+        """Keep the screenshot shown in all translated READMEs in sync with English."""
+        english = (ROOT / "README.md").read_text(encoding="utf-8")
+        image_urls = re.findall(
+            r"https://github[.]com/user-attachments/assets/[0-9a-f-]+",
+            english,
+        )
+        self.assertEqual(len(image_urls), 1, "Expected one canonical screenshot")
+        for locale in LOCALES:
+            with self.subTest(locale=locale):
+                localized = (ROOT / ("README." + locale + ".md")).read_text(encoding="utf-8")
+                localized_urls = re.findall(
+                    r"https://github[.]com/user-attachments/assets/[0-9a-f-]+",
+                    localized,
+                )
+                self.assertEqual(
+                    localized_urls, image_urls,
+                    "Screenshot differs from README.md; sync the image and source marker",
+                )
+
     def test_english_alias_links_to_root_source(self):
         self.assertIn("(README.md)", (ROOT / "README.en.md").read_text(encoding="utf-8"))
 

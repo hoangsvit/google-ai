@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — 日本語
 
-<!-- Source README.md git-blob: 316959a6394912b5bdeb0cf2d235ea299e62e5ba -->
+<!-- Source README.md git-blob: daf5a76837f9cefab213a3faf18f71653641888a -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · **日本語** · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -9,7 +9,7 @@
 
 **ePlus AI Toolkit** は、Android 端末上の Google One / Google Play で表示される Google AI Pro の特典を確認するためのツールです。**Windows** では PowerShell、**macOS** では Terminal（zsh/bash）から起動します。画面操作用の Textual UI とコマンドライン操作には、共通の Python・ADB・Frida エンジンを使用しています。
 
-![ePlus AI Toolkit の画面](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
+![ePlus AI Toolkit の画面](https://github.com/user-attachments/assets/fc27278f-7833-4484-9770-33e46bf10005)
 
 > [!CAUTION]
 > **非公式ツールです。実際の料金が発生する可能性があります。** **Step 2〜5** は Google Play の実際の購入画面を開き、条件によって **Subscribe（定期購入）** を自動タップする場合があります。オファーの表示、初回料金 0、またはチェックアウト送信の表示は、**対象資格・無料提供・契約成立・更新成功の証拠ではありません**。実行前に Google Play でアカウント、今日の請求額、更新料金、次回請求日を確認してください。停止操作は送信済みの取引を取り消しません。
