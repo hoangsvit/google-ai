@@ -120,6 +120,7 @@ class GoogleAITUI(App[None]):
         height: auto; margin: 1 0 0 0; padding: 0 1;
         color: #ffe0a0; background: #283047; border-left: solid #d6a34f;
     }
+    #payment_notice_compact { display: none; }
     #read_only { color: #81c6df; height: auto; margin-top: 1; }
     #workflow_actions { height: auto; }
     #form_row { height: auto; }
@@ -161,7 +162,11 @@ class GoogleAITUI(App[None]):
     Screen.compact #device, Screen.compact #account { height: 1; border: none; }
     Screen.compact #welcome_panel { padding: 0 1; }
     Screen.compact #quick_hint, Screen.compact #read_only { display: none; }
-    Screen.compact #payment_notice { margin: 0; padding: 0; border: none; }
+    Screen.compact #payment_notice { display: none; }
+    Screen.compact #payment_notice_compact {
+        display: block; height: 1; margin: 0;
+        color: #ffe0a0; background: #283047;
+    }
     Screen.compact #welcome_panel { padding: 0 1; }
     Screen.compact #quickstart, Screen.compact #advanced_toggle { height: 3; }
     Screen.narrow #form_row { layout: vertical; }
@@ -242,6 +247,10 @@ class GoogleAITUI(App[None]):
                             "May be temporary holds; confirm actual charges and renewal in Google Play. "
                             "Step 5 is optional and not included.",
                             id="payment_notice",
+                        )
+                        yield Static(
+                            "Reported: 3 x US$1 (NOT one US$3); 24mo not guaranteed.",
+                            id="payment_notice_compact",
                         )
                         with Vertical(id="workflow_actions"):
                             with Horizontal(id="form_row"):
