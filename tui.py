@@ -79,8 +79,14 @@ class GoogleAITUI(App[None]):
     #screen { height: 1fr; min-height: 0; padding: 0 1; }
     #brand {
         height: 3; background: #122741; border: round #28628d;
-        color: #f0f8ff; text-style: bold; padding: 0 2;
+        color: #f0f8ff; padding: 0 2; align: left middle;
     }
+    #support_label { width: auto; height: 1; color: #c8dff1; }
+    #support_link {
+        width: auto; height: 1; color: #75d8ff;
+        text-style: underline bold;
+    }
+    #support_link:hover { color: #e6f8ff; }
     #credit { height: 1; color: #87b8d4; }
     #credit Static { width: auto; height: 1; color: #87b8d4; }
     #credit Link { width: auto; height: 1; color: #75d8ff; text-style: underline; }
@@ -213,7 +219,10 @@ class GoogleAITUI(App[None]):
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         with Vertical(id="screen"):
-            yield Static("  ePlus AI Toolkit   |   ePlus.DEV", id="brand")
+            with Horizontal(id="brand"):
+                yield Static("Support: ", id="support_label")
+                yield Link("https://t.me/eplus_news", url="https://t.me/eplus_news",
+                           tooltip="Telegram support channel", id="support_link")
             with Horizontal(id="credit"):
                 yield Static("  Original ")
                 yield Link("@gylive", url="https://github.com/gylive",
