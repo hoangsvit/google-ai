@@ -1,6 +1,9 @@
 # ePlus AI Toolkit — Tiếng Việt
 
-[← Short overview](../../README.vi.md) · [Documentation home](../README.md) · [English user guide](../USAGE.md)
+> [!NOTE]
+> Tài liệu tham khảo lịch sử; đây **không phải bản dịch đầy đủ được cập nhật** của README hiện tại. Đọc [README tiếng Việt mới nhất](../../README.vi.md) trước khi làm theo hướng dẫn, đặc biệt là các bước có rủi ro thanh toán.
+
+[← Bản dịch tiếng Việt hiện hành](../../README.vi.md) · [Documentation home](../README.md) · [English user guide](../USAGE.md)
 
 [English](../../README.md) · **Tiếng Việt** · [简体中文](../../README.zh-CN.md) · [日本語](../../README.ja.md) · [한국어](../../README.ko.md) · [Español](../../README.es.md) · [Français](../../README.fr.md)
 

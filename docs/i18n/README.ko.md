@@ -1,6 +1,9 @@
 # ePlus AI Toolkit — 한국어
 
-[← Short overview](../../README.ko.md) · [Documentation home](../README.md) · [English user guide](../USAGE.md)
+> [!NOTE]
+> 이 문서는 과거의 보조 참고 자료이며 **최신 README의 완전한 번역이 아닙니다**. 결제 위험이 있는 단계에 앞서 [최신 한국어 README](../../README.ko.md)를 먼저 확인하세요.
+
+[← 최신 한국어 번역](../../README.ko.md) · [Documentation home](../README.md) · [English user guide](../USAGE.md)
 
 [English](../../README.md) · [Tiếng Việt](../../README.vi.md) · [简体中文](../../README.zh-CN.md) · [日本語](../../README.ja.md) · **한국어** · [Español](../../README.es.md) · [Français](../../README.fr.md)
 

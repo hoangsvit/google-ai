@@ -1,12 +1,14 @@
 # ePlus AI Toolkit — Français
 
+<!-- Source README.md git-blob: 316959a6394912b5bdeb0cf2d235ea299e62e5ba -->
+
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · **Français**
 
 **Aperçu macOS :** la [version Mac](docs/MACOS-PREVIEW.md) implémente les étapes 0–5. Les étapes 2–5 peuvent entraîner de vrais frais et exigent une confirmation distincte ; la compatibilité des paiements avec un véritable Mac/MuMu reste non vérifiée.
 
-> **Référence principale :** [README en anglais](README.md). Cette traduction reprend les usages et avertissements essentiels ; en cas de divergence, consultez le code actuel et la version anglaise.
+> **Document de référence :** [README original en anglais](README.md). Cette version est rédigée en français pour faciliter la lecture, tout en conservant les commandes, les limites et les avertissements du projet. En cas de doute, reportez-vous au code et à la documentation d'origine.
 
-**ePlus AI Toolkit** est un outil en ligne de commande destiné à **Windows et macOS**. Il utilise **PowerShell (Windows uniquement) ou Terminal (zsh/bash, macOS)**, ainsi que Python, ADB, Frida et un appareil/émulateur Android compatible pour examiner les offres Google AI Pro proposées via Google One / Google Play. L'interface Textual et le CLI reposent sur le même moteur.
+**ePlus AI Toolkit** permet de consulter les offres Google AI Pro accessibles via Google One et Google Play sur un appareil Android. L'outil fonctionne sous **Windows et macOS** : vous le lancez depuis PowerShell sur Windows, ou Terminal (zsh/bash) sur Mac. L'interface Textual et les commandes utilisent le même moteur Python, ADB et Frida.
 
 ![Interface ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
 
@@ -20,14 +22,37 @@
 
 Ce projet est **indépendant, sans affiliation, parrainage ni approbation officielle** de Google, Google One, Google Play, NetEase ou MuMuPlayer. Le logiciel est fourni **en l'état**, sans garantie concernant les offres, les résultats d'abonnement ou la compatibilité. Utilisez-le uniquement sur vos appareils et comptes ou avec autorisation, conformément aux lois et conditions des plateformes. Consultez la [décharge complète (anglais)](DISCLAIMER.md) et les [précautions de sécurité](SECURITY.md).
 
-## 1. Prérequis et installation de MuMuPlayer
+## 1. Préparer votre environnement
 
-- **Windows**, PowerShell **5.1+** et Python **3.10+**.
-- **Installer MuMuPlayer séparément**, lancer Android avec root et débogage ADB activés.
-- Installer **Google Play Store** et **Google One** dans Android, puis se connecter au compte voulu.
-- L'outil peut détecter/télécharger **Android SDK Platform-Tools (ADB)** et préparer **Frida 16.5.9** si nécessaire, mais **ne télécharge et n'installe pas MuMuPlayer**. La compatibilité de Frida dépend de la version d'Android.
+**Suivez les instructions correspondant à votre système.** Sur Mac, vous n'avez pas besoin d'installer PowerShell.
 
-**Téléchargement officiel de MuMuPlayer :** [mumuplayer.com/download](https://www.mumuplayer.com/download/) (choisir Windows). Évitez les sites non officiels. Consultez le [Wiki d'installation](https://github.com/hoangsvit/google-ai/wiki/Install).
+| Élément | Windows | macOS |
+| --- | --- | --- |
+| Terminal | **PowerShell 5.1 ou version ultérieure** | **Terminal**, avec zsh ou bash |
+| Python | **3.10 ou version ultérieure** (commande `python`) | **3.10 ou version ultérieure** (`python3`) ; création d'un environnement local `.venv` |
+| Git | Git pour Windows | Git via Xcode Command Line Tools ou Homebrew |
+| Android | Appareil ou émulateur rooté avec ADB ; la procédure Windows prend en charge **MuMuPlayer** | Android rooté ou émulateur compatible ; **MuMuPlayer Pro pour Mac** est une option Apple Silicon, pas Intel |
+| Applications | Google Play Store et Google One, connectés au compte à vérifier | Ces mêmes applications sur l'appareil Android choisi |
+| ADB | L'outil peut localiser ou télécharger Android SDK Platform-Tools | Installation séparée, par exemple `brew install android-platform-tools` ; vérification avec `adb devices` |
+| Frida | **16.5.9**, préparée si nécessaire sous Windows | **16.5.9** dans `.venv` ; compatibilité Android à vérifier |
+| Démarrage | `.\run-all.ps1` | `sh run-macos.sh` ou `ePlus-AI-Toolkit.command` |
+
+Les deux systèmes nécessitent un environnement Android correctement configuré et auquel vous avez le droit d'accéder. Le code macOS couvre les étapes 0–5, mais **aucun paiement réel sur Mac/MuMu n'a encore été validé**. Consultez les guides [Windows](docs/INSTALLATION.md) et [macOS](docs/MACOS-PREVIEW.md).
+
+### Prérequis sous Windows
+
+- Windows avec **PowerShell 5.1+** et **Python 3.10+**.
+- MuMuPlayer installé séparément, avec root et débogage ADB activés.
+- Google Play Store et Google One installés sur Android et connectés au compte concerné.
+- Une liaison ADB et une installation compatible de **Frida 16.5.9**. Le programme peut préparer ces outils, mais **il n'installe pas MuMuPlayer**.
+
+### Étape 1 — Installer MuMuPlayer
+
+Téléchargez la version Windows depuis le [site officiel de MuMuPlayer (NetEase)](https://www.mumuplayer.com/download/). Évitez les sites de téléchargement non officiels.
+
+Lancez l'émulateur, activez root et ADB, puis vérifiez la présence de Google Play Store et de Google One. Connectez-vous au compte Google que vous souhaitez vérifier.
+
+Pour un parcours illustré, consultez le [guide d'installation sur le Wiki GitHub](https://github.com/hoangsvit/google-ai/wiki/Install).
 
 ## 2. Télécharger et démarrer
 
@@ -56,7 +81,7 @@ adb devices
 
 L'appareil doit être en état `device`, pas `offline` ni `unauthorized`. Voir le [guide de dépannage](docs/DETAILED-GUIDE.md).
 
-### Alternative : utiliser une version publiée si le code récent échoue
+### Si la version actuelle ne fonctionne pas
 
 Si l'exécution de la dernière version du dépôt provoque des erreurs, vous pouvez essayer une **version déjà publiée** depuis [GitHub Releases](https://github.com/hoangsvit/google-ai/releases). Lisez les notes de version et téléchargez un paquet Windows **s'il est joint**. Si seul le téléchargement automatique **Source code (zip)** de GitHub est disponible, téléchargez le ZIP, décompressez-le, ouvrez PowerShell dans le dossier extrait puis exécutez :
 
@@ -83,6 +108,9 @@ sh run-macos.sh
 
 ## 3. Interface Textual
 
+Lorsqu'une étape est en cours, les commandes **Check Device & Offers**, **Run** et les sélecteurs de mode ou d'étape sont désactivés pour éviter les exécutions simultanées. L'étape 0 peut modifier la configuration locale ; l'étape 1 ne déclenche pas de paiement, mais peut préparer ADB et Frida. Vérifiez le résultat dans Google Play avant de poursuivre avec **Next**. **Arrêter ou fermer l'outil n'annule pas une transaction déjà transmise.**
+
+
 **Check Device & Offers** exécute **Step 1 — Available offers**, pour consulter les offres **sans déclencher de paiement**. Surveillez **Live Status** et **Show technical details** ; l'absence de nouveaux journaux pendant 30 secondes ne signifie pas forcément que l'outil est bloqué.
 
 Dans **Advanced: Run by step** :
@@ -108,7 +136,9 @@ Dans le TUI, **chaque étape de paiement exige une approbation distincte**. Mêm
 
 **Arrêt/sortie :** Stop pour les étapes 0–1 demande l'arrêt du processus local. Pour les étapes 2–5, **Stop after this step** bloque les étapes suivantes, mais **n'interrompt pas de force un paiement en cours**. Pendant un paiement, **Q / Exit** attend la fin de l'étape actuelle. **D** affiche/masque le journal technique ; **R** lance le mode choisi.
 
-## 4. PowerShell CLI (avancé)
+## 4. Commandes PowerShell (utilisateurs avancés)
+
+**Sous Windows uniquement.** Ces commandes utilisent PowerShell. Sur Mac, utilisez `run-macos.sh` et le [guide macOS](docs/MACOS-PREVIEW.md). Les paramètres explicites lancent le mode CLI à la place de l'interface Textual.
 
 **Consultation/diagnostic, sans paiement :**
 
@@ -148,7 +178,7 @@ Paramètres facultatifs :
 
 Utilisez uniquement un identifiant de périphérique réellement affiché par ADB. Évitez `-Force` : il désactive la vérification de correspondance du compte, mais **ne contourne pas** les conditions d'éligibilité ni les protections de paiement de Google.
 
-## 5. Dépannage et résultats
+## 5. Résultats et résolution des problèmes
 
 - **MuMu/ADB introuvable :** vérifiez l'émulateur, root, l'autorisation ADB et l'état du périphérique.
 - **Erreur Frida :** vérifiez les journaux, la version **16.5.9** et la compatibilité Android.
@@ -157,17 +187,36 @@ Utilisez uniquement un identifiant de périphérique réellement affiché par AD
 - **Paiement demandé :** ne signifie pas que l'abonnement a été activé ou prolongé ; vérifiez Google Play avant de réessayer.
 - **Erreur de sécurité du paiement (ex. OR-REH-04) :** arrêtez les étapes de paiement et suivez les procédures officielles.
 
-Les journaux se trouvent dans `logs/` et les rapports dans `ultra0-report/`. **Ne partagez pas de données non masquées contenant comptes, jetons ou informations de paiement.** La CI effectue seulement des tests statiques/simulés, **pas de véritables achats**. La prise en charge complète de 
+Les journaux se trouvent dans `logs/` et les rapports dans `ultra0-report/`. **Ne partagez pas de données non masquées contenant comptes, jetons ou informations de paiement.** Les tests automatisés de la CI utilisent des simulations et **ne vérifient aucun achat réel**. La compatibilité de paiement sur Mac/MuMu réel n'a pas été vérifiée.
+
 ## Assistance communautaire et projets associés
 
 Si vous rencontrez des problèmes pour installer ou utiliser ePlus AI Toolkit, vous pouvez contacter la communauté et échanger des conseils sur la [publication d'assistance et de discussion Telegram d'ePlus](https://t.me/eplus_news/29). Pour les bugs reproductibles, vous pouvez aussi [ouvrir une issue GitHub](https://github.com/hoangsvit/google-ai/issues). **Ne publiez jamais de mots de passe, de codes OTP/2FA, de jetons d'offre ou d'achat, de journaux non anonymisés ou de données bancaires.** Il ne s'agit pas du support officiel de Google.
 
 **Vous n'êtes pas éligible à l'offre Google AI Pro ?** Vous pouvez découvrir un autre projet communautaire d'ePlus.DEV : [Muse Invite Hub](https://github.com/ePlus-DEV/muse-invite-hub), pour [rechercher ou partager des codes d'invitation Muse](https://muse.eplus.dev/). **Muse est un service distinct** : ses invitations **ne donnent pas accès à Google AI Pro et ne remplacent pas** un abonnement Google AI Pro. La disponibilité des codes et les conditions géographiques ou de compte peuvent varier.
 
-## Documentation et crédits
+## Organisation du dépôt
+
+Les scripts de démarrage et les modules Python principaux restent à la racine du projet pour éviter de casser les instructions existantes. Sous Windows, utilisez `run-all.ps1` ; sur Mac, `run-macos.sh`.
+
+| Fichier ou dossier | Utilité |
+| --- | --- |
+| `run-all.ps1` | Démarre l'interface Textual ou le mode CLI de Windows |
+| `run-macos.sh`, `ePlus-AI-Toolkit.command`, `macos_runner.py` | Lance et pilote les étapes 0–5 sur Mac ; paiements réels non vérifiés |
+| `tui.py`, `tui_core.py`, `ultra0.py`, `setup_env.py`, `device_selector.py`, `query_sku.py` | Modules Python actuellement utilisés |
+| [`tools/windows/`](tools/windows/README.md) | Configuration manuelle facultative sous Windows |
+| [`legacy/windows/`](legacy/windows/README.md) | Anciens scripts .bat ; certains utilisent `--force` pour ignorer la vérification du compte et peuvent provoquer de **vrais frais** |
+| `scripts/`, `assets/` | Utilitaires et ressources Android/Frida |
+| `tests/`, `.github/workflows/`, `docs/` | Tests, GitHub Actions et documentation |
+
+## Documentation et contribution
 
 [README anglais](README.md) · [Wiki Install](https://github.com/hoangsvit/google-ai/wiki/Install) · [Guide détaillé](docs/DETAILED-GUIDE.md) · [Étapes d'origine](docs/ORIGINAL-STEPS.md) · [Décharge](DISCLAIMER.md) · [Sécurité](SECURITY.md) · [Contribuer](CONTRIBUTING.md) · [Mentions légales](THIRD_PARTY_NOTICES.md)
 
+Voir aussi [structure et maintenance](docs/PROJECT.md), [utilisation et CLI](docs/USAGE.md), [sécurité des paiements](docs/SAFETY.md), [notes historiques](docs/AUTHOR-NOTES.md) et [consignes pour agents](AGENTS.md). GitHub Actions vérifie Python, PowerShell, Textual et Frida/Billing au moyen de simulations, **sans véritables paiements**. Des tests CI réussis ne garantissent ni la compatibilité avec votre appareil ni l'éligibilité de votre compte.
+
+## Crédits
+
 **Auteur d'origine :** [@gylive](https://github.com/gylive) — [google-ultra](https://github.com/gylive/google-ultra). **Maintenance :** [David Nguyen (@hoangsvit)](https://github.com/hoangsvit) / [ePlus.DEV](https://eplus.dev). Les mentions MIT de l'auteur initial sont conservées dans `THIRD_PARTY_NOTICES.md`.
 
-[Centre de documentation](docs/README.md) · [Guide complet en français](docs/i18n/README.fr.md) · [Sécurité des paiements](docs/SAFETY.md)
+[Centre de documentation](docs/README.md) · [Guide historique en français](docs/i18n/README.fr.md) · [Sécurité des paiements](docs/SAFETY.md)

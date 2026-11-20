@@ -1,6 +1,9 @@
 # ePlus AI Toolkit — 日本語
 
-[← Short overview](../../README.ja.md) · [Documentation home](../README.md) · [English user guide](../USAGE.md)
+> [!NOTE]
+> これは過去の補足資料であり、**最新 README の完全な翻訳ではありません**。課金の可能性がある操作を含め、必ず[現在の日本語 README](../../README.ja.md)を先に確認してください。
+
+[← 最新の日本語訳](../../README.ja.md) · [Documentation home](../README.md) · [English user guide](../USAGE.md)
 
 [English](../../README.md) · [Tiếng Việt](../../README.vi.md) · [简体中文](../../README.zh-CN.md) · **日本語** · [한국어](../../README.ko.md) · [Español](../../README.es.md) · [Français](../../README.fr.md)
 

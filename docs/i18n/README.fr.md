@@ -1,6 +1,9 @@
 # ePlus AI Toolkit — Français
 
-[← Short overview](../../README.fr.md) · [Documentation home](../README.md) · [English user guide](../USAGE.md)
+> [!NOTE]
+> Ce guide est une référence historique complémentaire, **pas la traduction complète à jour**. Consultez d'abord le [README français actuel](../../README.fr.md), surtout avant toute opération susceptible d'entraîner des frais.
+
+[← Traduction française actuelle](../../README.fr.md) · [Documentation home](../README.md) · [English user guide](../USAGE.md)
 
 [English](../../README.md) · [Tiếng Việt](../../README.vi.md) · [简体中文](../../README.zh-CN.md) · [日本語](../../README.ja.md) · [한국어](../../README.ko.md) · [Español](../../README.es.md) · **Français**
 

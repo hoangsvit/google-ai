@@ -1,6 +1,9 @@
 # ePlus AI Toolkit — 简体中文
 
-[← Short overview](../../README.zh-CN.md) · [Documentation home](../README.md) · [English user guide](../USAGE.md)
+> [!NOTE]
+> 本文是历史补充资料，**并非当前 README 的完整最新翻译**。尤其在可能产生费用的操作前，请先阅读[最新简体中文 README](../../README.zh-CN.md)。
+
+[← 当前简体中文翻译](../../README.zh-CN.md) · [Documentation home](../README.md) · [English user guide](../USAGE.md)
 
 [English](../../README.md) · [Tiếng Việt](../../README.vi.md) · **简体中文** · [日本語](../../README.ja.md) · [한국어](../../README.ko.md) · [Español](../../README.es.md) · [Français](../../README.fr.md)
 

@@ -42,6 +42,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_docs_navigation.py' -v
       - name: Multilingual README links and safety text
         run: python -m unittest discover -s tests -p 'test_readme_locales.py' -v
+      - name: Translated README source synchronization and section parity
+        run: python -m unittest discover -s tests -p 'test_readme_source_parity.py' -v
       - name: English-only filenames and source checks
         run: python -m unittest discover -s tests -p 'test_english_only.py' -v
       - name: Bundled asset integrity tests (no Android)
