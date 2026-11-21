@@ -142,6 +142,7 @@ class MacTuiTests(unittest.IsolatedAsyncioTestCase):
                 app = GoogleAITUI(repo=Path(temp), selected_step=3)
             with patch("tui.subprocess.Popen") as child:
                 async with app.run_test(size=(100, 30)) as pilot:
+                    app._offer_check_ready = True
                     app._confirm_stage(3, False)
                     await pilot.pause()
                     self.assertIsInstance(app.screen, Approval)

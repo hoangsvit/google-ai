@@ -12,6 +12,7 @@
 | **Frida connection error during Step 1** | The read-only query reconnects Frida and restarts Google One once for certain transient connection failures. If it still fails, open Debug and check ADB, Frida and Google One on the selected device. Paid checkout is never retried automatically. |
 | **Item not available for purchase** | Google Play did not make the item available. Check the signed-in Play account, Play country and Google One availability; this message alone does not identify the cause. |
 | **Google One or Play Store missing** | Enable the app in Android settings. Install Google One from Google Play; if Play Store is missing, use an emulator image with Google Play included. |
+| **Steps 2–5 are locked** | Connect the Android device and complete **Check Device & Offers** with a verified Play account. The paid stage checks the device and account again; an earlier check does not guarantee the device remains connected. |
 | **Account not verified / wrong account** | Inspect the active Google Play profile; do not bypass verification. |
 | **Checkout submitted; check Google Play** | The tool attempted to submit checkout; it has **not** verified a successful subscription or extension. |
 | **`already_subscribed` / `ineligible`** | Stop; do not retry other checkout stages based on unverified extension claims. |

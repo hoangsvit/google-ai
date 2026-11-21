@@ -211,6 +211,7 @@ class GoogleAITUI(App[None]):
         self._exit_after_step = False
         self._last_outcome: Outcome | None = None
         self._verified_account: str | None = None
+        self._offer_check_ready = False
         self._started_at: float | None = None
         self._last_activity_at: float | None = None
         self.advanced_visible = False
@@ -324,6 +325,7 @@ class GoogleAITUI(App[None]):
     def diagnose_pressed(self) -> None:
         if self.busy or self._diagnosing:
             return
+        self._offer_check_ready = False
         self._diagnosing = True
         self.query_one("#diagnose", Button).disabled = True
         self.query_one("#quickstart", Button).disabled = True
@@ -356,6 +358,7 @@ class GoogleAITUI(App[None]):
         self.query_one("#step_result", Static).update("\n".join(diagnosis.details))
         self.query_one("#offers_title", Static).display = False
         self.query_one("#offer_view", RichLog).display = False
+        self._update_run_mode()
 
     def on_mount(self) -> None:
         self.set_interval(1, self._refresh_elapsed)
@@ -409,6 +412,10 @@ class GoogleAITUI(App[None]):
             self.query_one("#step", Select).disabled = False
             self.query_one("#run", Button).label = "Run selected step"
             hint = "Run only this step. Steps 2-5 can request real payment."
+        paid_selected = mode == "all" or (mode in ("single", "from") and step in (2, 3, 4, 5))
+        self.query_one("#run", Button).disabled = paid_selected and not self._offer_check_ready
+        if paid_selected and not self._offer_check_ready:
+            hint = "First run Check Device & Offers successfully to unlock Steps 2-5."
         self.query_one("#mode_hint", Static).update(hint)
 
     def action_toggle_advanced(self) -> None:
@@ -444,6 +451,10 @@ class GoogleAITUI(App[None]):
     def _confirm_stage(self, step: int, sequence: bool,
                        previous_verified: bool = False) -> None:
         if self.busy or self._diagnosing:
+            return
+        if step >= 2 and not self._offer_check_ready:
+            self._set_status("Check Device & Offers first")
+            self._set_message("Connect Android and complete the offer check before starting a paid step.")
             return
         if step == 2:
             title = "Start initial 12-month checkout?"
@@ -608,6 +619,12 @@ class GoogleAITUI(App[None]):
     def _start(self, step: int, sequence: bool) -> None:
         if self.busy or self._diagnosing:
             return
+        if step >= 2 and not self._offer_check_ready:
+            self._set_status("Check Device & Offers first")
+            self._set_message("Connect Android and complete the offer check before starting a paid step.")
+            return
+        if step <= 1:
+            self._offer_check_ready = False
         self.busy = True
         self.sequence = sequence
         self.current_step = step
@@ -779,6 +796,16 @@ class GoogleAITUI(App[None]):
 
     def _finished(self, step: int, outcome: Outcome, report: dict | None) -> None:
         self.busy = False
+        if step == 1:
+            detected = str((report or {}).get("detected_play_account") or "").strip().lower()
+            verified = (self._verified_account or "").strip().lower()
+            offers = (report or {}).get("offers")
+            self._offer_check_ready = bool(
+                outcome.code == "listed" and isinstance(offers, list) and offers
+                and verified and (not detected or detected == verified)
+            )
+        elif step == 0 or outcome.code != "checkout_requested":
+            self._offer_check_ready = False
         self._last_outcome = outcome
         self.query_one("#manual", Button).display = False
         self.query_one("#manual", Button).disabled = True
@@ -797,6 +824,8 @@ class GoogleAITUI(App[None]):
         self._set_workflow(step, "done" if outcome.code in ("listed", "environment_ok") else "review")
         self._set_status(outcome.title)
         instruction = outcome.instruction
+        if step == 1 and outcome.code == "listed" and not self._offer_check_ready:
+            instruction += " Verify the Play account and run the check again before starting a paid step."
         if outcome.code in ("tool_error", "exception", "missing_report", "setup_failed"):
             diagnostic = self._visible_failure()
             if diagnostic:

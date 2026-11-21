@@ -336,6 +336,7 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                     self.assertIsNone(app._verified_account)
                     app._received("  Account      Alice@Example.com")
                     self.assertEqual(app._verified_account, "alice@example.com")
+                    app._offer_check_ready = True
                     app._start(3, True)
                     self.assertIsNone(app._verified_account)
 
@@ -472,6 +473,7 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                 app = GoogleAITUI(repo=Path(directory))
                 with patch("tui.subprocess.Popen") as launch:
                     async with app.run_test(size=(110, 35)) as pilot:
+                        app._offer_check_ready = True
                         app._confirm_stage(step, False)
                         await pilot.pause()
                         self.assertIsInstance(app.screen, Approval)
@@ -495,6 +497,8 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
             app = GoogleAITUI(repo=Path(directory), selected_step=3)
             with patch("tui.subprocess.Popen") as popen:
                 async with app.run_test(size=(110, 35)) as pilot:
+                    app._offer_check_ready = True
+                    app._update_run_mode()
                     await pilot.click("#advanced_toggle")
                     await pilot.pause()
                     await pilot.click("#run")
@@ -503,6 +507,54 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                     await pilot.click("#cancel")
                     await pilot.pause()
                     popen.assert_not_called()
+
+    async def test_paid_steps_blocked_until_fresh_verified_offer_check(self):
+        from textual.widgets import Button, Select
+        from tui import GoogleAITUI, Approval
+        from tui_core import Outcome
+
+        with tempfile.TemporaryDirectory() as directory:
+            app = GoogleAITUI(repo=Path(directory), selected_step=2)
+            with patch.object(GoogleAITUI, "run_stage") as run:
+                async with app.run_test(size=(110, 35)) as pilot:
+                    app._update_run_mode()
+                    self.assertTrue(app.query_one("#run", Button).disabled)
+                    app.action_run_selected()
+                    app.query_one("#mode", Select).value = "all"
+                    app.selected_pressed()
+                    app.query_one("#mode", Select).value = "from"
+                    app.selected_pressed()
+                    app.sequence_pressed()
+                    app._start(2, False)
+                    self.assertFalse(app.busy)
+                    self.assertNotIsInstance(app.screen, Approval)
+                    run.assert_not_called()
+                    app.query_one("#mode", Select).value = "single"
+
+                    app._verified_account = "test@example.com"
+                    report = {"status": "listed", "offers": [{"id": "test"}],
+                              "detected_play_account": "test@example.com"}
+                    app._finished(1, Outcome("listed", "Offers loaded", "Review offers"), report)
+                    self.assertFalse(app.query_one("#run", Button).disabled)
+                    app._confirm_stage(2, False)
+                    await pilot.pause()
+                    self.assertIsInstance(app.screen, Approval)
+                    await pilot.click("#cancel")
+                    await pilot.pause()
+                    app._finished(1, Outcome("tool_error", "Failed", "Retry"), None)
+                    self.assertTrue(app.query_one("#run", Button).disabled)
+                    self.assertFalse(app._offer_check_ready)
+
+    async def test_offer_check_without_verified_matching_account_stays_locked(self):
+        from tui import GoogleAITUI
+        from tui_core import Outcome
+        with tempfile.TemporaryDirectory() as directory:
+            app = GoogleAITUI(repo=Path(directory))
+            async with app.run_test(size=(110, 35)):
+                app._verified_account = "first@example.com"
+                app._finished(1, Outcome("listed", "Offers loaded", "Review"),
+                              {"offers": [{"id": "test"}], "detected_play_account": "other@example.com"})
+                self.assertFalse(app._offer_check_ready)
 
 
 if __name__ == "__main__":
