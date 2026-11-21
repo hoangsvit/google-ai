@@ -835,11 +835,35 @@ def run_trial(pid: int, wait=90, plan="auto", list_only=False, stack=False, old_
         elif ev and ("err" in ev or ev.startswith("no_")):
             res["errors"].append(p)
 
-    sc = sess.create_script(build_js(plan, list_only, stack, old_token, stack_mode, activity_method))
-    sc.on("message", on_msg)
-    sc.load()
-    time.sleep(wait)
+    try:
+        sc = sess.create_script(build_js(plan, list_only, stack, old_token, stack_mode, activity_method))
+        sc.on("message", on_msg)
+        sc.load()
+        time.sleep(wait)
+    finally:
+        try:
+            sess.detach()
+        except Exception:
+            pass  # The device may already have disconnected.
     return res
+
+
+def query_offers_with_recovery(pid: int, **kwargs) -> dict:
+    """Retry transient Frida connection failures once, only for read-only queries."""
+    import frida
+    transient = tuple(cls for name in ("TransportError", "ServerNotRunningError",
+                                        "ProcessNotFoundError", "TimedOutError")
+                      if isinstance((cls := getattr(frida, name, None)), type)
+                      and issubclass(cls, Exception))
+    try:
+        return run_trial(pid, list_only=True, **kwargs)
+    except transient:
+        warn("Frida connection failed during the read-only check; reconnecting once.")
+        ensure_frida_server()
+        fresh_pid = launch_app()
+        if not fresh_pid:
+            raise RuntimeError("Google One could not be restarted for the read-only retry")
+        return run_trial(fresh_pid, list_only=True, **kwargs)
 
 
 def diagnose_launch_failure(fr: dict) -> tuple:
@@ -922,6 +946,9 @@ def assess_checkout_terms(text: str, expected_plan: str = "auto") -> dict:
                                "không đủ điều kiện dùng thử")):
         result["reason"] = "ineligible"
         return result
+    if "the item you requested is not available for purchase" in low:
+        result["reason"] = "purchase_unavailable"
+        return result
     if "processing" in low and "subscribe" not in low:
         result["reason"] = "processing"
         return result
@@ -962,9 +989,9 @@ def confirm_zero(wait=40, password="", expected_plan="auto") -> dict:
         reason = assessment["reason"]
         out.update({"reason": reason, "price": assessment["today_price"],
                     "text": assessment["text"]})
-        if reason == "ineligible":
+        if reason in ("ineligible", "purchase_unavailable"):
             out["ineligible"] = True
-            warn("Google Play says this account is not eligible; no Subscribe tap.")
+            warn("Google Play reports that this item or offer is unavailable; no Subscribe tap.")
             return out
         if reason == "payment_security_blocked":
             out["error_code"] = assessment.get("error_code")
@@ -1068,8 +1095,10 @@ def process(email, password="", totp_secret="", add=True, card=None, plan="auto"
     if not pid:
         rec["status"] = "app_not_started"
         return rec
-    fr = run_trial(pid, plan=plan, list_only=list_only, stack=stack, old_token=old_token,
+    options = dict(plan=plan, stack=stack, old_token=old_token,
                    stack_mode=stack_mode, activity_method=activity_method)
+    fr = (query_offers_with_recovery(pid, **options) if list_only else
+          run_trial(pid, list_only=False, **options))
     rec.update(fr)
     if list_only:
         rec["status"] = "listed" if fr.get("offers") else "offer_query_failed"

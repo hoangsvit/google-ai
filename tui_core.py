@@ -80,6 +80,10 @@ MESSAGES = {
         "This account is not eligible",
         "Review Google Play's offer terms. Force mode cannot change eligibility.",
     ),
+    "purchase_unavailable": (
+        "Google Play says this item is unavailable",
+        "Check the account, Play country and Google One availability. No purchase was confirmed.",
+    ),
     "backup_payment_methods_prompt": (
         "Google Play asked about backup payments",
         "Review that optional setting in Google Play; it does not confirm a subscription.",
@@ -176,6 +180,9 @@ def read_fresh_report(directory: Path, step: int, started_at: float,
 
 def outcome_for_stage(step: int, exit_code: int, report: dict | None) -> Outcome:
     validate_step(step)
+    if exit_code != 0 and step == 1 and report and report.get("status") == "exception":
+        return Outcome("exception", "Could not connect to Android tools",
+                       "The read-only check failed. Open Debug; check Frida, ADB and Google One, then retry.")
     if exit_code != 0:
         return Outcome("tool_error", "The step could not finish",
                        "Check Debug and the Android screen before retrying.")

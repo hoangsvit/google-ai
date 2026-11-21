@@ -21,6 +21,54 @@ def mock_dev(device_id, name="com.google.android.apps.subscriptions.red"):
 
 
 class OriginalFlowGuardrails(unittest.TestCase):
+    def test_read_only_transient_frida_failure_restarts_once(self):
+        class TransportError(Exception):
+            pass
+        frida = types.SimpleNamespace(TransportError=TransportError)
+        expected = {"offers": [{"id": "test"}]}
+        with patch.dict(sys.modules, {"frida": frida}), \
+             patch.object(mod, "run_trial", side_effect=[TransportError(), expected]) as run, \
+             patch.object(mod, "ensure_frida_server") as server, \
+             patch.object(mod, "launch_app", return_value=456):
+            self.assertEqual(mod.query_offers_with_recovery(123, plan="pro12"), expected)
+        server.assert_called_once()
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(run.call_args.args[0], 456)
+        self.assertTrue(run.call_args.kwargs["list_only"])
+
+    def test_unknown_failure_is_not_retried(self):
+        with patch.dict(sys.modules, {"frida": types.SimpleNamespace()}), \
+             patch.object(mod, "run_trial", side_effect=RuntimeError("wrong device")) as run, \
+             patch.object(mod, "ensure_frida_server") as server:
+            with self.assertRaisesRegex(RuntimeError, "wrong device"):
+                mod.query_offers_with_recovery(123)
+        run.assert_called_once()
+        server.assert_not_called()
+
+    def test_google_play_unavailable_is_not_eligibility_proof(self):
+        result = mod.assess_checkout_terms("Error The item you requested is not available for purchase. Got it")
+        self.assertEqual(result["reason"], "purchase_unavailable")
+
+    def test_paid_stage_does_not_use_read_only_recovery(self):
+        with patch.object(mod, "current_play_account", return_value="test@example.com"), \
+             patch.object(mod, "launch_app", return_value=123), \
+             patch.object(mod, "query_offers_with_recovery") as recover, \
+             patch.object(mod, "run_trial", side_effect=RuntimeError("connection lost")) as run:
+            with self.assertRaisesRegex(RuntimeError, "connection lost"):
+                mod.process("test@example.com", add=False, no_switch=True)
+        run.assert_called_once()
+        recover.assert_not_called()
+
+    def test_session_is_detached_on_script_failure(self):
+        session = MagicMock()
+        session.create_script.side_effect = RuntimeError("script failure")
+        device = MagicMock()
+        device.attach.return_value = session
+        with patch.object(mod, "get_target_frida_device", return_value=device):
+            with self.assertRaisesRegex(RuntimeError, "script failure"):
+                mod.run_trial(123, list_only=True)
+        session.detach.assert_called_once()
+
     def test_serial_match_takes_precedence(self):
         devices = [mock_dev("127.0.0.1:16384"), mock_dev("emulator-5554")]
         module = types.SimpleNamespace(get_device_manager=lambda: types.SimpleNamespace(
