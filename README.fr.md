@@ -1,6 +1,9 @@
 # ePlus AI Toolkit — Français
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?logo=telegram&logoColor=white)](https://t.me/eplus_news)
+[![X](https://img.shields.io/badge/X-%23000000.svg?logo=X&logoColor=white)](https://x.com/david_nguyen94)
+
+<!-- Source README.md git-blob: 6bce0f2c938cf251470668940a6d345e3ce77281 -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · **Français**
 
@@ -10,7 +13,7 @@
 
 **ePlus AI Toolkit** permet de consulter les offres Google AI Pro accessibles via Google One et Google Play sur un appareil Android. L'outil fonctionne sous **Windows et macOS** : vous le lancez depuis PowerShell sur Windows, ou Terminal (zsh/bash) sur Mac. L'interface Textual et les commandes utilisent le même moteur Python, ADB et Frida.
 
-![Interface ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
+![Interface ePlus AI Toolkit](assets/images/dashboard.png)
 
 > [!CAUTION]
 > **Outil non officiel ; des frais réels peuvent être facturés.** Les **étapes 2 à 5** peuvent ouvrir un véritable paiement Google Play et appuyer automatiquement sur **Subscribe (S'abonner)**. L'affichage d'une offre, d'un prix initial nul ou d'un message indiquant qu'un paiement a été demandé **ne prouve pas** l'éligibilité, la gratuité, l'activation ni la prolongation de l'abonnement. Avant toute opération, vérifiez dans Google Play le compte, le montant dû aujourd'hui, le prix de renouvellement et la date de facturation. Arrêter l'outil n'annule pas une transaction déjà envoyée.
@@ -117,6 +120,10 @@ Le tableau de bord propose deux fonctions de vérification issues du parcours de
 
 ## 3. Interface Textual
 
+Le tableau de bord propose un parcours guidé : commencez par **Check Device & Offers** (Step 1). Le bouton **Continue: 12-month stage →** apparaît uniquement après une nouvelle consultation réussie, avec un compte Play identifié et l’offre initiale correspondante dont la première période est à prix nul. Il ouvre une confirmation distincte pour Step 2 ; le moteur vérifie de nouveau le compte, l’offre et les conditions avant le paiement. La consultation ne prouve ni l’éligibilité, ni des mois gratuits, ni l’activation. Après une demande de paiement dont le résultat permet une vérification, contrôlez la situation réelle dans Google Play avant **Verified in Google Play → Next**, ou choisissez **Finish here** pour terminer. Step 5 reste facultatif et aucune étape ne démarre automatiquement à la suite.
+
+**Advanced: Run by step** ouvre une vue de configuration séparée où Run reste visible ; **← Back to guided flow** ramène au parcours principal. **From selected step** ne propose que Steps 2–5 ; **All: Steps 2–5** affiche le parcours depuis Step 2 et masque le sélecteur d’étape. **R** fonctionne uniquement dans cette vue. Après une consultation réussie, **View offers** ouvre Offer Explorer. L’aide s’ouvre séparément sans remplacer le résultat affiché.
+
 Lorsqu'une étape est en cours, les commandes **Check Device & Offers**, **Run** et les sélecteurs de mode ou d'étape sont désactivés pour éviter les exécutions simultanées. L'étape 0 peut modifier la configuration locale ; l'étape 1 ne déclenche pas de paiement, mais peut préparer ADB et Frida. Vérifiez le résultat dans Google Play avant de poursuivre avec **Next**. **Arrêter ou fermer l'outil n'annule pas une transaction déjà transmise.**
 
 
@@ -155,6 +162,12 @@ Les durées sont les **anciens noms des étapes** et ne garantissent aucune prol
 Dans le TUI, **chaque étape de paiement exige une approbation distincte**. Même si un envoi de paiement est signalé, vérifiez le forfait actif, les frais et le renouvellement dans les [abonnements Google Play](https://play.google.com/store/account/subscriptions). Ne sélectionnez **Verified in Google Play → Next** que si vous avez confirmé personnellement la modification. L'outil **ne prouve pas à lui seul** l'activation.
 
 **Arrêt/sortie :** Stop pour les étapes 0–1 demande l'arrêt du processus local. Pour les étapes 2–5, **Stop after this step** bloque les étapes suivantes, mais **n'interrompt pas de force un paiement en cours**. Pendant un paiement, **Q / Exit** attend la fin de l'étape actuelle. **D** affiche/masque le journal technique ; **R** lance le mode choisi.
+
+### Mettre à jour l’application
+
+À l’ouverture du tableau de bord, l’outil recherche en arrière-plan une révision plus récente de la branche officielle `main`. **Check for updates** relance cette recherche. Si une nouvelle version est disponible, **Update & Restart** installe la révision affichée, puis rouvre le tableau de bord au repos à l’aide du script de démarrage adapté au système. Les versions sont indiquées par l’identifiant abrégé du commit Git. Aucune étape ni opération de paiement ne reprend automatiquement.
+
+La mise à jour automatique nécessite un clone Git officiel sur `main`, sans modification locale ni opération Git en cours, et un historique permettant une avance rapide vers la nouvelle révision. Les branches de développement, les projets dérivés et les archives ZIP du code source doivent être mis à jour manuellement ; conservez les ZIP dans des dossiers distincts. Les erreurs réseau ou Git s’affichent dans la zone de mise à jour et permettent de réessayer. La mise à jour est verrouillée pendant une étape, un diagnostic de connexion, une confirmation de paiement ou l’attente d’une vérification dans Google Play au cours d’une séquence guidée. Pendant l’installation, les nouvelles étapes et Exit sont bloqués ; l’aide et les détails techniques restent accessibles. L’outil n’exécute ni reset ni stash sur les fichiers locaux.
 
 ## 4. Commandes PowerShell (utilisateurs avancés)
 

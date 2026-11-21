@@ -11,6 +11,7 @@ Keep the active platform launchers and imported Python modules at the repository
 | `run-all.ps1` | Windows entrypoint (Textual dashboard and guided CLI) |
 | `run-macos.sh`, `ePlus-AI-Toolkit.command`, `macos_runner.py` | macOS launcher and adapter (Steps 0–5; real-device checkout unverified) |
 | `tui.py`, `tui_core.py`, `ultra0.py`, `setup_env.py`, `device_selector.py`, `query_sku.py` | Active Python runtime and supporting tools; kept in place for compatibility |
+| `app_update.py` | Official-main source update checks, guarded fast-forward installation and native dashboard restart |
 | [`tools/windows/`](../tools/windows/README.md) | Optional manual Windows setup shortcut; not required for normal launch |
 | [`legacy/windows/`](../legacy/windows/README.md) | Historical batch shortcuts; some bypass account checks with `--force` and may initiate a **real charge**. Use the maintained launcher instead |
 | `scripts/`, `assets/` | Runtime helpers and bundled Android/Frida assets |

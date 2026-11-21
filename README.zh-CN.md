@@ -1,6 +1,9 @@
 # ePlus AI Toolkit — 简体中文
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?logo=telegram&logoColor=white)](https://t.me/eplus_news)
+[![X](https://img.shields.io/badge/X-%23000000.svg?logo=X&logoColor=white)](https://x.com/david_nguyen94)
+
+<!-- Source README.md git-blob: 6bce0f2c938cf251470668940a6d345e3ce77281 -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · **简体中文** · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -9,7 +12,7 @@
 
 **ePlus AI Toolkit** 用于查看 Android 设备上的 Google One 和 Google Play 提供的 Google AI Pro 优惠。它支持 **Windows 和 macOS**：Windows 用户通过 PowerShell 启动，Mac 用户则使用 Terminal（zsh/bash）。Textual 图形化终端界面与命令行模式共用 Python、ADB 和 Frida 执行引擎。
 
-![ePlus AI Toolkit 界面](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
+![ePlus AI Toolkit 界面](assets/images/dashboard.png)
 
 > [!CAUTION]
 > **非官方工具，可能产生真实费用。** **Step 2–5** 可能打开 Google Play 的真实结账页面，并自动点击 **Subscribe（订阅）**。发现优惠、看到首期价格为 0，或收到“已提交结账”的消息，**均不代表**账户有资格、订阅免费、已激活或续期成功。每次操作前，请在 Google Play 上核实账户、本次收费、后续价格和续订日期。停止工具不能撤销已经提交的交易。
@@ -116,6 +119,10 @@ sh run-macos.sh
 
 ## 3. Textual 界面
 
+界面采用逐步引导流程：先运行 **Check Device & Offers**（Step 1）。仅当本次检查成功返回有效列表、识别到 Play 账户，并找到首期价格为 0 的指定初始优惠时，才显示 **Continue: 12-month stage →**。点击后仍须单独确认 Step 2，底层程序还会在付款前重新核对账户、优惠和付款条款。检查结果不证明优惠资格、免费月数或订阅已激活。提交付款请求后，只有结果允许继续核对时，才能在亲自检查 Google Play 后点击 **Verified in Google Play → Next**，也可选择 **Finish here** 结束。Step 5 为可选步骤，任何步骤都不会自动接着运行。
+
+**Advanced: Run by step** 打开独立的配置界面，Run 按钮始终可见；**← Back to guided flow** 返回主流程。**From selected step** 仅提供 Steps 2–5；**All: Steps 2–5** 显示从 Step 2 开始的路径并隐藏步骤选择框。**R** 快捷键仅在此界面有效。成功获取列表后，可通过 **View offers** 查看 Offer Explorer。帮助单独打开，不会替换当前结果。
+
 在某个步骤运行期间，**Check Device & Offers**、**Run** 以及模式和步骤选择功能会暂时锁定，避免重复执行。Step 0 可能修改电脑上的设置；Step 1 虽不会主动付款，但在准备过程中可能调整 ADB/Frida。请先到 Google Play 核实结果，再进入下一步。**点击 Stop 或 Exit 并不能撤销已提交的交易。**
 
 
@@ -154,6 +161,12 @@ sh run-macos.sh
 TUI 中**每个结账步骤均需单独批准**。当工具提示已尝试提交结账时，请到 [Google Play Subscriptions](https://play.google.com/store/account/subscriptions) 亲自确认实际套餐、收费与续订日期。只有确认订阅确实改变后才能选择 **Verified in Google Play → Next**；工具本身**无法独立证明激活成功**。
 
 **停止与退出：**Step 0–1 的 Stop 会请求终止本地检查。Step 2–5 的 **Stop after this step** 只阻止后续步骤，**不会强制中断正在进行的支付**。**Q / Exit** 在结账期间会等当前步骤结束；**D** 切换技术日志，**R** 执行当前选择。
+
+### 更新应用
+
+每次打开控制面板时，工具都会在后台检查官方 `main` 分支是否有更新。点击 **Check for updates** 可重新检查；发现新版后，点击 **Update & Restart**，即可安装界面显示的版本，并通过当前操作系统的启动脚本重新打开空闲的控制面板。版本以 Git 提交的短标识显示，任何步骤或付款操作都不会自动继续。
+
+自动更新仅适用于官方 Git 克隆，且必须位于 `main` 分支、没有本地改动或未完成的 Git 操作，并且可以快进到新版。开发分支、派生项目和源码 ZIP 需手动更新；ZIP 应放在单独的文件夹中。网络或 Git 错误会显示在更新区域，可重试检查。运行步骤、诊断连接、确认付款或在引导流程中等待核对 Google Play 时，更新按钮会被锁定。安装期间无法启动新步骤或使用 Exit，但仍可查看帮助和技术信息。更新器不会使用 reset 或 stash 处理本地文件。
 
 ## 4. PowerShell 命令行操作（高级）
 

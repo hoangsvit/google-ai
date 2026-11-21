@@ -1,6 +1,9 @@
 # ePlus AI Toolkit — Tiếng Việt
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?logo=telegram&logoColor=white)](https://t.me/eplus_news)
+[![X](https://img.shields.io/badge/X-%23000000.svg?logo=X&logoColor=white)](https://x.com/david_nguyen94)
+
+<!-- Source README.md git-blob: 6bce0f2c938cf251470668940a6d345e3ce77281 -->
 
 [English](README.md) · **Tiếng Việt** · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -9,7 +12,7 @@
 
 **ePlus AI Toolkit** giúp bạn kiểm tra các ưu đãi Google AI Pro được hiển thị qua Google One và Google Play trên thiết bị Android. Công cụ chạy trên **Windows và macOS**: Windows sử dụng PowerShell, còn macOS sử dụng Terminal (zsh/bash). Cả giao diện Textual lẫn chế độ dòng lệnh đều dùng chung bộ xử lý Python, ADB và Frida.
 
-![Giao diện ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
+![Giao diện ePlus AI Toolkit](assets/images/dashboard.png)
 
 > [!CAUTION]
 > **Đây không phải công cụ chính thức của Google và có thể phát sinh chi phí.** Ở các bước **2–5**, công cụ có thể mở trang thanh toán Google Play và tự nhấn **Subscribe**. Ưu đãi xuất hiện trong danh sách, mức giá đầu tiên bằng 0 hoặc thông báo đã gửi yêu cầu thanh toán **không có nghĩa là** bạn đủ điều kiện, được dùng miễn phí hay đã gia hạn thành công. Trước khi thực hiện, hãy kiểm tra đúng tài khoản, khoản tiền phải trả ngay, mức phí những kỳ sau và ngày gia hạn trong **Google Play**. Dừng công cụ không hủy được giao dịch đã gửi.
@@ -118,9 +121,13 @@ Trên bảng điều khiển có hai chức năng kiểm tra được phát tri�
 
 ## 3. Sử dụng giao diện
 
+Giao diện dẫn bạn đi từng bước như khi đặt hàng: bắt đầu bằng **Check Device & Offers** (Step 1). Chỉ khi lần kiểm tra mới trả về danh sách hợp lệ, nhận diện được tài khoản Play và tìm thấy đúng ưu đãi ban đầu có giá kỳ đầu bằng 0, nút **Continue: 12-month stage →** mới xuất hiện. Nút này mở phần xác nhận riêng cho Step 2; bộ xử lý vẫn kiểm tra lại tài khoản, ưu đãi và điều khoản trước khi mở thanh toán. Kết quả kiểm tra không chứng minh đủ điều kiện, được miễn phí hay đã kích hoạt gói. Sau một lần gửi yêu cầu thanh toán có kết quả cho phép xem lại, hãy đối chiếu thực tế trong Google Play rồi mới nhấn **Verified in Google Play → Next**, hoặc chọn **Finish here** để kết thúc. Step 5 là tùy chọn; không bước nào tự chạy tiếp.
+
+**Advanced: Run by step** mở màn hình cấu hình riêng có nút Run luôn nhìn thấy; **← Back to guided flow** đưa bạn về luồng chính. **From selected step** chỉ cho chọn Steps 2–5; **All: Steps 2–5** hiển thị lộ trình từ Step 2 và ẩn ô chọn bước. Phím **R** chỉ hoạt động trong màn hình này. Sau khi lấy danh sách ưu đãi thành công, nhấn **View offers** để xem Offer Explorer. Trợ giúp mở riêng và không thay nội dung kết quả đang xem.
+
 Nhấn **Check Device & Offers** để chạy **Step 1 — Available offers** và kiểm tra ưu đãi mà **không bắt đầu thanh toán**. Bạn có thể theo dõi tiến trình tại **Live Status**, chọn **Show technical details** để xem thông tin kỹ thuật và kiểm tra đúng tài khoản trong Google Play. Nếu 30 giây không có thông báo mới, công cụ sẽ cảnh báo; điều đó **chưa có nghĩa là chương trình đã bị treo**.
 
-Step 1 không mua hàng, nhưng quá trình chuẩn bị vẫn có thể tải hoặc sửa ADB/Frida và thay đổi cấu hình máy ảo hoặc mạng. **Step 0 — Environment cũng có thể thay đổi môi trường trên máy**, nên không được xem là thao tác hoàn toàn chỉ đọc. Thanh bên hiển thị sáu bước; thông tin trong Android Device và Google Account được lấy từ kết quả thực tế, đồng thời che bớt dữ liệu nhận dạng tài khoản. Những terminal có hỗ trợ liên kết sẽ cho phép mở trang của tác giả gốc và người duy trì.
+Step 1 không mua hàng, nhưng quá trình chuẩn bị vẫn có thể tải hoặc sửa ADB/Frida và thay đổi cấu hình máy ảo hoặc mạng. **Step 0 — Environment cũng có thể thay đổi môi trường trên máy**, nên không được xem là thao tác hoàn toàn chỉ đọc. Thanh tiến trình cho biết vị trí hiện tại trong luồng hướng dẫn; thông tin trong Android Device và Google Account được lấy từ kết quả thực tế, đồng thời che bớt dữ liệu nhận dạng tài khoản. Những terminal có hỗ trợ liên kết sẽ cho phép mở trang của tác giả gốc và người duy trì.
 
 Mục **Advanced: Run by step** gồm:
 
@@ -157,6 +164,12 @@ Trước **mỗi bước thanh toán trên giao diện**, bạn phải xác nh�
 Khi một bước đang chạy, các nút **Check Device & Offers**, **Run** và các tùy chọn chế độ hoặc bước sẽ tạm khóa để tránh chạy nhiều thao tác cùng lúc. Bạn vẫn có thể xem trợ giúp và nhật ký kỹ thuật. Nút **Next** chỉ xuất hiện khi kết quả thanh toán có thể được kiểm tra trước khi tiếp tục; nếu xảy ra lỗi hoặc chưa rõ kết quả, công cụ không cho chuyển sang bước kế tiếp.
 
 **Dừng hoặc thoát:** Với Steps 0–1, bạn có thể yêu cầu dừng tiến trình trên máy. Với Steps 2–5, **Stop after this step** chỉ ngăn công cụ chạy tiếp bước sau, **không buộc dừng giao dịch đang xử lý**. Nếu nhấn **Q / Exit** trong lúc thanh toán, công cụ sẽ đợi bước hiện tại kết thúc rồi mới thoát. Phím **D** bật/tắt nhật ký kỹ thuật, còn **R** chạy theo chế độ đã chọn.
+
+### Cập nhật ứng dụng
+
+Khi mở dashboard, công cụ kiểm tra ngầm xem nhánh `main` chính thức có bản mới hay không. Nhấn **Check for updates** để kiểm tra lại. Khi có bản mới, nhấn **Update & Restart** để cài đúng bản đang hiển thị và mở lại bằng chương trình khởi động dành cho hệ điều hành của bạn. Phiên bản được hiển thị bằng mã Git rút gọn. Dashboard mở lại ở trạng thái chờ; không bước nào hay giao dịch nào được tiếp tục tự động.
+
+Tự cập nhật chỉ áp dụng cho bản sao Git chính thức đang ở nhánh `main`, không có thay đổi cục bộ, không có thao tác Git chưa hoàn tất và có lịch sử cho phép tiến thẳng tới bản mới. Nhánh phát triển, bản sao từ dự án khác và bản giải nén ZIP cần cập nhật thủ công; hãy giữ các bản ZIP trong thư mục riêng. Lỗi mạng hoặc Git xuất hiện tại khu vực cập nhật và có thể thử lại. Nút cập nhật bị khóa khi đang chạy bước, chẩn đoán kết nối, xác nhận thanh toán hoặc chờ kiểm tra Google Play trong chuỗi có hướng dẫn. Trong lúc cài đặt, không thể chạy bước mới hay dùng Exit; vẫn có thể xem trợ giúp và thông tin kỹ thuật. Công cụ không dùng reset hay stash để xóa hoặc cất thay đổi cục bộ.
 
 ## 4. PowerShell CLI (nâng cao)
 

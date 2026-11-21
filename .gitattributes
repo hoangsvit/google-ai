@@ -1,0 +1,2 @@
+# Keep README source hashes identical in Windows, macOS and Linux checkouts.
+/README*.md text eol=lf

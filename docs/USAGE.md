@@ -4,16 +4,29 @@
 
 ## Use the dashboard (recommended)
 
+The dashboard follows a checkout-style guided path: start with **Check Device & Offers** (Step 1). A fresh successful listing, an identified Play account and the matching initial offer with a zero-priced first phase reveal **Continue: 12-month stage →**. This only opens the separate Step 2 approval; the engine rechecks account, offer and payment terms before checkout. It is not proof of eligibility, free months or activation. After a reviewable checkout attempt, verify the actual result in Google Play before **Verified in Google Play → Next**, or choose **Finish here**. Step 5 is optional. No stage starts automatically.
+
+**Advanced: Run by step** is a full button beside the guided action, stacked below it in narrower terminals. It opens a separate configuration view with its own visible Run button; **← Back to guided flow** returns to the wizard. **From selected step** only offers Steps 2–5. **All: Steps 2–5** shows the planned route from Step 2 and hides the step selector. The **R** shortcut works only in this view. Offer Explorer is available through **View offers** after a successful listing. Help opens separately and preserves the current result.
+
+[Standard dashboard preview](../assets/images/dashboard.png) · [Compact 90×20 preview](../assets/images/dashboard-compact.png). Both previews show a simulated successful inspection; no billing operation was run.
+
 ### Start with Check Device & Offers
 
 1. Click **Check Device & Offers** on the welcome screen. It invokes **Step 1 — Available offers**, intended to *list* offers rather than initiate checkout.
 2. Watch **Live Status** for the stage, elapsed time, current activity and result. **Show technical details** reveals execution output. A warning after 30 seconds without new output indicates inactivity, **not proof of a hang**.
 3. Check the account and offer information on the Android screen. A listed offer is **not** a guarantee of eligibility or a successful subscription.
-4. Expand **Advanced: Run by step** only when you deliberately need to select a different stage.
+4. If **Continue: 12-month stage →** appears, review its separate approval before starting Step 2. After each checkout attempt, verify Google Play before Next, or choose **Finish here**.
+5. Open **Advanced: Run by step** only to deliberately configure a separate step or sequence.
 
 **Important distinction:** Step 1 does not initiate a purchase, but underlying environment preflight can still install or repair ADB/Frida and change emulator/network settings. **Step 0 — Environment** is a setup/diagnostics stage, not a purchase-free guarantee of zero local side effects.
 
-The sidebar lists the six stages. Android Device / Google Account cards update from observed output; account identifiers are masked. Original-author and maintainer credits link to their GitHub profiles in supported terminals.
+The top progress strip shows the guided stages; their durations are labels, not verified entitlements. Android Device / Google Account cards update from observed output; account identifiers are masked. Original-author and maintainer credits link to their GitHub profiles in supported terminals.
+
+### Application updates
+
+The dashboard checks for a newer revision of the official `main` branch in the background at startup. **Check for updates** retries the check; when a newer revision is available, **Update & Restart** installs the displayed revision and reopens the native launcher at an idle dashboard. Versions are shown as short Git commit IDs. No stage or checkout is resumed.
+
+Automatic updates require an official Git clone on `main`, no local changes or unfinished Git operations, and a fast-forward history. Development branches, forks and source ZIPs must be updated manually; keep ZIP installations in separate folders. Network/Git failures appear in the update status and can be retried. Updating is locked during a stage, connection diagnosis, payment approval or guided Google Play review. While installation runs, new stages and Exit are locked; Help and technical details remain available. The updater never resets or stashes local files.
 
 ### Advanced run modes
 
@@ -43,7 +56,7 @@ While a stage is running, **Check Device & Offers**, Run, Run mode and Step sele
 - **Stop check (Steps 0–1):** requests cancellation of the local process tree. Cancellation can fail if a child process is stuck; inspect technical details.
 - **Stop after this step (Steps 2–5):** prevents further stages, but **does not force-kill a checkout in progress**. The remote payment outcome could otherwise become unknown.
 - **Exit toolkit / Q:** exits immediately while idle; during Steps 0–1 it requests cancellation and exits afterward, and during Steps 2–5 it queues exit after the current stage.
-- **D** toggles technical details; **R** uses the selected advanced run mode. A **Next** button is available only for a reviewable checkout outcome in a guided sequence.
+- **D** toggles technical details; **R** uses the selected run mode only while the Advanced view is open. A **Next** button is available only for a reviewable checkout outcome in a guided sequence.
 
 Neither Stop nor closing the terminal reverses an existing Google Play transaction. Always verify the real transaction and subscription status directly.
 

@@ -129,7 +129,7 @@ class MacTuiTests(unittest.IsolatedAsyncioTestCase):
             with patch("tui.subprocess.Popen") as child:
                 async with app.run_test(size=(100, 30)) as pilot:
                     self.assertEqual(app.query_one("#step", Select).value, 3)
-                    self.assertEqual(len(app.query("#workflow .workflow-step")), 6)
+                    self.assertEqual(len(app.query("#controls .workflow-step")), 6)
                     self.assertFalse(app.query_one("#mode", Select).disabled)
                     self.assertFalse(app.busy)
                     await pilot.pause()

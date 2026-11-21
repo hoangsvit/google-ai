@@ -33,6 +33,7 @@ class GitignoreTests(unittest.TestCase):
             "assets/frida/billing.js", "assets/modules/module_521.b64",
             "tests/test_assets.py", "docs/DETAILED-GUIDE.md",
             ".env.example", "run-all.ps1", "notes.txt",
+            "assets/images/dashboard.png", "assets/images/dashboard-compact.png",
         )
         self.assertEqual([], [p for p in paths if ignored(p)])
 

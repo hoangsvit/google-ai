@@ -9,6 +9,10 @@ on:
       - "macos_runner.py"
       - "tui.py"
       - "tui_core.py"
+      - "app_update.py"
+      - "tests/test_app_update.py"
+      - "tests/test_tui_layout.py"
+      - "tests/test_tui_wizard.py"
       - "tests/test_macos.py"
       - "docs/MACOS-PREVIEW.md"
       - ".github/workflows/macos-readonly.yml"
@@ -39,9 +43,14 @@ jobs:
           sh -n run-macos.sh
           sh -n ePlus-AI-Toolkit.command
           sh run-macos.sh --help
-          python -m py_compile macos_runner.py tui.py tui_core.py ultra0.py device_selector.py
+          python -m py_compile macos_runner.py tui.py tui_core.py app_update.py ultra0.py device_selector.py
       - name: Mock-only tests for all six stage routes and payment guards
         run: python -m unittest discover -s tests -p 'test_macos.py' -v
+      - name: Offline source-update and restart tests
+        run: |
+          python -m unittest discover -s tests -p 'test_app_update.py' -v
+          python -m unittest discover -s tests -p 'test_tui_layout.py' -v
+          python -m unittest discover -s tests -p 'test_tui_wizard.py' -v
       - name: Package runnable macOS source bundle and SHA-256
         shell: bash
         run: |
@@ -50,10 +59,11 @@ jobs:
           zip="$RUNNER_TEMP/$name.zip"
           git archive --format=zip --output="$zip" HEAD \
             run-macos.sh ePlus-AI-Toolkit.command macos_runner.py \
-            tui.py tui_core.py ultra0.py device_selector.py \
+            tui.py tui_core.py app_update.py device_diagnostics.py ultra0.py device_selector.py \
             requirements.txt requirements-tui.txt \
             scripts/runtime-lookup.py \
             assets/frida/billing.js assets/modules/module_521.b64 \
+            assets/images/dashboard.png assets/images/dashboard-compact.png \
             README.md docs/MACOS-PREVIEW.md \
             DISCLAIMER.md SECURITY.md THIRD_PARTY_NOTICES.md
           test -s "$zip"

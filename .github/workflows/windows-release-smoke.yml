@@ -10,6 +10,7 @@ on:
       - "run-all.ps1"
       - "tui.py"
       - "tui_core.py"
+      - "app_update.py"
       - "tests/**"
   workflow_call:
   workflow_dispatch:
@@ -34,12 +35,15 @@ jobs:
       - name: Windows Python syntax and critical offline regressions
         shell: pwsh
         run: |
-          python -m py_compile ultra0.py tui.py tui_core.py setup_env.py device_selector.py
+          python -m py_compile ultra0.py tui.py tui_core.py app_update.py setup_env.py device_selector.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $tests = @(
             "test_windows_encoding.py",
             "test_runtime_lookup.py",
             "test_tui.py",
+            "test_tui_layout.py",
+            "test_tui_wizard.py",
+            "test_app_update.py",
             "test_repository_layout.py",
             "test_report_identity.py",
             "test_manual_verification.py",
@@ -70,7 +74,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Source archive creation failed" }
           Expand-Archive -LiteralPath $archive -DestinationPath $extract -Force
           foreach ($path in @(
-            "run-all.ps1", "tui.py", "tui_core.py", "ultra0.py",
+            "run-all.ps1", "tui.py", "tui_core.py", "app_update.py", "ultra0.py",
             "requirements-tui.txt", "assets/frida/billing.js",
             "assets/modules/module_521.b64", "README.md"
           )) {

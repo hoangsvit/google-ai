@@ -1,6 +1,9 @@
 # ePlus AI Toolkit — 한국어
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?logo=telegram&logoColor=white)](https://t.me/eplus_news)
+[![X](https://img.shields.io/badge/X-%23000000.svg?logo=X&logoColor=white)](https://x.com/david_nguyen94)
+
+<!-- Source README.md git-blob: 6bce0f2c938cf251470668940a6d345e3ce77281 -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · **한국어** · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -9,7 +12,7 @@
 
 **ePlus AI Toolkit**은 Android 기기의 Google One과 Google Play에 표시되는 Google AI Pro 혜택을 확인하는 도구입니다. **Windows**에서는 PowerShell로, **macOS**에서는 Terminal(zsh/bash)로 실행합니다. Textual 화면과 명령줄 방식은 모두 Python·ADB·Frida 기반의 동일한 실행 엔진을 사용합니다.
 
-![ePlus AI Toolkit 화면](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
+![ePlus AI Toolkit 화면](assets/images/dashboard.png)
 
 > [!CAUTION]
 > **비공식 도구이며 실제 요금이 청구될 수 있습니다.** **Step 2–5**는 실제 Google Play 결제 화면을 열고 상황에 따라 **Subscribe(구독)**를 자동으로 누를 수 있습니다. 프로모션이 표시되거나 첫 결제 금액이 0이거나 결제 요청 메시지가 나타나더라도 **프로모션 적용, 무료 구독, 구독 활성화, 기간 연장이 확인된 것은 아닙니다**. 실행 전에 Google Play에서 계정, 오늘의 결제 금액, 이후 요금과 갱신일을 확인해야 합니다. 도구를 중지해도 이미 제출한 거래는 취소되지 않습니다.
@@ -116,6 +119,10 @@ sh run-macos.sh
 
 ## 3. 대시보드 사용법
 
+화면은 순서대로 진행하는 안내 방식입니다. 먼저 **Check Device & Offers**(Step 1)를 실행하세요. 이번 조회가 정상적으로 완료되고 Play 계정이 식별되며 첫 결제 기간의 가격이 0인 지정 초기 혜택을 찾은 경우에만 **Continue: 12-month stage →**가 표시됩니다. 이 버튼은 Step 2의 별도 확인을 열며, 실제 결제 전에는 처리 엔진이 계정, 혜택과 결제 조건을 다시 확인합니다. 조회 결과는 이용 자격, 무료 기간이나 구독 활성화를 증명하지 않습니다. 결제 요청 후 검토 가능한 결과가 나오면 Google Play에서 실제 상태를 확인한 뒤 **Verified in Google Play → Next**를 누르거나 **Finish here**로 종료하세요. Step 5는 선택 사항이며 다음 단계는 자동으로 실행되지 않습니다.
+
+**Advanced: Run by step**는 Run 버튼이 항상 보이는 별도 설정 화면을 열며, **← Back to guided flow**로 기본 안내에 돌아갑니다. **From selected step**에서는 Steps 2–5만 선택할 수 있습니다. **All: Steps 2–5**는 Step 2부터의 경로를 표시하고 단계 선택란을 숨깁니다. **R** 단축키는 이 화면에서만 작동합니다. 조회 성공 후 **View offers**로 Offer Explorer를 열 수 있습니다. 도움말은 따로 열리므로 현재 결과를 덮어쓰지 않습니다.
+
 단계가 실행되는 동안에는 **Check Device & Offers**, **Run**, 실행 모드와 단계 선택을 잠가 다른 작업이 동시에 시작되지 않도록 합니다. Step 0은 컴퓨터의 설정을 변경할 수 있습니다. Step 1은 결제를 시작하지 않지만 사전 준비 과정에서 ADB/Frida 설정이 바뀔 수 있습니다. 다음 단계로 진행하기 전에 반드시 Google Play에서 결과를 확인하세요. **Stop이나 Exit를 눌러도 이미 제출한 결제는 취소되지 않습니다.**
 
 
@@ -154,6 +161,12 @@ sh run-macos.sh
 TUI에서 **각 결제 단계는 별도 승인이 필요합니다**. 도구가 결제 제출을 시도했다고 표시해도 [Google Play 구독 관리](https://play.google.com/store/account/subscriptions)에서 실제 구독, 요금과 갱신일을 확인하세요. 직접 변경 사항을 확인한 경우에만 **Verified in Google Play → Next**를 선택하세요. 도구는 구독 성공을 독립적으로 증명할 수 없습니다.
 
 **중지/종료:** Step 0–1에서는 Stop이 로컬 검사를 종료하도록 요청합니다. Step 2–5의 **Stop after this step**은 이후 단계를 막을 뿐 **진행 중인 결제를 강제 종료하지 않습니다**. 결제 중 **Q / Exit**는 현재 단계 종료 후 종료합니다. **D**는 기술 로그, **R**은 선택한 모드 실행입니다.
+
+### 앱 업데이트
+
+대시보드를 열면 공식 `main` 브랜치에 새 버전이 있는지 백그라운드에서 확인합니다. **Check for updates**를 누르면 다시 확인할 수 있습니다. 새 버전이 있으면 **Update & Restart**를 눌러 표시된 버전을 설치하고, 운영체제에 맞는 실행 스크립트로 대시보드를 대기 상태에서 다시 엽니다. 버전은 짧은 Git 커밋 ID로 표시됩니다. 이전 단계나 결제 작업은 자동으로 재개되지 않습니다.
+
+자동 업데이트는 공식 Git 복제본의 `main` 브랜치에서만 사용할 수 있습니다. 로컬 변경이나 완료되지 않은 Git 작업이 없어야 하며, 새 버전으로 빨리 감기가 가능한 이력이어야 합니다. 개발 브랜치, 파생 프로젝트와 소스 ZIP은 수동으로 업데이트하고 ZIP 설치본은 별도 폴더에 보관하세요. 네트워크 또는 Git 오류는 업데이트 영역에 표시되며 다시 확인할 수 있습니다. 단계 실행, 연결 진단, 결제 승인 또는 안내 절차에서 Google Play 확인을 기다리는 동안에는 업데이트 버튼이 잠깁니다. 설치 중에는 새 단계를 실행하거나 Exit를 사용할 수 없지만 도움말과 기술 정보는 볼 수 있습니다. 업데이트 기능은 로컬 파일에 reset이나 stash를 실행하지 않습니다.
 
 ## 4. PowerShell 명령어 (고급)
 

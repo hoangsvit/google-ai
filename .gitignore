@@ -75,3 +75,5 @@ test-results/
 
 # Personal screenshots and image captures
 *.png
+!assets/images/dashboard.png
+!assets/images/dashboard-compact.png

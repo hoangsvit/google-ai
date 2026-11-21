@@ -17,6 +17,17 @@ MD_LINK = re.compile(r"(?<!!)\[[^]]+\]\(([^)]+)\)")
 
 
 class DocumentationNavigationTests(unittest.TestCase):
+    def test_guided_dashboard_controls_and_previews_are_documented(self):
+        for source in (ROOT / "README.md", DOCS / "USAGE.md"):
+            with self.subTest(source=source.name):
+                text = source.read_text(encoding="utf-8")
+                for label in ("Continue: 12-month stage →", "Verified in Google Play → Next",
+                              "Finish here", "View offers", "← Back to guided flow"):
+                    self.assertIn(label, text)
+                self.assertNotIn("The sidebar lists the six stages.", text)
+        for name in ("dashboard.png", "dashboard-compact.png"):
+            self.assertTrue((ROOT / "assets/images" / name).is_file())
+
     def test_original_full_readme_structure_and_translations(self):
         english = (ROOT / "README.md").read_text(encoding="utf-8")
         self.assertGreater(len(english), 12000)

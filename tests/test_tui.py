@@ -229,13 +229,12 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                     await pilot.pause()
                     app.advanced_pressed()
                     await pilot.pause()
-                    sidebar = app.query_one("#controls").region
                     for selector in ("#mode", "#step", "#run"):
                         widget = app.query_one(selector)
-                        self.assertGreaterEqual(widget.region.x, sidebar.right)
+                        self.assertGreaterEqual(widget.region.x, app.query_one("#content").region.x)
                         self.assertGreater(widget.region.width, 15)
                     self.assertTrue(app.query_one("#run", Button).display)
-                    self.assertTrue(app.query_one("#quickstart", Button).display)
+                    self.assertEqual(app.query_one("#status_panel").region.height, 0)
                     self.assertEqual(app.query_one("#mode", Select).value, "single")
                 popen.assert_not_called()
 
@@ -257,6 +256,7 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
             app = GoogleAITUI(repo=Path(directory))
             with patch.object(GoogleAITUI, "_confirm_stage") as confirm:
                 async with app.run_test(size=(110, 35)) as pilot:
+                    app.advanced_pressed()
                     app.query_one("#mode", Select).value = "all"
                     await pilot.pause()
                     app.selected_pressed()
@@ -425,27 +425,26 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                         await pilot.pause()
                         notice = app.query_one("#payment_notice", Static)
                         compact = app.query_one("#payment_notice_compact", Static)
-                        if size[1] < 27:
-                            self.assertFalse(notice.display)
-                            self.assertTrue(compact.display)
-                            wording = str(compact.render())
-                            self.assertIn("3 separate US$1 checks", wording)
-                            self.assertIn("not one US$3", wording)
-                            self.assertIn("24 months not guaranteed", wording)
-                            self.assertGreater(app.query_one("#status_panel").region.height, 3)
-                        else:
-                            self.assertTrue(notice.display)
-                            self.assertFalse(compact.display)
-                            wording = str(notice.render())
-                            self.assertIn("Step 2 (12 months)", wording)
-                            self.assertIn("Step 3 (6)", wording)
-                            self.assertIn("Step 4 (6)", wording)
-                            self.assertIn("at least US$3 available", wording)
-                            self.assertIn("3 separate US$1 card checks", wording)
-                            self.assertIn("not one US$3 payment", wording)
-                            self.assertIn("temporary holds", wording)
-                            self.assertIn("24 months is not guaranteed", wording)
-                        self.assertTrue(app.query_one("#quickstart").display)
+                        self.assertFalse(app.query_one("#workflow_actions").display)
+                        self.assertEqual(notice.region.height, 0)
+                        self.assertTrue(compact.display)
+                        wording = str(compact.render())
+                        self.assertIn("may charge money", wording)
+                        self.assertIn("Confirm each stage in Google Play", wording)
+                        self.assertGreater(app.query_one("#status_panel").region.height, 3)
+                        self.assertLessEqual(compact.region.bottom, app.query_one("#welcome_panel").region.bottom)
+                        app.advanced_pressed()
+                        for _ in range(30):
+                            await pilot.pause()
+                            if app.query_one("#run").region.height > 0:
+                                break
+                        self.assertTrue(app.query_one("#workflow_actions").display)
+                        wording = str(notice.render())
+                        for detail in ("Step 2 (12 months)", "Step 3 (6)", "Step 4 (6)",
+                                       "at least US$3 available", "3 separate US$1 card checks",
+                                       "not one US$3 payment", "temporary holds", "24 months is not guaranteed"):
+                            self.assertIn(detail, wording)
+                        self.assertGreater(app.query_one("#run").region.height, 0)
                     launch.assert_not_called()
 
     async def test_checkout_confirmations_explain_each_one_dollar_event(self):
@@ -481,6 +480,8 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
             with patch("tui.subprocess.Popen") as popen:
                 async with app.run_test(size=(110, 35)) as pilot:
                     await pilot.click("#advanced_toggle")
+                    await pilot.pause()
+                    app.query_one("#run").scroll_visible(animate=False)
                     await pilot.pause()
                     await pilot.click("#run")
                     await pilot.pause()

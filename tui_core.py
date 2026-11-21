@@ -50,6 +50,32 @@ class Outcome:
     can_review: bool = False
 
 
+def initial_checkout_blocker(outcome: Outcome, report: dict | None,
+                             account: str | None = None) -> str:
+    """Explain whether a current listing can show the wizard's Step 2 action.
+
+    This is a navigation hint, not billing authorization. The engine must
+    recheck the current account, exact offer and checkout terms when run.
+    Call only with the fresh report from the completed Step 1 invocation.
+    """
+    if outcome.code != "listed" or not isinstance(report, dict) or report.get("status") != "listed":
+        return "Run Check Device & Offers to get a fresh result before continuing."
+    detected = report.get("detected_play_account")
+    detected = detected.strip().lower() if isinstance(detected, str) else ""
+    observed = account.strip().lower() if isinstance(account, str) else ""
+    if detected and observed and detected != observed:
+        return "The reported Play accounts differ. Check the account and run the check again."
+    if not re.fullmatch(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}", detected or observed):
+        return "The Google Play account was not identified. Check it on Android and retry."
+    offers = report.get("offers")
+    if not isinstance(offers, list) or not any(
+        isinstance(offer, dict) and offer.get("id") == STAGES[2].offer
+        and str(offer.get("micros")) == "0" for offer in offers
+    ):
+        return "No matching 12-month offer with a zero-priced first phase was found. Do not continue to Step 2."
+    return ""
+
+
 MESSAGES = {
     "listed": ("Offers loaded", "Offer metadata is not proof of eligibility."),
     "checkout_requested": (

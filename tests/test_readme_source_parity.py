@@ -17,6 +17,7 @@ TECHNICAL = (
     "legacy/windows/", "brew install android-platform-tools",
     "adb devices", "sh run-macos.sh", ".\\run-all.ps1",
     "[!CAUTION]", "[!NOTE]", "2–5", "16.5.9",
+    "Continue: 12-month stage →", "Finish here", "View offers", "← Back to guided flow",
 )
 
 class ReadmeSourceParityTests(unittest.TestCase):
