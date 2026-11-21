@@ -26,6 +26,6 @@ The author's example checkout dates, advertised plan lengths and historical rene
 
 The original author gave commands such as `python ultra0.py --check`, `python ultra0.py --list`, and `python ultra0.py accounts.txt`. Using account files containing passwords and card information is discouraged. The current recommendation is `run-all.ps1 -ListOnly`, followed by manual verification directly in Google Play.
 
-**Caution:** The source still contains legacy code for filling Android login and payment forms and can automatically press Subscribe. Do not use `--force` to suppress an unverified account mismatch. Do not publish complete reports or tokens.
+**Caution:** The source still contains legacy code for filling Android login and payment forms. Do not use `--force` to suppress an unverified account mismatch. Do not publish complete reports or tokens.
 
 See [the maintained English guide](DETAILED-GUIDE.md), [the original stage mapping](ORIGINAL-STEPS.md) and [security notes](../SECURITY.md).

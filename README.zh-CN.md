@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — 简体中文
 
-<!-- Source README.md git-blob: 36ba1d28c6270324f676a8d29133d211758275a3 -->
+<!-- Source README.md git-blob: 5d94a65851f6cc5b1f29a3d37518dfe6d213704c -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · **简体中文** · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -12,7 +12,7 @@
 ![ePlus AI Toolkit 界面](images/terminal-ui-overview.png)
 
 > [!CAUTION]
-> **非官方工具，可能产生真实费用。** **Step 2–5** 可能打开 Google Play 的真实结账页面，并自动点击 **Subscribe（订阅）**。发现优惠、看到首期价格为 0，或收到“已提交结账”的消息，**均不代表**账户有资格、订阅免费、已激活或续期成功。每次操作前，请在 Google Play 上核实账户、本次收费、后续价格和续订日期。停止工具不能撤销已经提交的交易。
+> **非官方工具，可能产生真实费用。** **Step 2–5** 可能打开 Google Play 的真实结账页面。请在 Google Play 查看条款，同意后自行点击 **Subscribe（订阅）**。发现优惠、看到首期价格为 0，或看到结账页面，**均不代表**账户有资格、订阅免费、已激活或续期成功。每次操作前，请在 Google Play 上核实账户、本次收费、后续价格和续订日期。停止工具不能撤销已经提交的交易。
 
 > [!NOTE]
 > **至少准备 3 美元可用余额，用于三笔各 1 美元的独立交易，并非一次扣除 3 美元。** 在用户报告的 **24 个月**流程中，Step 2（最初 12 个月）、Step 3（延长 6 个月）和 Step 4（再延长 6 个月）各涉及**一笔 1 美元的银行卡验证或支付交易**：**3 × US$1 = US$3**。其中的 1 美元可能只是临时预授权冻结，并非已入账的实际扣款；金额也可能因银行、账户或 Google Play 的要求而不同。**3 美元只是这一案例的最低备用余额，不是固定手续费，也不保证所有账户都能获得 24 个月。** 预授权会暂时占用可用余额，通常依据银行处理情况在 **1–14 个工作日**内解除。每完成一步，请到 Google Play 核实交易状态和订阅续订日期。可选的 Step 5 **不计入上述三笔交易**。[Google Play 官方说明](https://support.google.com/googleplay/answer/6224192?hl=en)。

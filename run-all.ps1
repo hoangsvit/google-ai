@@ -10,7 +10,7 @@
   Individual -Step 2..5 commands do not require typed confirmations.
   -AllStages retains verification prompts between potentially billable steps.
   Step 5 is the author's optional additional offer and can be skipped.
-  The original ultra0.py may automatically click Subscribe during a live stage.
+  Review the checkout and confirm in Google Play.
   Always verify the account, current charge, renewal terms and subscription in Google Play.
 .EXAMPLE
   .\run-all.ps1                       # Textual dashboard, installs UI dependency if missing
@@ -351,12 +351,12 @@ try {
     }
 
     Stage "Optional original Pro subscription steps (2-5)"
-    Note "CAUTION: ultra0.py is not a harmless preview. It can automatically press Subscribe."
+    Note "CAUTION: Confirming in Google Play can create real charges."
     Note "An offer with micros=0 may still have later paid phases, and stacking 12+6+6 months is UNVERIFIED."
     if ($AllStages) {
         Note "Choose: 1 = Continue | 2 = Skip | 0 = Stop."
     } else {
-        Note "Single-step mode: no console confirmations; the selected step may open and confirm a Google Play checkout."
+        Note "Single-step mode: no console confirmations; the selected step may open Google Play checkout for manual confirmation."
     }
 
     # Reuse the selected Play account. No repeated email input is required.
@@ -480,7 +480,9 @@ try {
                 $reason = [string]$report.sheet.reason
             }
         }
-        if ($report.status -eq "checkout_requested") {
+        if ($report.status -eq "checkout_opened") {
+            Show-Status "Checkout" "Waiting for you to confirm in Google Play" "Yellow"
+        } elseif ($report.status -eq "checkout_requested") {
             Show-Status "Checkout" "Submitted; check Google Play" "Yellow"
         } else {
             $issueCode = if ($reason) { $reason } else { [string]$report.status }

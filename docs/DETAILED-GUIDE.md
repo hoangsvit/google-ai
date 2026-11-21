@@ -6,7 +6,7 @@ This guide describes the maintained **Python + ADB + Frida** workflow. The Playw
 
 [Back to README](../README.md) · [Security precautions](../SECURITY.md) · [Original stage reference (English)](ORIGINAL-STEPS.md)
 
-> **Safety:** Offer data and a first pricing phase of 0 do **not** prove that a promotion applies to the account, that the subscription is active, or that time can be stacked. The original `ultra0.py` may automatically click **Subscribe** when not run in `--list` mode. Always inspect Google's live pricing, recurring charges, cancellation terms and actual subscription record in Google Play.
+> **Safety:** Offer data and a first pricing phase of 0 do **not** prove that a promotion applies to the account, that the subscription is active, or that time can be stacked. Outside `--list` mode the tool can open checkout for manual confirmation. Always inspect Google's live pricing, recurring charges, cancellation terms and actual subscription record in Google Play.
 
 ## Prerequisites
 
@@ -99,9 +99,9 @@ This asks you to choose 1 (Continue), 2 (Skip) or 0 (Stop), and does not infer w
 
 The active Play Store email is detected automatically; `-Email` can specify an expected account. `-Force` passes the original Python `--force` to bypass **only** the account-verification check, after a numbered approval prompt. Normally it is unnecessary.
 
-For `-AllStages`, all approvals use **1 = Continue, 2 = Skip / End run, 0 = Stop**. After each attempted subscription stage, review the Google Play plan, next payment date, and price before selecting 1. Optional Step 5 requires another numeric approval. Individual `-Step 2`, `-Step 3`, `-Step 4` or `-Step 5` commands are **non-interactive at the PowerShell confirmation layer**: no `RUN N`, `NO ACTIVE` or `VERIFIED` input is requested. Selecting a checkout step explicitly authorizes that attempt, which may tap Subscribe automatically if the current terms appear eligible. If the device or Play account is ambiguous, the standalone step fails closed with a diagnostic rather than asking for input. Check the real subscription and renewal date after the step. The explicit CLI command `-Step 1` remains the read-only offer-listing mode; running `.\run-all.ps1` **without arguments opens the Textual dashboard**.
+For `-AllStages`, all approvals use **1 = Continue, 2 = Skip / End run, 0 = Stop**. After each attempted subscription stage, review the Google Play plan, next payment date, and price before selecting 1. Optional Step 5 requires another numeric approval. Individual `-Step 2`, `-Step 3`, `-Step 4` or `-Step 5` commands are **non-interactive at the PowerShell confirmation layer**: no `RUN N`, `NO ACTIVE` or `VERIFIED` input is requested. Selecting a checkout step explicitly authorizes that attempt, and you confirm any purchase directly in Google Play. If the device or Play account is ambiguous, the standalone step fails closed with a diagnostic rather than asking for input. Check the real subscription and renewal date after the step. The explicit CLI command `-Step 1` remains the read-only offer-listing mode; running `.\run-all.ps1` **without arguments opens the Textual dashboard**.
 
-The original Python code can click **Subscribe** automatically on a screen it interprets as a zero-priced checkout. This is a real billing flow, not a simulation, and the claimed subscription extensions are not guaranteed.
+Google Play shows the live billing terms. Confirm directly in Google Play if you accept those terms.
 
 If local execution policy prevents PowerShell scripts, review the file and follow your organization's Windows execution-policy rules rather than disabling system protections globally.
 

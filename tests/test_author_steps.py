@@ -46,7 +46,7 @@ class OriginalProStageTests(unittest.TestCase):
         self.assertNotIn('[switch]$Debug', ps)
         self.assertNotIn('[switch]$Detailed', ps)
         self.assertIn('if ($script:RunLog)', ps)
-        self.assertIn('Show-Status "Checkout" "Submitted; check Google Play"', ps)
+        self.assertIn('Show-Status "Checkout" "Waiting for you to confirm in Google Play"', ps)
         helper = (ROOT / "scripts/user-errors.ps1").read_text(encoding="utf-8")
         self.assertIn("payment_security_blocked", helper)
         self.assertIn('if ($ShowDebug -or ($Step -eq 1 -and -not $AllStages))', ps)
@@ -64,7 +64,7 @@ class OriginalProStageTests(unittest.TestCase):
         self.assertIn('Show-UserIssue -Code $issueCode', ps)
         self.assertIn('Show-UserIssue -Code "offer_not_available"', ps)
         self.assertIn('Get-FailureCode -ErrorMessage $rawError', ps)
-        self.assertIn('if ($report.status -eq "checkout_requested")', ps)
+        self.assertIn('if ($report.status -eq "checkout_opened")', ps)
         self.assertIn('break', ps)
 
     def test_no_checkout_by_default(self):
@@ -103,7 +103,7 @@ class OriginalProStageTests(unittest.TestCase):
         self.assertIn('if ($Force) { $args += "--force" }', ps)
         self.assertIn('Confirm-Exact "Use original --force for this Android account?" "FORCE"', ps)
         self.assertIn('if (-not $Email -and $playAccount)', ps)
-        self.assertIn('if ($report.status -eq "checkout_requested")', ps)
+        self.assertIn('if ($report.status -eq "checkout_opened")', ps)
         self.assertNotIn('"launched", "subscribed"', ps)
         self.assertIn('Confirm-Exact "Only if you verified the active plan', ps)
         self.assertIn('original stages starting at Step {0}, including optional Step 5?', ps)

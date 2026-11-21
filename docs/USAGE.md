@@ -32,7 +32,7 @@ By default, only the selected step runs. To choose a guided sequence, expand **C
 | **Offer the next step** | Begins a guided checkout sequence at the chosen Step **2–5**, without replaying earlier checkout steps. |
 | **Start at Step 2** | Begins the guided checkout sequence at **Step 2**. Step **5** is optional. |
 
-All checkout stages on the dashboard require **explicit approval per stage**. After a stage reports that it attempted to submit checkout, check the real Google Play subscription and renewal date. The tool cannot independently confirm a successful activation or extension. Only press **Verified in Google Play → Next** if the change has actually been verified. The next stage still requires separate approval. Failed or ambiguous results do not authorize advancing.
+All checkout stages on the dashboard require **explicit approval per stage**. Choose **Open Google Play**, review the terms, and confirm manually in Google Play. Then check the actual subscription and renewal date. The tool cannot independently confirm a successful activation or extension. Only press **Verified in Google Play → Next** if the change has actually been verified. The next stage still requires separate approval. Failed or ambiguous results do not authorize advancing.
 
 | Step | Purpose | Checkout risk |
 | --- | --- | --- |
@@ -82,7 +82,7 @@ The standalone `setup_env.py` and [`tools/windows/setup-environment.bat`](../too
 .\run-all.ps1 -Step 5
 ```
 
-**Unlike the TUI, an explicitly selected single checkout stage does not require a second typed PowerShell approval.** The original Python engine may automatically press Subscribe after checking the Google Play screen. Do not execute these commands unless you intend to initiate a potentially billable operation and have reviewed its terms.
+**Unlike the TUI, an explicitly selected single checkout stage does not require a second typed PowerShell approval.** Review the checkout and confirm manually in Google Play. Do not execute these commands unless you intend to initiate a potentially billable operation and have reviewed its terms.
 
 To use the original **CLI** guided sequence:
 

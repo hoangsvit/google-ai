@@ -52,6 +52,11 @@ class Outcome:
 
 MESSAGES = {
     "listed": ("Offers loaded", "Offer metadata is not proof of eligibility."),
+    "checkout_opened": (
+        "Waiting for you to confirm in Google Play",
+        "Review today's price and renewal terms, then subscribe in Google Play if you agree. "
+        "Verify the actual subscription and renewal date before continuing.",
+    ),
     "checkout_requested": (
         "Checkout submitted - not yet verified",
         "Check Google Play Subscriptions, renewal date and charges before proceeding.",
@@ -134,7 +139,7 @@ def cli_issue_outcome(lines: list[str], step: int) -> Outcome | None:
         if not match:
             continue
         code = match.group(1)
-        if code in ("listed", "checkout_requested"):
+        if code in ("listed", "checkout_opened", "checkout_requested"):
             return None
         entry = CLI_ISSUES.get(code) or MESSAGES.get(code)
         if not entry:
@@ -230,12 +235,12 @@ def outcome_for_stage(step: int, exit_code: int, report: dict | None) -> Outcome
     status = str(report.get("status", "unknown"))
     sheet = report.get("sheet")
     reason = str(sheet.get("reason", "")) if isinstance(sheet, dict) else ""
-    code = reason if status != "checkout_requested" and reason in MESSAGES else status
+    code = reason if status not in ("checkout_opened", "checkout_requested") and reason in MESSAGES else status
     title, instruction = MESSAGES.get(
         code, ("Could not verify this step",
                "Check the Android screen and Debug before retrying."))
     return Outcome(code, title, instruction,
-                   can_review=(step >= 2 and status == "checkout_requested"))
+                   can_review=(step >= 2 and status in ("checkout_opened", "checkout_requested")))
 
 
 def mask_email(value: str) -> str:

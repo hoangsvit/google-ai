@@ -2,7 +2,7 @@
 
 UI-only orchestration: the original run-all.ps1 and ultra0.py still own all
 Android, Frida, Google Play, payment and account validation. The TUI never
-declares an activated subscription from launchBillingFlow or a Subscribe tap.
+declares an activated subscription from an opened checkout.
 """
 from __future__ import annotations
 
@@ -35,11 +35,11 @@ class Approval(ModalScreen[bool]):
     CSS = """
     Approval { align: center middle; background: #070d19 75%; }
     #approval_card {
-        width: 66; max-width: 92%; height: auto; max-height: 95%;
+        width: 66; max-width: 92%; height: 20; max-height: 95%;
         padding: 1 3; background: #15243a; border: round #3d6383;
     }
     #approval_title { text-style: bold; color: #ebf5ff; margin-bottom: 1; }
-    #approval_scroll { height: auto; max-height: 1fr; }
+    #approval_scroll { height: 1fr; }
     #approval_message { color: #c9d8e8; margin-bottom: 2; }
     #approval_actions { height: auto; align-horizontal: right; }
     #approval_actions Button { margin-left: 1; }
@@ -56,7 +56,7 @@ class Approval(ModalScreen[bool]):
                 yield Static(self.message_text, id="approval_message")
             with Horizontal(id="approval_actions"):
                 yield Button("Cancel", id="cancel")
-                yield Button("Continue", id="approve", variant="warning")
+                yield Button("Open Google Play", id="approve", variant="warning")
 
     @on(Button.Pressed, "#approval_actions Button")
     def approve(self, event: Button.Pressed) -> None:
@@ -652,9 +652,9 @@ class GoogleAITUI(App[None]):
         if step == 2:
             title = "Start initial 12-month checkout?"
             message = ("Confirm this Google Play account has NO active Google One subscription. "
-                       "This step can automatically press Subscribe and create real charges.")
+                       "Review the price before subscribing in Google Play.")
         elif step >= 3:
-            title = f"Start Step {step} (+6 months)?"
+            title = f"Open Step {step} checkout (+6 months)?"
             message = ("Google AI Pro must already be active. Verify the previous "
                        "subscription and renewal date in Google Play. Google may reject "
                        "additional free offers or apply paid renewal terms.")
@@ -678,6 +678,11 @@ class GoogleAITUI(App[None]):
         if previous_verified:
             message = ("Confirm the previous stage ACTUALLY changed the Google Play "
                        "subscription/renewal date. " + message)
+        account = mask_email(self._verified_account or "")
+        message = (f"Google Play account: {account}\n"
+                   f"Plan: {STAGES[step].label}\n"
+                   f"Action: {'New subscription' if step == 2 else 'Update existing subscription'}\n\n"
+                   + message)
         self.push_screen(Approval(title, message),
                          lambda approved: self._start(step, sequence) if approved else None)
 
@@ -1019,7 +1024,7 @@ class GoogleAITUI(App[None]):
                 isinstance(offer, dict) and offer.get("id") == "12months-eft"
                 and str(offer.get("micros")) == "0" for offer in offers
             ))
-        elif step == 0 or outcome.code != "checkout_requested":
+        elif step == 0 or outcome.code not in ("checkout_opened", "checkout_requested"):
             self._offer_check_ready = False
             self._initial_offer_ready = False
             self._offer_ready_device = None
@@ -1093,7 +1098,9 @@ class GoogleAITUI(App[None]):
         }:
             self.push_screen(SetupNotice(outcome.title, outcome.instruction))
             return
-        if outcome.code == "checkout_requested":
+        if outcome.code == "checkout_opened":
+            self.notify("Review the terms and confirm in Google Play.", severity="warning")
+        elif outcome.code == "checkout_requested":
             self.notify("Review the actual subscription in Google Play.", severity="warning")
         elif outcome.code not in ("listed", "environment_ok", "cancelled"):
             self.notify("Step stopped; check the result before another attempt.", severity="warning")

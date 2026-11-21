@@ -7,7 +7,7 @@ A terminal toolkit for **Windows and macOS** to inspect Google AI Pro offers thr
 ![ePlus AI Toolkit — full dashboard (110×35, Steps 0–5)](images/terminal-ui-overview.png)
 
 > [!CAUTION]
-> **Unofficial project. Potential billing charges.** Steps **2–5** can open a real Google Play checkout and may automatically tap **Subscribe**. An offer appearing in a list, a displayed first-phase price of zero, or a message indicating that the Subscribe action was attempted does **not** establish eligibility, an active subscription, a free subscription, or a changed renewal date. Verify the exact account, today's charge, future pricing and renewal date directly in Google Play before any checkout.
+> **Unofficial project. Potential billing charges.** Steps **2–5** can open a real Google Play checkout for you to review and confirm manually. An offer appearing in a list, a displayed first-phase price of zero, or an open checkout does **not** establish eligibility, an active subscription, a free subscription, or a changed renewal date. Verify the exact account, today's charge, future pricing and renewal date directly in Google Play before any checkout.
 
 > [!NOTE]
 > **At least US$3 available for three separate US$1 transactions—not one US$3 charge.** In the currently reported **24-month** sequence, Step 2 (initial 12 months), Step 3 (first +6 months) and Step 4 (second +6 months) each involve a **US$1 card-verification/payment event**: **3 × US$1 = US$3** across three transactions. An event may be a temporary authorization hold rather than a settled charge; the actual amount can differ by bank, account or Google Play. US$3 is the minimum balance for this reported example, **not a universal Google fee or a guarantee that US$3 will always suffice**. Pending holds may reduce the available balance; according to Google, authorizations are not purchases and typically clear in **1–14 business days**, depending on the bank. Verify transaction status and subscription/renewal dates directly in Google Play after each stage. Step 5 is optional and is **not** part of this three-transaction example. [Google Play: Fees, charges & authorizations](https://support.google.com/googleplay/answer/6224192?hl=en).
@@ -154,7 +154,7 @@ By default, only the selected step runs. In **Choose another step**, select **Mo
 
 **Step 5 is optional and excluded from this three-transaction example.** No listed duration or authorization proves that an extension succeeded; check the subscription and renewal date in Google Play after each checkout.
 
-All checkout stages on the dashboard require **explicit approval per stage**. After a stage reports that it attempted to submit checkout, check the real Google Play subscription and renewal date. The tool cannot independently confirm a successful activation or extension. Only press **Verified in Google Play → Next** if the change has actually been verified. The next stage still requires separate approval. Failed or ambiguous results do not authorize advancing.
+All checkout stages on the dashboard require **explicit approval per stage**. Choose **Open Google Play** to review the account and plan. When checkout opens, review the terms and press **Subscribe** yourself if you agree. Then check the actual subscription and renewal date in Google Play. The tool cannot independently confirm a successful activation or extension. Only press **Verified in Google Play → Next** if the change has actually been verified. The next stage still requires separate approval. Failed or ambiguous results do not authorize advancing.
 
 | Step | Purpose | Checkout risk |
 | --- | --- | --- |
@@ -204,7 +204,7 @@ The standalone `setup_env.py` and [`tools/windows/setup-environment.bat`](tools/
 .\run-all.ps1 -Step 5
 ```
 
-**Unlike the TUI, an explicitly selected single checkout stage does not require a second typed PowerShell approval.** The original Python engine may automatically press Subscribe after checking the Google Play screen. Do not execute these commands unless you intend to initiate a potentially billable operation and have reviewed its terms.
+**Unlike the TUI, an explicitly selected single checkout stage does not require a second typed PowerShell approval.** Review the checkout and confirm manually in Google Play. Do not execute these commands unless you intend to initiate a potentially billable operation and have reviewed its terms.
 
 To use the original **CLI** guided sequence:
 
@@ -232,7 +232,7 @@ Only use a `-Serial` observed through ADB. `-Email` constrains the account expec
 | **Frida setup failure** | Review technical details; Frida **16.5.9** must be compatible with the host and device. |
 | **No offers / `offer_query_failed`** | Open Google One and Google Play on the target Android instance and run Step 1 again. |
 | **Account not verified / wrong account** | Inspect the active Google Play profile; do not bypass verification. |
-| **Checkout submitted; check Google Play** | The tool attempted to submit checkout; it has **not** verified a successful subscription or extension. |
+| **Waiting for you to confirm in Google Play** | Review checkout and confirm manually. Check the subscription and renewal date before continuing. |
 | **`already_subscribed` / `ineligible`** | Stop; do not retry other checkout stages based on unverified extension claims. |
 | **Payment/security error (e.g. OR-REH-04)** | Follow Google Account/Payments security instructions. Do not repeatedly retry. |
 | **Unicode output error** | Update the repository; the maintained Windows launcher configures Python UTF-8 output for piped status symbols. |
