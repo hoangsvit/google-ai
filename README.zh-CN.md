@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — 简体中文
 
-<!-- Source README.md git-blob: 36ba1d28c6270324f676a8d29133d211758275a3 -->
+<!-- Source README.md git-blob: 5d94a65851f6cc5b1f29a3d37518dfe6d213704c -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · **简体中文** · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -12,7 +12,7 @@
 ![ePlus AI Toolkit 界面](images/terminal-ui-overview.png)
 
 > [!CAUTION]
-> **非官方工具，可能产生真实费用。** **Step 2–5** 可能打开 Google Play 的真实结账页面，并自动点击 **Subscribe（订阅）**。发现优惠、看到首期价格为 0，或收到“已提交结账”的消息，**均不代表**账户有资格、订阅免费、已激活或续期成功。每次操作前，请在 Google Play 上核实账户、本次收费、后续价格和续订日期。停止工具不能撤销已经提交的交易。
+> **非官方工具，可能产生真实费用。** **Step 2–5** 可能打开 Google Play 的真实结账页面。请在 Google Play 查看条款，同意后自行点击 **Subscribe（订阅）**。发现优惠、看到首期价格为 0，或看到结账页面，**均不代表**账户有资格、订阅免费、已激活或续期成功。每次操作前，请在 Google Play 上核实账户、本次收费、后续价格和续订日期。停止工具不能撤销已经提交的交易。
 
 > [!NOTE]
 > **至少准备 3 美元可用余额，用于三笔各 1 美元的独立交易，并非一次扣除 3 美元。** 在用户报告的 **24 个月**流程中，Step 2（最初 12 个月）、Step 3（延长 6 个月）和 Step 4（再延长 6 个月）各涉及**一笔 1 美元的银行卡验证或支付交易**：**3 × US$1 = US$3**。其中的 1 美元可能只是临时预授权冻结，并非已入账的实际扣款；金额也可能因银行、账户或 Google Play 的要求而不同。**3 美元只是这一案例的最低备用余额，不是固定手续费，也不保证所有账户都能获得 24 个月。** 预授权会暂时占用可用余额，通常依据银行处理情况在 **1–14 个工作日**内解除。每完成一步，请到 Google Play 核实交易状态和订阅续订日期。可选的 Step 5 **不计入上述三笔交易**。[Google Play 官方说明](https://support.google.com/googleplay/answer/6224192?hl=en)。
@@ -116,7 +116,7 @@ sh run-macos.sh
 
 在 Windows 上，运行 **Check Device & Offers** 时，工具会查找 ADB，必要时尝试下载官方 Android SDK Platform-Tools。下载或安装可能失败，请通过 **Show technical details** 查看详情。macOS 请按 Mac 指南安装 Platform-Tools。MuMu 需要自行安装和启动，并启用 root、ADB 调试，登录 Google Play 与 Google One。
 
-只有新的 Step 1 检查返回优惠并确认 Play 账号后，Step 2–5 才会解锁。如果 12 个月优惠 `12months-eft` 的首期价格为 0，完成弹窗和主界面会显示 **Continue to Step 2**；否则请查看优惠列表。该按钮只会打开单独的确认窗口，并不保证账号符合条件或最终费用为零。提交付款请求后，请先在 Google Play 核对订阅、续费日期和实际费用，再选择 **Verified in Google Play → Next**。后续每一步都需要单独确认。重新检查、付款步骤失败或设备变化可能使付款步骤重新锁定。
+只有新的 Step 1 检查返回优惠并确认 Play 账号后，Step 2–5 才会解锁。如果 12 个月优惠 `12months-eft` 的首期价格为 0，完成弹窗和主界面会显示 **Continue to Step 2**；否则请查看优惠列表。该按钮只会打开单独的确认窗口，并不保证账号符合条件或最终费用为零。在 Google Play 确认订阅后，请先在 Google Play 核对订阅、续费日期和实际费用，再选择 **Verified in Google Play → Next**。后续每一步都需要单独确认。重新检查、付款步骤失败或设备变化可能使付款步骤重新锁定。
 
 在 **Choose another step** 中，可选择：
 
@@ -150,7 +150,7 @@ sh run-macos.sh
 
 以上月数只是**历史流程名称**，不保证真正延长订阅。如果已有有效订阅，**不要重复 Step 2**。
 
-TUI 中**每个结账步骤均需单独批准**。当工具提示已尝试提交结账时，请到 [Google Play Subscriptions](https://play.google.com/store/account/subscriptions) 亲自确认实际套餐、收费与续订日期。只有确认订阅确实改变后才能选择 **Verified in Google Play → Next**；工具本身**无法独立证明激活成功**。
+TUI 中**每个结账步骤均需单独批准**。请选择 **Open Google Play** 并查看条款。同意后，请在 Google Play 自行确认订阅，然后前往 [Google Play Subscriptions](https://play.google.com/store/account/subscriptions) 亲自确认实际套餐、收费与续订日期。只有确认订阅确实改变后才能选择 **Verified in Google Play → Next**；工具本身**无法独立证明激活成功**。
 
 **停止与退出：**Step 0–1 的 Stop 会请求终止本地检查。Step 2–5 的 **Stop after this step** 只阻止后续步骤，**不会强制中断正在进行的支付**。**Q / Exit** 在结账期间会等当前步骤结束；**D** 切换技术日志，**R** 执行当前选择。
 
@@ -202,7 +202,7 @@ CLI 确认选项为 **1 = Continue（继续）、2 = End run（结束）、0 = S
 - **Frida 错误：**查看技术日志，核对 **16.5.9** 及 Android 兼容性。
 - **没有优惠：**启动 Google One/Play Store，重新执行 **Step 1**。
 - **账户不匹配：**在 Play Store 检查登录账号，不要跳过验证。
-- **已尝试提交结账：**不等于成功续订；重新操作前必须在 Google Play 上确认。
+- **等待在 Google Play 确认。** 请查看结账条款，同意后在 Google Play 自行确认订阅。
 - **支付安全错误（如 OR-REH-04）：**停止付费步骤，按官方流程处理账号安全问题。
 
 日志位于 `logs/`，报告位于 `ultra0-report/`。**不要公开包含账户、token 或支付信息的原始文件。** CI 仅执行静态检查和模拟测试，**不会进行或验证真实的 Google Play 交易**。

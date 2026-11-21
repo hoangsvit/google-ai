@@ -130,8 +130,7 @@ class OriginalFlowGuardrails(unittest.TestCase):
              patch.object(mod, "run_trial", return_value={
                  "offers": [{"id": "12months-eft", "micros": "0"}], "launched": {"code": 0}, "errors": [],
                  "purchase": None}), \
-             patch.object(mod, "confirm_zero", return_value={"confirmed": True}), \
-             patch.object(mod, "verify", return_value="Google AI Pro subscription"):
+             patch.object(mod, "inspect_checkout", return_value={"reason": "zero_today_and_duration_verified"}):
             result = mod.process("current@device", add=False, list_only=True)
             self.assertEqual(result["status"], "listed")
         with patch.object(mod, "current_play_account", return_value="test@example.com"), \
@@ -139,10 +138,10 @@ class OriginalFlowGuardrails(unittest.TestCase):
              patch.object(mod, "run_trial", return_value={
                  "offers": [{"id": "12months-eft", "micros": "0"}], "launched": {"code": 0}, "errors": [],
                  "purchase": None}), \
-             patch.object(mod, "confirm_zero", return_value={"confirmed": True}), \
-             patch.object(mod, "verify", return_value="Google AI Pro subscription"):
+             patch.object(mod, "inspect_checkout", return_value={"reason": "zero_today_and_duration_verified"}):
             result = mod.process("test@example.com", add=False, no_switch=True)
-        self.assertEqual(result["status"], "checkout_requested")
+        self.assertEqual(result["status"], "checkout_opened")
+        self.assertNotIn("subscription_page", result)
 
 
 if __name__ == "__main__":

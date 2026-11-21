@@ -19,8 +19,7 @@ only proves host compatibility and mocked account/offer/confirmation logic.
 - Guided sequence and Run All: each subsequent stage requires the user to
   verify Google Play subscription details, renewal date and future price.
 
-**Warning:** Stages 2–5 can initiate real Google Play charges or automatically
-press Subscribe via upstream Android scripts. A zero-priced introductory phase
+**Warning:** Stages 2–5 can open Google Play checkout. Confirming in Google Play can create real charges. A zero-priced introductory phase
 does *not* guarantee eligibility or free renewal. Do not use this against an
 account or Android device without authorization. The script has no --force
 bypass for Mac.

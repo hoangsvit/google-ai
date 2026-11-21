@@ -56,7 +56,7 @@ class CheckoutTests(unittest.TestCase):
              patch.object(app, "nodes", side_effect=lambda xml: [
                  {"text": xml, "desc": ""}]), \
              patch.object(app, "tap_text") as tapped:
-            result = app.confirm_zero(wait=2, expected_plan="pro6")
+            result = app.inspect_checkout(wait=2, expected_plan="pro6")
         self.assertFalse(result["confirmed"])
         self.assertEqual(result["reason"], "payment_security_blocked")
         tapped.assert_not_called()
@@ -66,14 +66,12 @@ class CheckoutTests(unittest.TestCase):
         with patch.object(app, "current_play_account", return_value="test@example.com"), \
              patch.object(app, "launch_app", return_value=123), \
              patch.object(app, "run_trial", return_value=fr), \
-             patch.object(app, "confirm_zero", return_value={
+             patch.object(app, "inspect_checkout", return_value={
                  "confirmed": False, "reason": "payment_security_blocked",
                  "error_code": "OR-REH-04"
-             }), \
-             patch.object(app, "verify") as verify:
+             }):
             result = app.process("test@example.com", add=False, no_switch=True, plan="pro6", stack=True)
         self.assertEqual(result["status"], "checkout_security_blocked")
-        verify.assert_not_called()
 
     def test_already_subscribed_is_not_extension_success(self):
         result = app.assess_checkout_terms(
@@ -86,7 +84,7 @@ class CheckoutTests(unittest.TestCase):
              patch.object(app, "nodes", side_effect=lambda xml: [
                  {"text": xml, "desc": ""}]), \
              patch.object(app, "tap_text") as tapped:
-            result = app.confirm_zero(wait=2, expected_plan="pro6")
+            result = app.inspect_checkout(wait=2, expected_plan="pro6")
         self.assertFalse(result["confirmed"])
         self.assertEqual(result["reason"], "already_subscribed")
         tapped.assert_not_called()
@@ -111,30 +109,29 @@ class CheckoutTests(unittest.TestCase):
              patch.object(app, "nodes", side_effect=lambda xml: [
                  {"text": xml, "desc": ""}]), \
              patch.object(app, "tap_text") as tap:
-            out = app.confirm_zero(wait=2, expected_plan="pro12")
+            out = app.inspect_checkout(wait=2, expected_plan="pro12")
         self.assertFalse(out["confirmed"])
         tap.assert_not_called()
 
-    def test_tap_must_succeed_to_claim_confirmation(self):
+    def test_verified_checkout_waits_for_manual_confirmation(self):
         with patch.object(app, "ui_xml", return_value=(
                  "Google AI Pro Subscribe Today $0 12-month free trial")), \
              patch.object(app, "nodes", side_effect=lambda xml: [
                  {"text": xml, "desc": ""}]), \
-             patch.object(app, "tap_text", return_value=False):
-            out = app.confirm_zero(wait=2, expected_plan="pro12")
+             patch.object(app, "tap_text") as tapped:
+            out = app.inspect_checkout(wait=2, expected_plan="pro12")
         self.assertFalse(out["confirmed"])
-        self.assertEqual(out["reason"], "subscribe_button_not_found")
+        self.assertEqual(out["reason"], "zero_today_and_duration_verified")
+        tapped.assert_not_called()
 
     def test_process_does_not_leave_checkout_when_unverified(self):
         fr = {"launched": {"code": 0}, "offers": [{"id": "12months-eft", "micros": "0"}]}
         with patch.object(app, "current_play_account", return_value="test@example.com"), \
              patch.object(app, "launch_app", return_value=123), \
              patch.object(app, "run_trial", return_value=fr), \
-             patch.object(app, "confirm_zero", return_value={"confirmed": False}), \
-             patch.object(app, "verify") as verify:
+             patch.object(app, "inspect_checkout", return_value={"reason": "checkout_not_visible"}):
             result = app.process("test@example.com", add=False, no_switch=True, plan="pro12")
         self.assertEqual(result["status"], "checkout_not_confirmed")
-        verify.assert_not_called()
 
 
 if __name__ == "__main__":

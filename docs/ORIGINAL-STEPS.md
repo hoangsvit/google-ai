@@ -45,7 +45,7 @@ Run `tools/windows/setup-environment.bat` from the repository root (or double-cl
 
 For the **Step 3–5** subscription replacement, the revised code rejects missing purchase tokens, expired or wrong-account database tokens, or unsupported replacement modes instead of silently falling back to a fresh standalone purchase. If the optional BillingClient query finds multiple subscriptions, it only accepts the matching original Google AI Pro product ID.
 
-**Current internal report statuses:** `listed` means the offer query returned data; `checkout_requested` is still assigned by `ultra0.py` when the script reports tapping **Subscribe** after checking displayed terms; `checkout_not_confirmed` means the tap was not confirmed. None of these statuses proves a completed purchase, active subscription or extended renewal date. Confirm the actual charge and next renewal date in Google Play before continuing. The proposed 12+6+6(+6) durations remain unverified historical claims.
+**Current internal report statuses.** `listed` indicates that the offer query returned data. `checkout_opened` indicates that Google Play is waiting for manual confirmation. Older reports may use `checkout_requested` for a previously attempted Subscribe tap. Verify the subscription and renewal in Google Play.
 
 ## Maintained entrypoints
 

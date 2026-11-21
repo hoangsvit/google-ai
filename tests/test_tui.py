@@ -141,6 +141,14 @@ class CoreTests(unittest.TestCase):
         self.assertNotIn("activated", result.title.lower())
         self.assertIn("Check Google Play", result.instruction)
 
+    def test_open_checkout_requires_manual_confirmation(self):
+        result = outcome_for_stage(2, 0, {
+            "status": "checkout_opened", "sheet": {"reason": "zero_today_and_duration_verified"}
+        })
+        self.assertTrue(result.can_review)
+        self.assertIn("Waiting for you to confirm", result.title)
+        self.assertIn("before continuing", result.instruction)
+
     def test_exit_error_never_allows_next(self):
         result = outcome_for_stage(3, 1, {"status": "checkout_requested"})
         self.assertFalse(result.can_review)

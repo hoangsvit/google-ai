@@ -14,7 +14,7 @@
 | **Google One or Play Store missing** | Enable the app in Android settings. Install Google One from Google Play; if Play Store is missing, use an emulator image with Google Play included. |
 | **Steps 2–5 are locked** | Connect the Android device and complete **Check Device & Offers** with a verified Play account. The paid stage checks the device and account again; an earlier check does not guarantee the device remains connected. |
 | **Account not verified / wrong account** | Inspect the active Google Play profile; do not bypass verification. |
-| **Checkout submitted; check Google Play** | The tool attempted to submit checkout; it has **not** verified a successful subscription or extension. |
+| **Waiting for you to confirm in Google Play** | Review the terms and subscribe in Google Play if you agree. Verify the subscription and renewal date before continuing. |
 | **`already_subscribed` / `ineligible`** | Stop; do not retry other checkout stages based on unverified extension claims. |
 | **Payment/security error (e.g. OR-REH-04)** | Follow Google Account/Payments security instructions. Do not repeatedly retry. |
 | **Unicode output error** | Update the repository; the maintained Windows launcher configures Python UTF-8 output for piped status symbols. |

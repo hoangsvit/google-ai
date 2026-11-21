@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Tiếng Việt
 
-<!-- Source README.md git-blob: 36ba1d28c6270324f676a8d29133d211758275a3 -->
+<!-- Source README.md git-blob: 5d94a65851f6cc5b1f29a3d37518dfe6d213704c -->
 
 [English](README.md) · **Tiếng Việt** · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -12,7 +12,7 @@
 ![Giao diện ePlus AI Toolkit](images/terminal-ui-overview.png)
 
 > [!CAUTION]
-> **Đây không phải công cụ chính thức của Google và có thể phát sinh chi phí.** Ở các bước **2–5**, công cụ có thể mở trang thanh toán Google Play và tự nhấn **Subscribe**. Ưu đãi xuất hiện trong danh sách, mức giá đầu tiên bằng 0 hoặc thông báo đã gửi yêu cầu thanh toán **không có nghĩa là** bạn đủ điều kiện, được dùng miễn phí hay đã gia hạn thành công. Trước khi thực hiện, hãy kiểm tra đúng tài khoản, khoản tiền phải trả ngay, mức phí những kỳ sau và ngày gia hạn trong **Google Play**. Dừng công cụ không hủy được giao dịch đã gửi.
+> **Đây không phải công cụ chính thức của Google và có thể phát sinh chi phí.** Ở các bước **2–5**, công cụ có thể mở trang thanh toán Google Play để bạn xem lại và tự nhấn **Subscribe (Đăng ký)**. Ưu đãi xuất hiện trong danh sách, mức giá đầu tiên bằng 0 hoặc màn hình thanh toán đang mở **không có nghĩa là** bạn đủ điều kiện, được dùng miễn phí hay đã gia hạn thành công. Trước khi thực hiện, hãy kiểm tra đúng tài khoản, khoản tiền phải trả ngay, mức phí những kỳ sau và ngày gia hạn trong **Google Play**. Dừng công cụ không hủy được giao dịch đã gửi.
 
 > [!NOTE]
 > **Cần có tối thiểu 3 USD khả dụng cho 3 giao dịch riêng biệt, mỗi giao dịch 1 USD — không phải một lần trừ 3 USD.** Theo quy trình **24 tháng** đã được người dùng báo cáo, Step 2 (dùng thử 12 tháng), Step 3 (gia hạn thêm 6 tháng) và Step 4 (gia hạn thêm 6 tháng) tương ứng với **ba lần xác minh thẻ/thanh toán, mỗi lần 1 USD**: **3 × US$1 = US$3**. Tùy trạng thái ngân hàng và Google Play, khoản 1 USD có thể chỉ là **tạm giữ để xác thực**, không phải phí đã trừ chính thức; số tiền thực tế cũng có thể khác. **3 USD là mức số dư tối thiểu cho ví dụ này, không phải mức phí cố định hoặc bảo đảm mọi tài khoản đều đủ điều kiện.** Khoản tạm giữ có thể làm giảm số dư khả dụng và thường được giải tỏa trong **1–14 ngày làm việc**, tùy ngân hàng. Sau từng bước, hãy tự kiểm tra trạng thái giao dịch và ngày gia hạn tại Google Play. Step 5 là tùy chọn, **không tính trong ba giao dịch trên**. [Giải thích chính thức của Google Play](https://support.google.com/googleplay/answer/6224192?hl=en).
@@ -151,7 +151,7 @@ Mặc định, công cụ chỉ chạy bước đã chọn. Trong **Choose anoth
 
 Tên 12/6 tháng là **tên lịch sử của các bước**, không phải cam kết được cộng thêm thời hạn. Nếu đã có gói đang hoạt động, **không chạy lại Step 2**.
 
-Trước **mỗi bước thanh toán trên giao diện**, bạn phải xác nhận riêng. Nếu công cụ báo đã thử gửi yêu cầu thanh toán, hãy tự kiểm tra gói đang sử dụng, khoản tiền phải trả và ngày gia hạn tại [Google Play Subscriptions](https://play.google.com/store/account/subscriptions). Chỉ chọn **Verified in Google Play → Next** sau khi bạn đã tự xác minh trong Google Play. **Công cụ không thể tự xác nhận giao dịch đã thành công.**
+Trước **mỗi bước thanh toán trên giao diện**, bạn phải xác nhận riêng. Chọn **Open Google Play**, xem điều khoản và tự nhấn **Đăng ký** trong Google Play nếu bạn đồng ý. Sau đó, kiểm tra gói đang sử dụng, khoản tiền phải trả và ngày gia hạn tại [Google Play Subscriptions](https://play.google.com/store/account/subscriptions). Chỉ chọn **Verified in Google Play → Next** sau khi bạn đã tự xác minh trong Google Play. **Công cụ không thể tự xác nhận giao dịch đã thành công.**
 
 Khi một bước đang chạy, các nút **Check Device & Offers**, **Run** và các tùy chọn chế độ hoặc bước sẽ tạm khóa để tránh chạy nhiều thao tác cùng lúc. Bạn vẫn có thể xem trợ giúp và nhật ký kỹ thuật. Nút **Next** chỉ xuất hiện khi kết quả thanh toán có thể được kiểm tra trước khi tiếp tục; nếu xảy ra lỗi hoặc chưa rõ kết quả, công cụ không cho chuyển sang bước kế tiếp.
 
@@ -207,7 +207,7 @@ Chỉ nhập mã thiết bị (serial) thực sự xuất hiện trong danh sác
 - **Lỗi Frida:** mở log và kiểm tra phiên bản **16.5.9**/khả năng tương thích Android.
 - **Không có ưu đãi:** mở Google One/Play Store, rồi chạy lại **Step 1**.
 - **Sai tài khoản:** xác nhận đúng hồ sơ Google Play, không bỏ qua xác minh.
-- **Checkout đã gửi nhưng chưa xác nhận:** không coi là gia hạn; kiểm tra trực tiếp Google Play trước khi thử lại.
+- **Đang chờ xác nhận trong Google Play.** Kiểm tra điều khoản và tự nhấn Đăng ký nếu bạn đồng ý.
 - **`already_subscribed` hoặc `ineligible`:** dừng lại, không thử các bước thanh toán khác khi chưa xác minh.
 - **Lỗi hiển thị ký tự trên Windows:** cập nhật mã nguồn mới nhất; trình khởi chạy đã được cấu hình dùng UTF-8 khi chuyển dữ liệu đầu ra.
 - **Đã gửi yêu cầu checkout:** đó chỉ là thao tác cố gắng gửi, **không phải xác nhận đã kích hoạt hoặc gia hạn**.

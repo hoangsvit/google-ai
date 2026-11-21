@@ -15,7 +15,7 @@ Requirements:
         - Google Play Store and Google One with the intended account
         - Python 3 and a compatible Frida client and server
 
-WARNING: non-list mode can open Google Play checkout and tap Subscribe.
+WARNING: non-list mode can open Google Play checkout for manual confirmation.
 Offer metadata does not prove eligibility or subscription activation.
 """
 import argparse, base64, hashlib, hmac, json, os, re, struct, subprocess, sys, threading, time
@@ -974,7 +974,7 @@ def assess_checkout_terms(text: str, expected_plan: str = "auto") -> dict:
     return result
 
 
-def confirm_zero(wait=40, password="", expected_plan="auto") -> dict:
+def inspect_checkout(wait=40, expected_plan="auto") -> dict:
     step("Checking today's Google Play checkout total and trial duration")
     out = {"price": None, "confirmed": False, "ineligible": False,
            "text": "", "reason": "checkout_not_visible"}
@@ -1004,31 +1004,15 @@ def confirm_zero(wait=40, password="", expected_plan="auto") -> dict:
             warn("Google Play backup-payment prompt needs manual review; not enabling it automatically.")
             return out
         if reason == "zero_today_and_duration_verified":
-            if tap_text("\u8ba2\u9605", "Subscribe", "Đăng ký"):
-                out["confirmed"] = True
-                ok("Tapped Subscribe after verifying today's zero total and expected trial period.")
-            else:
-                out["reason"] = "subscribe_button_not_found"
-                warn("Subscribe control not found; no transaction confirmed.")
+            ok("Checkout is open. Review the terms and confirm in Google Play.")
             return out
         if reason in ("today_price_unverified", "trial_duration_unverified"):
             warn("Checkout does not explicitly verify BOTH today's $0 total and the expected duration. "
                  "A nonzero amount could be the future renewal price. Leaving Google Play open.")
             return out
         time.sleep(2)
-    warn(f"Checkout was not confirmed ({out['reason']}); leaving Google Play open.")
+    warn("Could not verify the checkout screen. Check Google Play on Android.")
     return out
-
-
-def verify() -> str:
-    step("Checking the Google Play subscription page")
-    sh("shell", f"am start -a android.intent.action.VIEW "
-                f"-d 'https://play.google.com/store/account/subscriptions'")
-    time.sleep(9)
-    text = " | ".join(n["text"] for n in nodes(ui_xml()) if n["text"])
-    if "Ultra" in text:
-        ok("Subscription page mentions Ultra; this does not prove activation")
-    return text[:500]
 
 
 # ---------- Per-account workflow ----------
@@ -1102,20 +1086,14 @@ def process(email, password="", totp_secret="", add=True, card=None, plan="auto"
             rec["error"] = "No offer data returned; inspect BillingClient and Frida errors."
         return rec
     if fr["launched"] and fr["launched"].get("code") == 0:
-        rec["sheet"] = confirm_zero(password=password, expected_plan=plan)
-        # Preserve the original checkout screen if amount or offer terms
-        # are ambiguous; never navigate away before the user can inspect it.
-        if rec["sheet"].get("confirmed"):
-            rec["subscription_page"] = verify()
-        else:
-            note("Checkout not confirmed; Google Play remains open for inspection.")
-        # launchBillingFlow code 0 and seeing a product name on the Play page
-        # DO NOT prove the subscription is active or a free trial is applied.
-        if rec["sheet"].get("reason") == "payment_security_blocked":
+        rec["sheet"] = inspect_checkout(expected_plan=plan)
+        reason = rec["sheet"]["reason"]
+        if reason == "payment_security_blocked":
             rec["status"] = "checkout_security_blocked"
+        elif reason == "zero_today_and_duration_verified":
+            rec["status"] = "checkout_opened"
         else:
-            rec["status"] = ("checkout_requested" if rec["sheet"].get("confirmed")
-                             else "checkout_not_confirmed")
+            rec["status"] = "checkout_not_confirmed"
     else:
         rec["status"], rec["error"] = diagnose_launch_failure(fr)
         warn(f"Checkout not opened: {rec['status']}: {rec['error']}")

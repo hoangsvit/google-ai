@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Español
 
-<!-- Source README.md git-blob: 36ba1d28c6270324f676a8d29133d211758275a3 -->
+<!-- Source README.md git-blob: 5d94a65851f6cc5b1f29a3d37518dfe6d213704c -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · **Español** · [Français](README.fr.md)
 
@@ -13,7 +13,7 @@
 ![Interfaz de ePlus AI Toolkit](images/terminal-ui-overview.png)
 
 > [!CAUTION]
-> **Proyecto no oficial; pueden producirse cargos reales.** Los **pasos 2–5** pueden abrir un proceso de pago real de Google Play y pulsar **Subscribe** automáticamente. Encontrar una oferta, ver un precio inicial de cero o recibir un mensaje de envío del pago **no demuestra** que la cuenta cumpla los requisitos, que la suscripción sea gratuita, que esté activa ni que se haya ampliado. Antes de cada pago, comprueba en Google Play la cuenta, el importe de hoy, el precio de renovación y la siguiente fecha de cobro. Detener el programa no deshace una transacción enviada.
+> **Proyecto no oficial; pueden producirse cargos reales.** Los **pasos 2–5** pueden abrir un proceso de pago real de Google Play para que revises las condiciones y pulses **Subscribe** si estás de acuerdo. Encontrar una oferta, ver un precio inicial de cero o ver la pantalla de pago **no demuestra** que la cuenta cumpla los requisitos, que la suscripción sea gratuita, que esté activa ni que se haya ampliado. Antes de cada pago, comprueba en Google Play la cuenta, el importe de hoy, el precio de renovación y la siguiente fecha de cobro. Detener el programa no deshace una transacción enviada.
 
 > [!NOTE]
 > **Ten al menos 3 USD disponibles para tres operaciones separadas de 1 USD; no es un único cargo de 3 USD.** En el caso comunicado de **24 meses**, el paso 2 (12 meses iniciales), el paso 3 (+6 meses) y el paso 4 (+6 meses) corresponden a **tres operaciones de verificación de tarjeta o pago de 1 USD cada una**: **3 × US$1 = US$3**. Una operación puede ser una retención temporal de autorización y no un cargo definitivo; Google Play o el banco pueden aplicar importes distintos. **Los 3 USD son el saldo mínimo del ejemplo, no una tarifa fija ni una garantía de que cualquier cuenta obtenga los 24 meses.** Las preautorizaciones pueden reducir el saldo disponible y suelen liberarse en **1–14 días laborables**, según el banco. Comprueba tras cada paso la operación y la fecha de renovación en Google Play. El paso 5 es opcional y **no forma parte de estas tres operaciones**. [Información oficial de Google Play](https://support.google.com/googleplay/answer/6224192?hl=en).
@@ -117,7 +117,7 @@ Mientras la interfaz está inactiva, la herramienta comprueba las conexiones ADB
 
 En Windows, al ejecutar **Check Device & Offers**, la herramienta busca ADB y, si hace falta, intenta descargar Android SDK Platform-Tools oficial. La descarga o instalación puede fallar; consulta **Show technical details** si ocurre. En macOS, instala Platform-Tools siguiendo las instrucciones para Mac. Instala e inicia MuMu por separado, activa root y la depuración ADB e inicia sesión en Google Play y Google One.
 
-Los pasos 2–5 solo se desbloquean cuando una nueva comprobación del paso 1 devuelve ofertas y verifica la cuenta de Play. Si la oferta de 12 meses `12months-eft` tiene una primera fase de precio 0, la ventana de resultado y la pantalla principal muestran **Continue to Step 2**; de lo contrario, revisa la lista. Este botón abre una confirmación independiente y no garantiza la elegibilidad ni el coste final. Tras solicitar el pago, comprueba la suscripción, la fecha de renovación y los cargos reales en Google Play antes de elegir **Verified in Google Play → Next**. Cada paso posterior requiere una confirmación propia. Una nueva comprobación, un fallo en un paso de pago o un cambio de dispositivo pueden bloquear de nuevo los pasos de pago.
+Los pasos 2–5 solo se desbloquean cuando una nueva comprobación del paso 1 devuelve ofertas y verifica la cuenta de Play. Si la oferta de 12 meses `12months-eft` tiene una primera fase de precio 0, la ventana de resultado y la pantalla principal muestran **Continue to Step 2**; de lo contrario, revisa la lista. Este botón abre una confirmación independiente y no garantiza la elegibilidad ni el coste final. Tras confirmar el pago en Google Play, comprueba la suscripción, la fecha de renovación y los cargos reales en Google Play antes de elegir **Verified in Google Play → Next**. Cada paso posterior requiere una confirmación propia. Una nueva comprobación, un fallo en un paso de pago o un cambio de dispositivo pueden bloquear de nuevo los pasos de pago.
 
 En **Choose another step**:
 
@@ -151,7 +151,7 @@ De forma predeterminada solo se ejecuta el paso elegido. En **Choose another ste
 
 Los meses son **nombres históricos de los pasos**, no una garantía de ampliación. Si ya tienes una suscripción activa, **no repitas el paso 2**.
 
-El TUI exige **aprobación explícita por cada paso de pago**. Aunque aparezca un mensaje de pago enviado, comprueba el estado real, los cargos y la renovación en [Suscripciones de Google Play](https://play.google.com/store/account/subscriptions). Pulsa **Verified in Google Play → Next** solo si has confirmado personalmente el cambio. La herramienta **no puede demostrar por sí misma** la activación.
+El TUI exige **aprobación explícita por cada paso de pago**. Selecciona **Open Google Play**, revisa las condiciones y confirma en Google Play si estás de acuerdo. Después, comprueba el estado real, los cargos y la renovación en [Suscripciones de Google Play](https://play.google.com/store/account/subscriptions). Pulsa **Verified in Google Play → Next** solo si has confirmado personalmente el cambio. La herramienta **no puede demostrar por sí misma** la activación.
 
 **Detener/salir:** Stop en los pasos 0–1 solicita cancelar el proceso local. En los pasos 2–5, **Stop after this step** evita los pasos siguientes, pero **no fuerza la interrupción de un pago en curso**. **Q / Exit** espera a que acabe el paso de pago actual. **D** alterna los detalles; **R** inicia el modo seleccionado.
 
