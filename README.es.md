@@ -117,7 +117,7 @@ Mientras la interfaz está inactiva, la herramienta comprueba las conexiones ADB
 
 En Windows, al ejecutar **Check Device & Offers**, la herramienta busca ADB y, si hace falta, intenta descargar Android SDK Platform-Tools oficial. La descarga o instalación puede fallar; consulta **Show technical details** si ocurre. En macOS, instala Platform-Tools siguiendo las instrucciones para Mac. Instala e inicia MuMu por separado, activa root y la depuración ADB e inicia sesión en Google Play y Google One.
 
-Los pasos 2–5 solo se desbloquean cuando una nueva comprobación del paso 1 devuelve ofertas y verifica la cuenta de Play. Si la oferta de 12 meses `12months-eft` tiene una primera fase de precio 0, la ventana de resultado y la pantalla principal muestran **Continue to Step 2**; de lo contrario, revisa la lista. Este botón abre una confirmación independiente y no garantiza la elegibilidad ni el coste final. Tras solicitar el pago, comprueba la suscripción, la fecha de renovación y los cargos reales en Google Play antes de elegir **Verified in Google Play → Next**. Cada paso posterior requiere una confirmación propia. Una nueva comprobación, un fallo en un paso de pago o un cambio de dispositivo pueden bloquear de nuevo los pasos de pago.
+Los pasos 2–5 solo se desbloquean cuando una nueva comprobación del paso 1 devuelve ofertas y verifica la cuenta de Play. Si la oferta de 12 meses `12months-eft` tiene una primera fase de precio 0, la ventana de resultado y la pantalla principal muestran **Continue to Step 2**; de lo contrario, revisa la lista. Este botón abre una confirmación independiente y no garantiza la elegibilidad ni el coste final. Tras confirmar el pago en Google Play, comprueba la suscripción, la fecha de renovación y los cargos reales en Google Play antes de elegir **Verified in Google Play → Next**. Cada paso posterior requiere una confirmación propia. Una nueva comprobación, un fallo en un paso de pago o un cambio de dispositivo pueden bloquear de nuevo los pasos de pago.
 
 En **Choose another step**:
 
@@ -151,7 +151,7 @@ De forma predeterminada solo se ejecuta el paso elegido. En **Choose another ste
 
 Los meses son **nombres históricos de los pasos**, no una garantía de ampliación. Si ya tienes una suscripción activa, **no repitas el paso 2**.
 
-El TUI exige **aprobación explícita por cada paso de pago**. Aunque aparezca un mensaje de pago enviado, comprueba el estado real, los cargos y la renovación en [Suscripciones de Google Play](https://play.google.com/store/account/subscriptions). Pulsa **Verified in Google Play → Next** solo si has confirmado personalmente el cambio. La herramienta **no puede demostrar por sí misma** la activación.
+El TUI exige **aprobación explícita por cada paso de pago**. Selecciona **Open Google Play**, revisa las condiciones y confirma en Google Play si estás de acuerdo. Después, comprueba el estado real, los cargos y la renovación en [Suscripciones de Google Play](https://play.google.com/store/account/subscriptions). Pulsa **Verified in Google Play → Next** solo si has confirmado personalmente el cambio. La herramienta **no puede demostrar por sí misma** la activación.
 
 **Detener/salir:** Stop en los pasos 0–1 solicita cancelar el proceso local. En los pasos 2–5, **Stop after this step** evita los pasos siguientes, pero **no fuerza la interrupción de un pago en curso**. **Q / Exit** espera a que acabe el paso de pago actual. **D** alterna los detalles; **R** inicia el modo seleccionado.
 

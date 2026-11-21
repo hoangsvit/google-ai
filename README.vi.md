@@ -151,7 +151,7 @@ Mặc định, công cụ chỉ chạy bước đã chọn. Trong **Choose anoth
 
 Tên 12/6 tháng là **tên lịch sử của các bước**, không phải cam kết được cộng thêm thời hạn. Nếu đã có gói đang hoạt động, **không chạy lại Step 2**.
 
-Trước **mỗi bước thanh toán trên giao diện**, bạn phải xác nhận riêng. Nếu công cụ báo đã thử gửi yêu cầu thanh toán, hãy tự kiểm tra gói đang sử dụng, khoản tiền phải trả và ngày gia hạn tại [Google Play Subscriptions](https://play.google.com/store/account/subscriptions). Chỉ chọn **Verified in Google Play → Next** sau khi bạn đã tự xác minh trong Google Play. **Công cụ không thể tự xác nhận giao dịch đã thành công.**
+Trước **mỗi bước thanh toán trên giao diện**, bạn phải xác nhận riêng. Chọn **Open Google Play**, xem điều khoản và tự nhấn **Đăng ký** trong Google Play nếu bạn đồng ý. Sau đó, kiểm tra gói đang sử dụng, khoản tiền phải trả và ngày gia hạn tại [Google Play Subscriptions](https://play.google.com/store/account/subscriptions). Chỉ chọn **Verified in Google Play → Next** sau khi bạn đã tự xác minh trong Google Play. **Công cụ không thể tự xác nhận giao dịch đã thành công.**
 
 Khi một bước đang chạy, các nút **Check Device & Offers**, **Run** và các tùy chọn chế độ hoặc bước sẽ tạm khóa để tránh chạy nhiều thao tác cùng lúc. Bạn vẫn có thể xem trợ giúp và nhật ký kỹ thuật. Nút **Next** chỉ xuất hiện khi kết quả thanh toán có thể được kiểm tra trước khi tiếp tục; nếu xảy ra lỗi hoặc chưa rõ kết quả, công cụ không cho chuyển sang bước kế tiếp.
 

@@ -151,7 +151,7 @@ Par défaut, seule l’étape sélectionnée est exécutée. Dans **Choose anoth
 
 Les durées sont les **anciens noms des étapes** et ne garantissent aucune prolongation. Si vous avez déjà un abonnement actif, **ne relancez pas l'étape 2**.
 
-Dans le TUI, **chaque étape de paiement exige une approbation distincte**. Même si un envoi de paiement est signalé, vérifiez le forfait actif, les frais et le renouvellement dans les [abonnements Google Play](https://play.google.com/store/account/subscriptions). Ne sélectionnez **Verified in Google Play → Next** que si vous avez confirmé personnellement la modification. L'outil **ne prouve pas à lui seul** l'activation.
+Dans le TUI, **chaque étape de paiement exige une approbation distincte**. Sélectionnez **Open Google Play**, vérifiez les conditions et confirmez vous-même dans Google Play si vous les acceptez. Ensuite, vérifiez le forfait actif, les frais et le renouvellement dans les [abonnements Google Play](https://play.google.com/store/account/subscriptions). Ne sélectionnez **Verified in Google Play → Next** que si vous avez confirmé personnellement la modification. L'outil **ne prouve pas à lui seul** l'activation.
 
 **Arrêt/sortie :** Stop pour les étapes 0–1 demande l'arrêt du processus local. Pour les étapes 2–5, **Stop after this step** bloque les étapes suivantes, mais **n'interrompt pas de force un paiement en cours**. Pendant un paiement, **Q / Exit** attend la fin de l'étape actuelle. **D** affiche/masque le journal technique ; **R** lance le mode choisi.
 

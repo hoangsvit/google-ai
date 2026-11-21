@@ -116,7 +116,7 @@ sh run-macos.sh
 
 在 Windows 上，运行 **Check Device & Offers** 时，工具会查找 ADB，必要时尝试下载官方 Android SDK Platform-Tools。下载或安装可能失败，请通过 **Show technical details** 查看详情。macOS 请按 Mac 指南安装 Platform-Tools。MuMu 需要自行安装和启动，并启用 root、ADB 调试，登录 Google Play 与 Google One。
 
-只有新的 Step 1 检查返回优惠并确认 Play 账号后，Step 2–5 才会解锁。如果 12 个月优惠 `12months-eft` 的首期价格为 0，完成弹窗和主界面会显示 **Continue to Step 2**；否则请查看优惠列表。该按钮只会打开单独的确认窗口，并不保证账号符合条件或最终费用为零。提交付款请求后，请先在 Google Play 核对订阅、续费日期和实际费用，再选择 **Verified in Google Play → Next**。后续每一步都需要单独确认。重新检查、付款步骤失败或设备变化可能使付款步骤重新锁定。
+只有新的 Step 1 检查返回优惠并确认 Play 账号后，Step 2–5 才会解锁。如果 12 个月优惠 `12months-eft` 的首期价格为 0，完成弹窗和主界面会显示 **Continue to Step 2**；否则请查看优惠列表。该按钮只会打开单独的确认窗口，并不保证账号符合条件或最终费用为零。在 Google Play 确认订阅后，请先在 Google Play 核对订阅、续费日期和实际费用，再选择 **Verified in Google Play → Next**。后续每一步都需要单独确认。重新检查、付款步骤失败或设备变化可能使付款步骤重新锁定。
 
 在 **Choose another step** 中，可选择：
 
@@ -150,7 +150,7 @@ sh run-macos.sh
 
 以上月数只是**历史流程名称**，不保证真正延长订阅。如果已有有效订阅，**不要重复 Step 2**。
 
-TUI 中**每个结账步骤均需单独批准**。当工具提示已尝试提交结账时，请到 [Google Play Subscriptions](https://play.google.com/store/account/subscriptions) 亲自确认实际套餐、收费与续订日期。只有确认订阅确实改变后才能选择 **Verified in Google Play → Next**；工具本身**无法独立证明激活成功**。
+TUI 中**每个结账步骤均需单独批准**。请选择 **Open Google Play** 并查看条款。同意后，请在 Google Play 自行确认订阅，然后前往 [Google Play Subscriptions](https://play.google.com/store/account/subscriptions) 亲自确认实际套餐、收费与续订日期。只有确认订阅确实改变后才能选择 **Verified in Google Play → Next**；工具本身**无法独立证明激活成功**。
 
 **停止与退出：**Step 0–1 的 Stop 会请求终止本地检查。Step 2–5 的 **Stop after this step** 只阻止后续步骤，**不会强制中断正在进行的支付**。**Q / Exit** 在结账期间会等当前步骤结束；**D** 切换技术日志，**R** 执行当前选择。
 
@@ -202,7 +202,7 @@ CLI 确认选项为 **1 = Continue（继续）、2 = End run（结束）、0 = S
 - **Frida 错误：**查看技术日志，核对 **16.5.9** 及 Android 兼容性。
 - **没有优惠：**启动 Google One/Play Store，重新执行 **Step 1**。
 - **账户不匹配：**在 Play Store 检查登录账号，不要跳过验证。
-- **已尝试提交结账：**不等于成功续订；重新操作前必须在 Google Play 上确认。
+- **等待在 Google Play 确认。** 请查看结账条款，同意后在 Google Play 自行确认订阅。
 - **支付安全错误（如 OR-REH-04）：**停止付费步骤，按官方流程处理账号安全问题。
 
 日志位于 `logs/`，报告位于 `ultra0-report/`。**不要公开包含账户、token 或支付信息的原始文件。** CI 仅执行静态检查和模拟测试，**不会进行或验证真实的 Google Play 交易**。
