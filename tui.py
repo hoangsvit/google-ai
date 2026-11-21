@@ -24,7 +24,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Header, Link, RichLog, Select, Static
 
 from tui_core import STAGES, Outcome, command_for_step, mask_email, \
-    needs_setup, offer_explorer_lines, outcome_for_stage, read_fresh_report, \
+    needs_setup, offer_explorer_lines, outcome_for_stage, read_fresh_report, cli_issue_outcome, \
     report_summary, validate_step
 from device_diagnostics import ConnectionDiagnosis, inspect_connection
 
@@ -717,6 +717,8 @@ class GoogleAITUI(App[None]):
             report = read_fresh_report(self.repo / "ultra0-report", step, started,
                                        expected_account=self._verified_account)
             result = outcome_for_stage(step, return_code, report)
+            if return_code != 0 or result.code in ("missing_report", "tool_error"):
+                result = cli_issue_outcome(list(self._run_output), step) or result
             self.call_from_thread(self._finished, step, result, report)
         except Exception as error:
             result = Outcome("exception", "Could not start the tool",

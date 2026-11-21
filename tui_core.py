@@ -110,6 +110,41 @@ MESSAGES = {
     ),
 }
 
+# These are fixed strings, rather than arbitrary child output, so the normal
+# status panel cannot expose account details or a payment token.
+CLI_ISSUES = {
+    "device_missing": ("Android device is not connected", "Start MuMu and enable ADB debugging, then run the device check."),
+    "device_ambiguous": ("More than one Android device is connected", "Disconnect extra devices or select a serial in the CLI."),
+    "app_missing": ("An Android app is missing or disabled", "Enable Google Play and Google One; install Google One from Play Store, or use a Google Play-enabled emulator image."),
+    "adb_missing": ("ADB is unavailable", "Run setup_env.py on Windows or install Android SDK platform-tools."),
+    "python_missing": ("Python is unavailable", "Install Python 3.10 or newer and restart the toolkit."),
+    "runtime_lookup_failed": ("Android device inspection failed", "Check ADB, the selected emulator and the local Debug log."),
+    "account_unavailable": ("Google Play account could not be identified", "Open the Play Store profile and verify the intended account."),
+    "account_mismatch": ("Google Play account changed", "Select the intended account in Play Store and check it before continuing."),
+    "offer_query_failed": MESSAGES["offer_query_failed"],
+    "offers_unavailable": MESSAGES["offer_query_failed"],
+    "report_missing": ("The tool did not return a result", "Open Debug for details."),
+}
+
+
+def cli_issue_outcome(lines: list[str], step: int) -> Outcome | None:
+    """Use only known explicit wrapper codes; never infer success or authorize checkout."""
+    for line in reversed(lines):
+        match = re.fullmatch(r"\s*EPLUS_ISSUE:([a-z_]+)\s*", line)
+        if not match:
+            continue
+        code = match.group(1)
+        if code in ("listed", "checkout_requested"):
+            return None
+        entry = CLI_ISSUES.get(code) or MESSAGES.get(code)
+        if not entry:
+            return None
+        title, instruction = entry
+        if step >= 2:
+            instruction += " Check Google Play subscriptions and payment history before another paid attempt."
+        return Outcome(code, title, instruction, can_review=False)
+    return None
+
 
 def validate_step(step: int) -> int:
     if type(step) is not int or not 0 <= step <= 5:

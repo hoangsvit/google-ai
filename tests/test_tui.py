@@ -7,12 +7,27 @@ import unittest
 from unittest.mock import patch
 
 from tui_core import (
-    command_for_step, mask_email, needs_setup, outcome_for_stage,
+    cli_issue_outcome, command_for_step, mask_email, needs_setup, outcome_for_stage,
     read_fresh_report, validate_step,
 )
 
 
 class CoreTests(unittest.TestCase):
+    def test_structured_cli_error_shows_actionable_failure(self):
+        result = cli_issue_outcome(["Device emulator-5554", "EPLUS_ISSUE:app_missing"], 1)
+        self.assertEqual(result.code, "app_missing")
+        self.assertIn("Google One", result.instruction)
+        self.assertFalse(result.can_review)
+
+    def test_paid_cli_errors_never_authorize_next_and_warn_about_payments(self):
+        result = cli_issue_outcome(["EPLUS_ISSUE:offer_query_failed"], 2)
+        self.assertFalse(result.can_review)
+        self.assertIn("payment history", result.instruction)
+        self.assertIsNone(cli_issue_outcome(["EPLUS_ISSUE:checkout_requested"], 2))
+
+    def test_cli_error_rejects_untrusted_text(self):
+        self.assertIsNone(cli_issue_outcome(["EPLUS_ISSUE:app_missing private@example.com"], 1))
+        self.assertIsNone(cli_issue_outcome(["EPLUS_ISSUE:unknown"], 1))
     def test_setup_only_when_pinned_frida_is_missing(self):
         with patch("tui_core.importlib.metadata.version", return_value="16.5.9"):
             self.assertFalse(needs_setup())

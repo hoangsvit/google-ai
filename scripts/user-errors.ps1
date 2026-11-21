@@ -167,6 +167,9 @@ function Show-UserIssue {
         [bool]$DebugMode = $false
     )
     $issue = Get-UserIssue -Code $Code
+    # Stable, non-sensitive code for the dashboard; never include raw errors,
+    # account details or purchase data in this machine-readable line.
+    if ($Code -match '^[a-z_]+$') { Write-Host ("EPLUS_ISSUE:{0}" -f $Code) }
     Write-Host ""
     Write-Host ("  ! {0}" -f $issue.Title) -ForegroundColor Yellow
     Write-Host ("    Next: {0}" -f $issue.Action) -ForegroundColor Gray
