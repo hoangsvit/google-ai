@@ -24,7 +24,7 @@ Instructions for coding agents working in this repository. Read this file, `READ
 - **`tests/`** — offline regression checks. Test with mocks instead of connecting to real Google accounts or buying subscriptions.
 - **`README.md`**, `docs/`, `SECURITY.md`, `THIRD_PARTY_NOTICES.md` — public guidance, provenance and safety constraints.
 
-The current stage contract is **0: Environment**, **1: Available offers**, **2: Pro 12 months**, **3: Pro +6 months**, **4: second Pro +6 months**, **5: optional +6 months**. Keep these numeric meanings and report formats compatible.
+The original Pro stage contract is **0: Environment**, **1: Available offers**, **2: Pro 12 months**, **3: Pro +6 months**, **4: second Pro +6 months**, **5: optional +6 months**. **Stage 6: Ultra 20x US$19.99/month x 3** is separate and must never enter the Pro sequence. Keep all original numeric meanings and report formats compatible. Ultra paid checkout must remain manual after exact price-phase verification.
 
 ## Non-negotiable safety rules
 

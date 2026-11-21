@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Français
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+<!-- Source README.md git-blob: c3e4a2e5de138f99affa260780d6b8b23310cd6a -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · **Français**
 
@@ -240,3 +240,13 @@ Voir aussi [structure et maintenance](docs/PROJECT.md), [utilisation et CLI](doc
 **Auteur d'origine :** [@gylive](https://github.com/gylive) — [google-ultra](https://github.com/gylive/google-ultra). **Maintenance :** [David Nguyen (@hoangsvit)](https://github.com/hoangsvit) / [ePlus.DEV](https://eplus.dev). Les mentions MIT de l'auteur initial sont conservées dans `THIRD_PARTY_NOTICES.md`.
 
 [Centre de documentation](docs/README.md) · [Guide historique en français](docs/i18n/README.fr.md) · [Sécurité des paiements](docs/SAFETY.md)
+
+## Option Ultra 20x — 19,99 USD/mois pendant trois mois
+
+L'étape **6**, indépendante, ajoute une offre candidate Google AI Ultra 20x (30 To), identifiée par `g1.ai.ultra.3months_ip_90p.acq`. Selon un script tiers, le tarif serait de **19,99 USD/mois pendant 3 mois** (59,97 USD en trois paiements), puis de **199,99 USD/mois**. Cette offre **n'est pas confirmée pour tous les comptes** Google Play et ne modifie pas les étapes Pro 2 à 5.
+
+Sous Windows, sélectionnez Step 6 dans **Advanced > One step only** ou exécutez `.\\run-all.ps1 -Step 6 -Email account@example.com`. Sous macOS, sélectionnez Step 6 dans l'interface. Pour vérifier le SKU sans ouvrir le paiement : `python ultra0.py --inspect-sku g1.ai.ultra.3months_ip_90p.acq`.
+
+Le programme vérifie le SKU exact et les phases tarifaires en dollars avant d'ouvrir Google Play, mais **n'appuie jamais automatiquement sur Subscribe pour cette offre payante**. Vérifiez vous-même le compte, les trois mensualités, le renouvellement et les conditions de résiliation dans Google Play. `--force` et le cumul des jetons d'abonnement sont refusés. **MuMu 12 et Android 12 ne sont pas obligatoires** : utilisez un environnement ADB/root/Frida et Google Play compatible. Consultez les [détails et précautions](docs/PROMO-SKU-INSPECTION.md).
+
+**Deux groupes distincts :** Pro (étapes 2 à 5) correspond à un essai gratuit signalé pouvant atteindre 24 mois, sans garantie. Ultra (étape 6) est une **offre payante séparée** exigeant, selon la source, **un compte vierge de tout ancien essai ou promotion de bienvenue Google One / AI**. Une auto-attestation est nécessaire : l'outil ne peut pas vérifier l'historique et Google Play détermine l'éligibilité.

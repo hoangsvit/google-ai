@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Tiếng Việt
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+<!-- Source README.md git-blob: c3e4a2e5de138f99affa260780d6b8b23310cd6a -->
 
 [English](README.md) · **Tiếng Việt** · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -247,3 +247,13 @@ Bạn cũng có thể tham khảo [cấu trúc dự án](docs/PROJECT.md), [các
 **Tác giả gốc:** [@gylive](https://github.com/gylive) — [google-ultra](https://github.com/gylive/google-ultra). **Người duy trì:** [David Nguyen (@hoangsvit)](https://github.com/hoangsvit) / [ePlus.DEV](https://eplus.dev). Giữ nguyên thông báo MIT của tác giả gốc trong [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); giấy phép này không mặc nhiên áp dụng cho các đóng góp mới không liên quan. [Danh sách người đóng góp](https://github.com/hoangsvit/google-ai/graphs/contributors).
 
 [Trung tâm tài liệu](docs/README.md) · [Tài liệu tham khảo cũ (tiếng Việt)](docs/i18n/README.vi.md) · [An toàn thanh toán](docs/SAFETY.md)
+
+## Tùy chọn Ultra 20x — 19,99 USD/tháng trong 3 tháng
+
+**Step 6** bổ sung riêng gói Google AI Ultra 20x (30 TB), SKU `g1.ai.ultra.3months_ip_90p.acq`. Theo bộ script bên thứ ba, giá là **19,99 USD mỗi tháng trong 3 tháng** (tổng 59,97 USD qua ba kỳ), sau đó **199,99 USD/tháng**. Đây là ưu đãi **chưa được xác minh cho mọi tài khoản** và không ảnh hưởng chuỗi Pro Step 2–5.
+
+Trên Windows, chọn Step 6 trong **Advanced > One step only**, hoặc chạy `.\\run-all.ps1 -Step 6 -Email account@example.com`. Trên macOS, chọn Step 6 ở giao diện. Muốn chỉ xem thông tin gói mà không mở thanh toán, dùng `python ultra0.py --inspect-sku g1.ai.ultra.3months_ip_90p.acq`.
+
+Công cụ kiểm tra đúng SKU và các kỳ giá USD trước khi mở Google Play. **Công cụ không tự nhấn Subscribe cho gói trả phí này.** Bạn phải tự xác nhận tài khoản, số tiền từng tháng, giá gia hạn và điều kiện hủy trên Google Play. Không dùng `--force` hoặc cộng dồn token đăng ký. **Không bắt buộc MuMu 12 hay Android 12**; chỉ cần môi trường Android hiện có tương thích ADB/root/Frida và các ứng dụng Google Play cần thiết. Xem [chi tiết và cảnh báo](docs/PROMO-SKU-INSPECTION.md).
+
+**Phân nhóm:** Pro Step 2–5 là nhóm dùng thử miễn phí được báo cáo (tối đa 24 tháng, không bảo đảm); Ultra Step 6 là **nhóm trả phí**, yêu cầu **tài khoản sạch chưa từng dùng trial/ưu đãi mở đầu** theo nguồn. Bạn phải tự xác nhận điều này trước khi mở thanh toán; công cụ không thể kiểm tra lịch sử trial và Google Play quyết định điều kiện thực tế.

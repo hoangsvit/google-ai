@@ -31,13 +31,14 @@ STAGES = {
     3: ("pro6", "6months-eft", True),
     4: ("pro6b", "6months-eft-2", True),
     5: ("pro6c", "6months-eft-ss-2026", True),
+    6: ("ultra19", "g1.ai.ultra.3months_ip_90p.acq", False),
 }
 
 
 def stage_command(step: int, serial: str, account: str = "",
                   python: str = sys.executable) -> list[str]:
-    if type(step) is not int or step not in range(6):
-        raise ValueError("Step must be an integer between 0 and 5")
+    if type(step) is not int or step not in range(7):
+        raise ValueError("Step must be an integer between 0 and 6")
     if not serial or serial.startswith("-"):
         raise ValueError("Selected Android device must have an explicit ADB serial")
     base = [python, str(ROOT / "ultra0.py")]
@@ -53,6 +54,8 @@ def stage_command(step: int, serial: str, account: str = "",
                      "--plan", plan, "--serial", serial]
     if stack:
         result.append("--stack")
+    if step == 6:
+        result.append("--clean-account-confirmed")
     return result
 
 
@@ -142,6 +145,21 @@ def verified_account(serial: str, env: dict[str, str], report: dict) -> str:
 
 def check_offer(report: dict, step: int) -> None:
     _plan, expected, _stack = STAGES[step]
+    if step == 6:
+        matches = [offer for offer in report["offers"] if isinstance(offer, dict) and
+                   offer.get("product") == expected and
+                   str(offer.get("micros")) == "19990000" and
+                   offer.get("currency") == "USD" and
+                   offer.get("period") == "P1M" and
+                   offer.get("cycles") == 3 and
+                   str(offer.get("renewal_micros")) == "199990000" and
+                   offer.get("renewal_period") == "P1M" and
+                   offer.get("renewal_currency") == "USD"]
+        if len(matches) != 1:
+            raise RuntimeError("Ultra USD 19.99 monthly for 3 months and USD 199.99 "
+                               "renewal pricing was not uniquely verified in offer data. "
+                               "No checkout started.")
+        return
     matches = [offer for offer in report["offers"] if isinstance(offer, dict) and
                offer.get("id") == expected and str(offer.get("micros")) == "0"]
     if not matches:
@@ -152,7 +170,8 @@ def check_offer(report: dict, step: int) -> None:
 
 
 def run_stage(step: int, serial: str, env: dict[str, str],
-              confirmed: bool = False, active_confirmed: bool = False) -> int:
+              confirmed: bool = False, active_confirmed: bool = False,
+              clean_account_confirmed: bool = False) -> int:
     if step == 0:
         return run_engine(stage_command(0, serial), env)
     if step == 1:
@@ -161,8 +180,11 @@ def run_stage(step: int, serial: str, env: dict[str, str],
         print(f"Account {account}", flush=True)
         print(f"Offers {len(report['offers'])} (eligibility not guaranteed)", flush=True)
         return 0
-    if not confirmed or (step >= 3 and not active_confirmed):
+    if not confirmed or (3 <= step <= 5 and not active_confirmed):
         raise RuntimeError("Explicit checkout and existing-plan confirmations required")
+    if step == 6 and not clean_account_confirmed:
+        raise RuntimeError("Ultra paid mode needs the user's self-confirmation of a "
+                           "clean account with no previous trial or introductory offer")
     print("Checking Android environment before paid stage...", flush=True)
     if run_engine(stage_command(0, serial), env):
         raise RuntimeError("Android environment checks failed; no checkout started")
@@ -174,23 +196,34 @@ def run_stage(step: int, serial: str, env: dict[str, str],
     if read_play_account(serial, env) != account:
         raise RuntimeError("Google Play account changed; no checkout started")
     print(f"Account {account}", flush=True)
-    print(f"Step {step} offer inspected; first phase zero-priced.", flush=True)
+    if step == 6:
+        print("Ultra 20x candidate checked: USD 19.99/month for 3 months; "
+              "USD 199.99/month renewal. Paid Subscribe requires manual review.", flush=True)
+    else:
+        print(f"Step {step} offer inspected; first phase zero-priced.", flush=True)
     print("CAUTION: Checkout may incur charges. Verify all terms in Google Play.", flush=True)
     return run_engine(stage_command(step, serial, account), env)
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="ePlus AI Toolkit macOS native stage adapter")
-    parser.add_argument("--step", type=int, required=True, choices=range(6))
+    parser.add_argument("--step", type=int, required=True, choices=range(7))
     parser.add_argument("--confirmed", action="store_true",
                         help="Explicitly authorize the selected checkout stage")
     parser.add_argument("--active-confirmed", action="store_true",
                         help="Confirm existing active plan for Steps 3–5")
+    parser.add_argument("--clean-account-confirmed", action="store_true",
+                        help="Self-attest no previous Google One/AI trial or promotion, for Ultra Step 6")
     args = parser.parse_args(argv)
     if args.step >= 2 and not args.confirmed:
         parser.error("Steps 2–5 require explicit --confirmed; may initiate real charges")
-    if args.step >= 3 and not args.active_confirmed:
+    if 3 <= args.step <= 5 and not args.active_confirmed:
         parser.error("Steps 3–5 also require --active-confirmed")
+    if args.step == 6 and not args.clean_account_confirmed:
+        parser.error("Paid Ultra Step 6 requires --clean-account-confirmed: this "
+                     "does not verify eligibility with Google Play")
+    if args.step != 6 and args.clean_account_confirmed:
+        parser.error("--clean-account-confirmed is only for Ultra Step 6")
     try:
         adb, serial = preflight()
         env = os.environ.copy()
@@ -198,7 +231,8 @@ def main(argv: list[str] | None = None) -> int:
         env["PYTHONIOENCODING"] = "utf-8:backslashreplace"
         env["PYTHONUTF8"] = "1"
         print(f"Device {serial}", flush=True)
-        return run_stage(args.step, serial, env, args.confirmed, args.active_confirmed)
+        return run_stage(args.step, serial, env, args.confirmed, args.active_confirmed,
+                         args.clean_account_confirmed)
     except (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired) as error:
         print(f"Stage stopped: {type(error).__name__}: {error}", file=sys.stderr, flush=True)
         return 1

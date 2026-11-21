@@ -10,10 +10,11 @@ usage() {
     "  (no flags)    Textual dashboard, including optional confirmed checkout" \
     "  --check       Android/Frida setup diagnostics" \
     "  --list        Query offers (no checkout)" \
-    "  --step N      Open the dashboard with Step 0..5 selected" \
+    "  --step N      Open the dashboard with Step 0..6 selected" \
     "  --sequence    Open dashboard with guided sequence controls" \
     "  --help        Display usage" \
-    "Steps 2–5 can submit real charges after explicit TUI confirmations."
+    "Steps 2–5 can submit real charges after explicit TUI confirmations." \
+    "Step 6 opens a separate Ultra 19.99 paid checkout for manual approval."
 }
 if [ "$#" -eq 1 ] && { [ "$1" = "--help" ] || [ "$1" = "-h" ]; }; then
   usage
@@ -32,7 +33,7 @@ case "$#" in
   2|3)
     if [ "$1" != "--step" ]; then usage >&2; exit 2; fi
     case "$2" in
-      0|1|2|3|4|5) : ;;
+      0|1|2|3|4|5|6) : ;;
       *) usage >&2; exit 2 ;;
     esac
     if [ "$#" -eq 3 ] && [ "$3" != "--sequence" ]; then usage >&2; exit 2; fi

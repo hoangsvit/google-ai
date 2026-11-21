@@ -39,6 +39,7 @@ STAGES = (
     Stage(3, "Pro +6 months", "6months-eft"),
     Stage(4, "Pro +6 months (second)", "6months-eft-2"),
     Stage(5, "Optional +6 months", "6months-eft-ss-2026"),
+    Stage(6, "Ultra 20x (PAID) - US$19.99/mo", "g1.ai.ultra.3months_ip_90p.acq"),
 )
 
 
@@ -50,11 +51,51 @@ class Outcome:
     can_review: bool = False
 
 
+def initial_checkout_blocker(outcome: Outcome, report: dict | None,
+                             account: str | None = None) -> str:
+    """Explain whether a current listing can show the wizard's Step 2 action.
+
+    This is a navigation hint, not billing authorization. The engine must
+    recheck the current account, exact offer and checkout terms when run.
+    Call only with the fresh report from the completed Step 1 invocation.
+    """
+    if outcome.code != "listed" or not isinstance(report, dict) or report.get("status") != "listed":
+        return "Run Check Device & Offers to get a fresh result before continuing."
+    detected = report.get("detected_play_account")
+    detected = detected.strip().lower() if isinstance(detected, str) else ""
+    observed = account.strip().lower() if isinstance(account, str) else ""
+    if detected and observed and detected != observed:
+        return "The reported Play accounts differ. Check the account and run the check again."
+    if not re.fullmatch(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}", detected or observed):
+        return "The Google Play account was not identified. Check it on Android and retry."
+    offers = report.get("offers")
+    if not isinstance(offers, list) or not any(
+        isinstance(offer, dict) and offer.get("id") == STAGES[2].offer
+        and str(offer.get("micros")) == "0" for offer in offers
+    ):
+        return "No matching 12-month offer with a zero-priced first phase was found. Do not continue to Step 2."
+    return ""
+
+
 MESSAGES = {
     "listed": ("Offers loaded", "Offer metadata is not proof of eligibility."),
     "checkout_requested": (
         "Checkout submitted - not yet verified",
         "Check Google Play Subscriptions, renewal date and charges before proceeding.",
+    ),
+    "paid_checkout_review_required": (
+        "Ultra checkout opened - review manually",
+        "For a clean account that has never used a trial or intro promotion. Review US$19.99/month for 3 months and US$199.99/month renewal. "
+        "No Subscribe button was pressed; only Google Play can confirm eligibility and billing.",
+    ),
+    "paid_checkout_unverified": (
+        "Ultra checkout terms not verified",
+        "Do not approve until the Google Play screen clearly shows the current charge, "
+        "3-month promotion, renewal price and correct account.",
+    ),
+    "paid_promotion_unavailable": (
+        "Ultra promotion unavailable",
+        "Exact USD 19.99 monthly x 3 and USD 199.99 renewal offer not verified; no checkout opened.",
     ),
     "checkout_security_blocked": (
         "Google Play requires account verification",
@@ -108,8 +149,8 @@ MESSAGES = {
 
 
 def validate_step(step: int) -> int:
-    if type(step) is not int or not 0 <= step <= 5:
-        raise ValueError("Step must be a number between 0 and 5")
+    if type(step) is not int or not 0 <= step <= 6:
+        raise ValueError("Step must be a number between 0 and 6")
     return step
 
 
@@ -124,8 +165,10 @@ def command_for_step(step: int, repo: Path, shell: str | None = None) -> list[st
         # The native adapter requires explicit flags as a second fail-closed gate.
         if step >= 2:
             command.append("--confirmed")
-        if step >= 3:
+        if 3 <= step <= 5:
             command.append("--active-confirmed")
+        if step == 6:
+            command.append("--clean-account-confirmed")
         return command
     executable = shell or shutil.which("powershell.exe") or shutil.which("pwsh")
     if not executable:
@@ -136,8 +179,13 @@ def command_for_step(step: int, repo: Path, shell: str | None = None) -> list[st
     # Single steps are non-interactive at the PowerShell approval layer.
     # Using the existing wrapper keeps ADB, Frida, Play-account, offer and
     # checkout validation in one place instead of copying billing code.
-    return [executable, "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass",
-            "-File", str(script), "-Step", str(step)]
+    command = [executable, "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass",
+               "-File", str(script), "-Step", str(step)]
+    if step == 6:
+        # A separate TUI approval required the clean-account checkbox first.
+        # Avoid a hidden Read-Host prompt in non-interactive PowerShell.
+        command += ["-CleanAccountConfirmed", "-UltraPaidApproved"]
+    return command
 
 
 def read_fresh_report(directory: Path, step: int, started_at: float,

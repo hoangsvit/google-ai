@@ -286,3 +286,11 @@ GitHub Actions checks Python, PowerShell, Textual and mocked Frida/Billing behav
 - [Community contributors](https://github.com/hoangsvit/google-ai/graphs/contributors)
 
 The upstream MIT notice is retained in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); that notice does not independently license unrelated new contributions.
+
+## Optional Ultra 20x — US$19.99/month for 3 months
+
+The **Pro free-trial group (Steps 2–5)** and the **Ultra paid / clean-account group (Step 6)** are separate. The optional **Step 6** adds one Google AI Ultra 20x (30 TB) promotion candidate: `g1.ai.ultra.3months_ip_90p.acq`. A third-party script claims **US$19.99 per month for 3 months** (US$59.97 in three payments), then **US$199.99/month**. This is **not** a confirmed offer for every Google Play account. Step 6 does not join or alter Pro Steps 2–5.
+
+On Windows, select **6. Ultra 20x - US$19.99/mo x 3** in **Advanced > One step only**, or use `.\run-all.ps1 -Step 6 -Email account@example.com`. On macOS, choose the same dashboard step. For inspection without checkout, use `python ultra0.py --inspect-sku g1.ai.ultra.3months_ip_90p.acq`.
+
+For Ultra, the source requires a **clean account that has never used any Google One / AI trial or introductory promotion**. Step 6 requires user self-attestation; the program cannot verify past promotional use, and eligibility is Google's decision. The toolkit checks the exact SKU and USD pricing phases before opening Google Play checkout. **It does not automatically tap Subscribe for this paid option.** Verify the account, total charge, monthly price for all three months, subsequent renewal and cancellation terms **in Google Play** before choosing to pay. `--force` and purchase-token stacking are rejected. **No particular MuMu version or Android 12 image is required**; keep the supported ADB/root/Frida and Google Play environment. See [Ultra promotion details and safety restrictions](docs/PROMO-SKU-INSPECTION.md).

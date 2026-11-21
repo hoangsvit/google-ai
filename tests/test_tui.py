@@ -23,9 +23,9 @@ class CoreTests(unittest.TestCase):
             self.assertTrue(needs_setup())
 
     def test_step_range(self):
-        for step in range(6):
+        for step in range(7):
             self.assertEqual(validate_step(step), step)
-        for value in (-1, 6, "2", True):
+        for value in (-1, 7, "2", True):
             with self.assertRaises(ValueError):
                 validate_step(value)
 
@@ -229,13 +229,12 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                     await pilot.pause()
                     app.advanced_pressed()
                     await pilot.pause()
-                    sidebar = app.query_one("#controls").region
                     for selector in ("#mode", "#step", "#run"):
                         widget = app.query_one(selector)
-                        self.assertGreaterEqual(widget.region.x, sidebar.right)
+                        self.assertGreaterEqual(widget.region.x, app.query_one("#content").region.x)
                         self.assertGreater(widget.region.width, 15)
                     self.assertTrue(app.query_one("#run", Button).display)
-                    self.assertTrue(app.query_one("#quickstart", Button).display)
+                    self.assertEqual(app.query_one("#status_panel").region.height, 0)
                     self.assertEqual(app.query_one("#mode", Select).value, "single")
                 popen.assert_not_called()
 
@@ -257,6 +256,7 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
             app = GoogleAITUI(repo=Path(directory))
             with patch.object(GoogleAITUI, "_confirm_stage") as confirm:
                 async with app.run_test(size=(110, 35)) as pilot:
+                    app.advanced_pressed()
                     app.query_one("#mode", Select).value = "all"
                     await pilot.pause()
                     app.selected_pressed()
@@ -425,27 +425,28 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                         await pilot.pause()
                         notice = app.query_one("#payment_notice", Static)
                         compact = app.query_one("#payment_notice_compact", Static)
-                        if size[1] < 27:
-                            self.assertFalse(notice.display)
-                            self.assertTrue(compact.display)
-                            wording = str(compact.render())
-                            self.assertIn("3 separate US$1 checks", wording)
-                            self.assertIn("not one US$3", wording)
-                            self.assertIn("24 months not guaranteed", wording)
-                            self.assertGreater(app.query_one("#status_panel").region.height, 3)
-                        else:
-                            self.assertTrue(notice.display)
-                            self.assertFalse(compact.display)
-                            wording = str(notice.render())
-                            self.assertIn("Step 2 (12 months)", wording)
-                            self.assertIn("Step 3 (6)", wording)
-                            self.assertIn("Step 4 (6)", wording)
-                            self.assertIn("at least US$3 available", wording)
-                            self.assertIn("3 separate US$1 card checks", wording)
-                            self.assertIn("not one US$3 payment", wording)
-                            self.assertIn("temporary holds", wording)
-                            self.assertIn("24 months is not guaranteed", wording)
-                        self.assertTrue(app.query_one("#quickstart").display)
+                        self.assertFalse(app.query_one("#workflow_actions").display)
+                        self.assertEqual(notice.region.height, 0)
+                        self.assertTrue(compact.display)
+                        wording = str(compact.render())
+                        self.assertIn("Pro FREE", wording)
+                        self.assertIn("Ultra PAID", wording)
+                        self.assertIn("Google Play", wording)
+                        self.assertTrue(app.query_one("#start_ultra").display)
+                        self.assertLessEqual(compact.region.bottom, app.query_one("#welcome_panel").region.bottom)
+                        self.assertGreater(app.query_one("#status_panel").region.height, 3)
+                        app.advanced_pressed()
+                        for _ in range(30):
+                            await pilot.pause()
+                            if app.query_one("#run").region.height > 0:
+                                break
+                        self.assertTrue(app.query_one("#workflow_actions").display)
+                        wording = str(notice.render())
+                        for detail in ("Step 2 (12)", "Step 3 (6)", "Step 4 (6)",
+                                       "Three separate US$1 checks", "not one US$3 payment",
+                                       "temporary holds", "not guaranteed", "ULTRA PAID", "clean account"):
+                            self.assertIn(detail, wording)
+                        self.assertGreater(app.query_one("#run").region.height, 0)
                     launch.assert_not_called()
 
     async def test_checkout_confirmations_explain_each_one_dollar_event(self):
@@ -482,12 +483,63 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                 async with app.run_test(size=(110, 35)) as pilot:
                     await pilot.click("#advanced_toggle")
                     await pilot.pause()
+                    app.query_one("#run").scroll_visible(animate=False)
+                    await pilot.pause()
                     await pilot.click("#run")
                     await pilot.pause()
                     self.assertIsInstance(app.screen, Approval)
                     await pilot.click("#cancel")
                     await pilot.pause()
                     popen.assert_not_called()
+
+
+    async def test_new_wizard_separates_free_pro_and_paid_ultra(self):
+        from textual.widgets import Static
+        from tui import GoogleAITUI
+        with tempfile.TemporaryDirectory() as directory:
+            app = GoogleAITUI(repo=Path(directory))
+            with patch("tui.subprocess.Popen") as start:
+                async with app.run_test(size=(132, 43)) as pilot:
+                    await pilot.pause()
+                    self.assertIn("PRO FREE TRIAL", str(app.query_one("#pro_group", Static).render()))
+                    self.assertIn("ULTRA PAID", str(app.query_one("#ultra_group", Static).render()))
+                    self.assertTrue(app.query_one("#start_ultra").display)
+                    self.assertTrue(app.query_one("#quickstart").display)
+                    self.assertIn("Ultra Paid", str(app.query_one("#stage_6").render()))
+                start.assert_not_called()
+
+    async def test_new_wizard_paid_ultra_modal_requires_clean_account(self):
+        from textual.widgets import Button, Checkbox, Static
+        from tui import GoogleAITUI, Approval
+        with tempfile.TemporaryDirectory() as directory:
+            app = GoogleAITUI(repo=Path(directory))
+            with patch.object(GoogleAITUI, "_start") as start:
+                async with app.run_test(size=(132, 43)) as pilot:
+                    await pilot.click("#start_ultra")
+                    await pilot.pause()
+                    self.assertIsInstance(app.screen, Approval)
+                    self.assertTrue(app._approval_pending)
+                    self.assertIn("SEPARATE PAID GROUP",
+                                  str(app.screen.query_one("#approval_message", Static).render()))
+                    self.assertTrue(app.screen.query_one("#approve", Button).disabled)
+                    app.screen.query_one("#clean_account_ack", Checkbox).value = True
+                    await pilot.pause()
+                    self.assertFalse(app.screen.query_one("#approve", Button).disabled)
+                    await pilot.click("#cancel")
+                    await pilot.pause()
+                    self.assertFalse(app._approval_pending)
+                start.assert_not_called()
+
+    def test_windows_tui_passes_ultra_attestation_without_readhost(self):
+        from tui_core import command_for_step
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "run-all.ps1").write_text("# mock", encoding="utf-8")
+            with patch("tui_core.sys.platform", "win32"):
+                command = command_for_step(6, root, shell="powershell.exe")
+            self.assertIn("-CleanAccountConfirmed", command)
+            self.assertIn("-UltraPaidApproved", command)
+            self.assertEqual(command[-4:-2], ["-Step", "6"])
 
 
 if __name__ == "__main__":

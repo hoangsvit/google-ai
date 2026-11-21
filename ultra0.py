@@ -93,6 +93,14 @@ FRIDA_REMOTE = "/data/local/tmp/frida-server"
 FRIDA_REQUIRED = "16.5.9"
 REPORT_DIR = Path("ultra0-report")
 
+# Candidate product IDs observed in an unverified third-party archive.
+# Inspect them only: discovery does not prove availability or eligibility.
+ULTRA_19_SKU = "g1.ai.ultra.3months_ip_90p.acq"
+ULTRA_19_PRICE_MICROS = "19990000"
+ULTRA_19_RENEWAL_MICROS = "199990000"
+
+READ_ONLY_PROMO_SKUS = (ULTRA_19_SKU,)
+
 def report_filename(email: str) -> str:
     """Use the complete account identity without leaking it into filenames.
 
@@ -695,12 +703,23 @@ def launch_app() -> int:
     return 0
 
 
-def build_js(plan: str = "auto", list_only: bool = False, stack: bool = False, old_token: str = "", stack_mode=None, activity_method="auto") -> str:
+def build_js(plan: str = "auto", list_only: bool = False, stack: bool = False, old_token: str = "", stack_mode=None, activity_method="auto", inspect_sku: str = "") -> str:
     """Build the product query for the requested Google Play plan."""
     if activity_method not in ("auto", "choose", "thread"):
         raise ValueError(f"Unsupported activity method: {activity_method}")
+    if inspect_sku:
+        if inspect_sku not in READ_ONLY_PROMO_SKUS:
+            raise ValueError("Unknown read-only promotion SKU")
+        if not list_only or plan != "auto" or stack or old_token or stack_mode is not None:
+            raise ValueError("Promotion SKU inspection requires isolated list-only mode")
     js = FRIDA_JS.replace('var ACTIVITY_METHOD="auto";',
                           f'var ACTIVITY_METHOD="{activity_method}";', 1)
+    if inspect_sku:
+        source = 'var PRODUCTS=["g1.play.20tb","g1.play.ai.pro","g1.30tb"];'
+        replacement = 'var PRODUCTS=' + json.dumps([inspect_sku]) + ';'
+        if source not in js:
+            raise RuntimeError("Frida product query template is missing")
+        js = js.replace(source, replacement, 1)
     if list_only:
         js = js.replace('var PREFER="";', 'var PREFER=""; var LIST_ONLY=true;', 1)
     if stack:
@@ -709,7 +728,13 @@ def build_js(plan: str = "auto", list_only: bool = False, stack: bool = False, o
         js = js.replace('var PREFER="";', 'var PREFER=""; var OLD_TOKEN="%s";' % old_token, 1)
     if stack_mode is not None:
         js = js.replace('var PREFER="";', 'var PREFER=""; var STACK_MODE=%d;' % stack_mode, 1)
-    if plan == "20x":
+    if plan == "ultra19":
+        if stack or old_token or stack_mode is not None:
+            raise ValueError("Ultra paid promotion does not support purchase-token stacking")
+        js = js.replace('var PRODUCTS=["g1.play.20tb","g1.play.ai.pro","g1.30tb"];',
+                        'var PRODUCTS=["' + ULTRA_19_SKU + '"];', 1)
+        js = js.replace("var PAID_ULTRA_19=false;", "var PAID_ULTRA_19=true;", 1)
+    elif plan == "20x":
         js = js.replace('var PRODUCTS=["g1.play.20tb","g1.play.ai.pro","g1.30tb"];',
                         'var PRODUCTS=["g1.play.ai.pro","g1.ai.pro","g1.30tb"];')
     elif plan == "5x":
@@ -803,7 +828,7 @@ def get_target_frida_device(pid: int, serial: str):
     return selected
 
 
-def run_trial(pid: int, wait=90, plan="auto", list_only=False, stack=False, old_token="", stack_mode=None, activity_method="auto") -> dict:
+def run_trial(pid: int, wait=90, plan="auto", list_only=False, stack=False, old_token="", stack_mode=None, activity_method="auto", inspect_sku="") -> dict:
     step("Injecting billing module to inspect introductory offers")
     dev = get_target_frida_device(pid, SERIAL)
     note(f"Using Frida device: {dev.id} (ADB: {SERIAL})")
@@ -835,7 +860,7 @@ def run_trial(pid: int, wait=90, plan="auto", list_only=False, stack=False, old_
         elif ev and ("err" in ev or ev.startswith("no_")):
             res["errors"].append(p)
 
-    sc = sess.create_script(build_js(plan, list_only, stack, old_token, stack_mode, activity_method))
+    sc = sess.create_script(build_js(plan, list_only, stack, old_token, stack_mode, activity_method, inspect_sku))
     sc.on("message", on_msg)
     sc.load()
     time.sleep(wait)
@@ -851,6 +876,10 @@ def diagnose_launch_failure(fr: dict) -> tuple:
         return ("subscription_update_unavailable",
                 "Existing subscription token or replacement parameters were unavailable. "
                 "No safe subscription update was launched. Inspect the Play subscription state.")
+    if ev_names.intersection({"no_matching_paid_offer", "ambiguous_paid_offer"}):
+        return ("paid_promotion_unavailable",
+                "The exact Ultra 20x USD 19.99 x 3 months and USD 199.99 renewal "
+                "pricing phases were not uniquely present. No checkout was opened.")
     if "choose_err" in ev_names and ("activity_thread_err" in ev_names or "no_activity" in ev_names):
         return ("activity_lookup_failed",
                 "Both Java.choose and ActivityThread failed to locate a usable Activity. "
@@ -951,6 +980,49 @@ def assess_checkout_terms(text: str, expected_plan: str = "auto") -> dict:
     return result
 
 
+def assess_ultra_paid_terms(text: str) -> dict:
+    """Inspect a paid Google Play prompt without authorizing or pressing Subscribe.
+
+    The source ZIP's prices are claims, not Google-provided eligibility. A UI
+    prompt alone cannot establish subscription activation or payment success.
+    """
+    clean = " ".join(text.split())
+    low = clean.lower()
+    result = {"reason": "paid_terms_unverified", "confirmed": False, "text": clean[:400]}
+    if "or-reh-04" in low or ("secure your account" in low and
+                            "transaction can't be completed" in low):
+        result["reason"] = "payment_security_blocked"
+        return result
+    if any(x in low for x in ("already subscribed", "you're already subscribed",
+                             "not eligible", "ineligible", "processing")):
+        result["reason"] = "paid_checkout_blocked"
+        return result
+    # OCR/UI text is advisory. The user must review the real payment screen;
+    # never turn an apparently matching string into an automatic paid tap.
+    if (re.search(r"google\s+ai\s+ultra|ultra\s*20x", low) and
+            re.search(r"us\$\s*19[.,]99(?!\d)", clean, re.I) and
+            re.search(r"us\$\s*199[.,]99(?!\d)", clean, re.I) and
+            re.search(r"3\s*[- ]?\s*months?", clean, re.I) and
+            re.search(r"subscribe|\u8ba2\u9605|dang ky", clean, re.I)):
+        result["reason"] = "paid_terms_visible_manual_review"
+    return result
+
+
+def inspect_ultra_paid_checkout(wait=12) -> dict:
+    step("Inspecting Ultra pricing; paid Subscribe is always a manual action")
+    result = {"reason": "paid_terms_unverified", "confirmed": False}
+    for _ in range(max(1, wait // 2)):
+        visible = " ".join(n["text"] or n["desc"] for n in nodes(ui_xml())
+                           if n["text"] or n["desc"])
+        result = assess_ultra_paid_terms(visible)
+        if result["reason"] != "paid_terms_unverified":
+            break
+        time.sleep(2)
+    warn("Review the checkout amount, 3 monthly charges, renewal price, and "
+         "Google Play account manually. No paid Subscribe button was pressed.")
+    return result
+
+
 def confirm_zero(wait=40, password="", expected_plan="auto") -> dict:
     step("Checking today's Google Play checkout total and trial duration")
     out = {"price": None, "confirmed": False, "ineligible": False,
@@ -1009,7 +1081,7 @@ def verify() -> str:
 
 
 # ---------- Per-account workflow ----------
-def process(email, password="", totp_secret="", add=True, card=None, plan="auto", no_switch=False, list_only=False, stack=False, old_token="", stack_mode=None, activity_method="auto") -> dict:
+def process(email, password="", totp_secret="", add=True, card=None, plan="auto", no_switch=False, list_only=False, stack=False, old_token="", stack_mode=None, activity_method="auto", inspect_sku="") -> dict:
     print("\n" + "=" * 56)
     print(f"  Processing account: {email}")
     print("=" * 56)
@@ -1069,7 +1141,8 @@ def process(email, password="", totp_secret="", add=True, card=None, plan="auto"
         rec["status"] = "app_not_started"
         return rec
     fr = run_trial(pid, plan=plan, list_only=list_only, stack=stack, old_token=old_token,
-                   stack_mode=stack_mode, activity_method=activity_method)
+                   stack_mode=stack_mode, activity_method=activity_method,
+                   inspect_sku=inspect_sku)
     rec.update(fr)
     if list_only:
         rec["status"] = "listed" if fr.get("offers") else "offer_query_failed"
@@ -1077,6 +1150,12 @@ def process(email, password="", totp_secret="", add=True, card=None, plan="auto"
             rec["error"] = "No offer data returned; inspect BillingClient and Frida errors."
         return rec
     if fr["launched"] and fr["launched"].get("code") == 0:
+        if plan == "ultra19":
+            rec["sheet"] = inspect_ultra_paid_checkout()
+            rec["status"] = ("paid_checkout_review_required"
+                             if rec["sheet"]["reason"] == "paid_terms_visible_manual_review"
+                             else "paid_checkout_unverified")
+            return rec
         rec["sheet"] = confirm_zero(password=password, expected_plan=plan)
         # Preserve the original checkout screen if amount or offer terms
         # are ambiguous; never navigate away before the user can inspect it.
@@ -1151,6 +1230,10 @@ def main():
     ap.add_argument("--account", help="Account: email[:password[:totp]]")
     ap.add_argument("--check", action="store_true", help="Check the Android, ADB and Frida environment")
     ap.add_argument("--list", action="store_true", help="List offer metadata without opening checkout")
+    ap.add_argument("--inspect-sku", choices=READ_ONLY_PROMO_SKUS,
+                    help="Query one unverified promotion product ID in read-only mode; never open checkout")
+    ap.add_argument("--clean-account-confirmed", action="store_true",
+                    help="Self-attest this Play account has never used a Google One/AI trial or introductory offer; only for paid Ultra")
     ap.add_argument("--force", action="store_true", help="UNSAFE: bypass Play Store account verification")
     ap.add_argument("--mode", type=int, default=None,
                     help="Subscription replacement mode: 1=TIME_PRORATION 2=CHARGE_PRORATED_PRICE 3=WITHOUT_PRORATION 4=DEFERRED 5=CHARGE_FULL_PRICE")
@@ -1164,9 +1247,29 @@ def main():
     ap.add_argument("--no-add", action="store_true", help="Do not add the account to Android")
     ap.add_argument("--no-switch", action="store_true",
                     help="Verify the current Google Play account without switching automatically")
-    ap.add_argument("--plan", default="auto", choices=["auto", "5x", "20x", "pro12", "pro6", "pro6b", "pro6c"],
-                    help="auto=query available products; 5x=Ultra 20TB; 20x=Ultra 30TB")
+    ap.add_argument("--plan", default="auto", choices=["auto", "5x", "20x", "pro12", "pro6", "pro6b", "pro6c", "ultra19"],
+                    help="ultra19=Ultra 20x USD 19.99/month x 3, manual paid checkout only")
     a = ap.parse_args()
+    if a.plan == "ultra19":
+        if (a.force or a.stack or a.old_token or a.mode is not None or
+                a.accounts or not a.no_add or not a.no_switch or
+                (not a.list and not a.account)):
+            ap.error("Ultra USD 19.99 requires one verified Google Play account, "
+                     "--no-add --no-switch, and no force/stack/old-token options")
+        if not a.list and not a.clean_account_confirmed:
+            ap.error("Paid Ultra requires --clean-account-confirmed: the user must "
+                     "attest that the Play account never used a Google One/AI trial "
+                     "or introductory offer. This does NOT verify Google eligibility.")
+    elif a.clean_account_confirmed:
+        ap.error("--clean-account-confirmed is only valid with --plan ultra19")
+    if a.inspect_sku:
+        # This mode must never inherit paid/stack/force arguments or account
+        # files. It targets the currently selected Android Play profile.
+        if (a.force or a.stack or a.old_token or a.mode is not None
+                or a.plan != "auto" or a.accounts or a.account):
+            ap.error("--inspect-sku is read-only and cannot be combined with checkout, "
+                     "account or account-bypass options")
+        a.list = True
 
     ADB = find_adb()
     globals()["SKIP_ACCOUNT_CHECK"] = bool(a.force)
@@ -1202,7 +1305,8 @@ def main():
         try:
             rec = process(email, pw, sec, add=(not a.no_add and not a.list), card=card, plan=a.plan,
                           no_switch=a.no_switch, list_only=a.list, stack=a.stack, old_token=a.old_token,
-                          stack_mode=a.mode, activity_method=a.activity_method)
+                          stack_mode=a.mode, activity_method=a.activity_method,
+                          inspect_sku=a.inspect_sku)
         except Exception as e:
             warn(f"{type(e).__name__}: {str(e)[:320]}")
             rec = {"email": email, "status": "exception", "error": str(e)[:320],

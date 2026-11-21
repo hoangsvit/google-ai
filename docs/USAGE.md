@@ -92,3 +92,7 @@ Optional parameters:
 ```
 
 Only use a `-Serial` observed through ADB. `-Email` constrains the account expected by the checks. `-Force` exists for compatibility but bypasses account-matching protections; **avoid using it**. It does not override Google Play payment restrictions or eligibility.
+
+## Optional Ultra 20x USD 19.99/month offer
+
+Step **6** belongs to the paid Ultra group (account must be clean: no previous Google One/AI trial or introductory offer, as claimed by the source). Pro Steps **2–5** belong to the separately reported free-trial / up-to-24-month group. The user must self-attest that the Ultra account is clean; Google Play determines eligibility. The macOS CLI also requires `--clean-account-confirmed`. See the [Ultra offer details](PROMO-SKU-INSPECTION.md) for exact pricing checks, Windows/macOS selection, and manual checkout limitations. Do not use `--force` or expect a particular MuMu or Android 12 build.

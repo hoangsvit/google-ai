@@ -49,6 +49,9 @@ class ConnectionAndOfferUITests(unittest.IsolatedAsyncioTestCase):
                     self.assertFalse(viewer.display)
                     app._finished(1, Outcome("listed", "Offers loaded", "Inspect manually."), report)
                     await pilot.pause()
+                    self.assertFalse(viewer.display)
+                    await pilot.click("#offers_toggle")
+                    await pilot.pause()
                     self.assertTrue(viewer.display)
                     self.assertTrue(app.query_one("#offers_title", Static).display)
                     self.assertGreater(len(viewer.lines), 0)
@@ -64,7 +67,8 @@ class ConnectionAndOfferUITests(unittest.IsolatedAsyncioTestCase):
                 async with app.run_test(size=(110, 35)):
                     viewer = app.query_one("#offer_view", RichLog)
                     app._finished(1, Outcome("listed", "Offers loaded", "Check"), {
-                        "offers": [{"id": "eft-3mo", "micros": "0"}]})
+                        "status": "listed", "offers": [{"id": "eft-3mo", "micros": "0"}]})
+                    app.offers_pressed()
                     self.assertTrue(viewer.display)
                     app._start(1, False)
                     self.assertFalse(viewer.display)

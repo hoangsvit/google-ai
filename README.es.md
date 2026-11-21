@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Español
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+<!-- Source README.md git-blob: c3e4a2e5de138f99affa260780d6b8b23310cd6a -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · **Español** · [Français](README.fr.md)
 
@@ -239,3 +239,13 @@ La documentación incluye [estructura del proyecto](docs/PROJECT.md), [uso del p
 **Autor original:** [@gylive](https://github.com/gylive) — [google-ultra](https://github.com/gylive/google-ultra). **Mantenedor:** [David Nguyen (@hoangsvit)](https://github.com/hoangsvit) / [ePlus.DEV](https://eplus.dev). El aviso MIT del autor original permanece en `THIRD_PARTY_NOTICES.md`.
 
 [Centro de documentación](docs/README.md) · [Guía histórica en español](docs/i18n/README.es.md) · [Seguridad de pagos](docs/SAFETY.md)
+
+## Opción Ultra 20x — 19,99 USD al mes durante tres meses
+
+El **Paso 6**, independiente, añade una oferta candidata de Google AI Ultra 20x (30 TB), identificada como `g1.ai.ultra.3months_ip_90p.acq`. Según un script de terceros, costaría **19,99 USD mensuales durante 3 meses** (59,97 USD en tres cargos) y después **199,99 USD al mes**. Esta oferta **no está confirmada para todas las cuentas** de Google Play y no cambia los pasos Pro 2–5.
+
+En Windows, selecciona Step 6 en **Advanced > One step only** o ejecuta `.\\run-all.ps1 -Step 6 -Email account@example.com`. En macOS, selecciona Step 6 desde el mismo panel. Para consultar el SKU sin abrir el pago, ejecuta `python ultra0.py --inspect-sku g1.ai.ultra.3months_ip_90p.acq`.
+
+La aplicación comprueba el SKU exacto y los ciclos de facturación en USD antes de abrir Google Play, pero **no pulsa automáticamente Subscribe para esta opción de pago**. Comprueba por tu cuenta los tres cargos mensuales, la renovación, las condiciones de cancelación y la cuenta. Se rechazan `--force` y la acumulación de tokens de suscripción. **No se exige MuMu 12 ni Android 12**; basta con un entorno compatible con ADB/root/Frida y Google Play. Consulta los [detalles y límites](docs/PROMO-SKU-INSPECTION.md).
+
+**Dos grupos distintos:** Pro (pasos 2–5) corresponde al supuesto periodo gratuito de hasta 24 meses, sin garantía; Ultra (paso 6) es una **oferta de pago independiente**. Según la fuente, requiere **una cuenta limpia que nunca haya usado una prueba o promoción de bienvenida de Google One / AI**. Debes confirmarlo personalmente: la herramienta no puede comprobar el historial y Google Play decide la elegibilidad.

@@ -3,6 +3,8 @@ var dexLoader=null, ctxRef=null, clientRef=null;
 var PRODUCTS=["g1.play.20tb","g1.play.ai.pro","g1.30tb"];   // 5x / 20x introductory offer / alternate 20x
 var PREFER="";        // Empty selects the longest introductory period; can prefer an offer ID such as "eft-12month".
 var ACTIVITY_METHOD="auto"; // auto=choose then ActivityThread; choose/thread force one
+var PAID_ULTRA_19=false; // Only enable for the separately approved 30 TB Ultra promotion.
+var PAID_ULTRA_SKU="g1.ai.ultra.3months_ip_90p.acq";
 function L(v){ Java.classFactory.loader=v; }
 function S(o){ send(o); }
 
@@ -106,7 +108,7 @@ function query(){
       var PD=Java.use("com.android.billingclient.api.ProductDetails");
       var SOD=Java.use("com.android.billingclient.api.ProductDetails$SubscriptionOfferDetails");
       var PP=Java.use("com.android.billingclient.api.ProductDetails$PricingPhase");
-      var best=null;
+      var best=null, ambiguousPaid=false;
       for(var i=0;i<list.size();i++){
         var pd=Java.cast(list.get(i), PD);
         var pid=String(pd.getProductId());
@@ -117,10 +119,30 @@ function query(){
           var oid=String(o.getOfferId());
           var tok=String(o.getOfferToken());
           var ph=o.getPricingPhases().getPricingPhaseList();
+          if(!ph || ph.size()===0) continue;
           var first=Java.cast(ph.get(0), PP);
           var micros=String(first.getPriceAmountMicros());
           var period=String(first.getBillingPeriod());
-          S({ev:"offer", product:pid, id:oid, micros:micros, period:period, token:tok, title:String(pd.getTitle()), name:String(pd.getName())});
+          var currency=String(first.getPriceCurrencyCode());
+          var cycles=Number(first.getBillingCycleCount());
+          var later=(ph.size()>1 ? Java.cast(ph.get(1), PP) : null);
+          var renewalMicros=later ? String(later.getPriceAmountMicros()) : "";
+          var renewalPeriod=later ? String(later.getBillingPeriod()) : "";
+          var renewalCurrency=later ? String(later.getPriceCurrencyCode()) : "";
+          S({ev:"offer", product:pid, id:oid, micros:micros, period:period,
+             currency:currency, cycles:cycles, renewal_micros:renewalMicros,
+             renewal_period:renewalPeriod, renewal_currency:renewalCurrency,
+             token:tok, title:String(pd.getTitle()), name:String(pd.getName())});
+          if(PAID_ULTRA_19){
+            // A different SKU, currency, period or renewal schedule is never substituted.
+            if(pid!==PAID_ULTRA_SKU || micros!=="19990000" ||
+               currency!=="USD" || period!=="P1M" || cycles!==3 ||
+               renewalMicros!=="199990000" || renewalPeriod!=="P1M" ||
+               renewalCurrency!=="USD" || ph.size()!==2) continue;
+            if(best){ ambiguousPaid=true; continue; }
+            best={pd:pd, offer:o, product:pid, id:oid, rank:0, period:period, token:tok};
+            continue;
+          }
           if(micros!=="0") continue;
           var rank=periodRank(period);
           if(!best || rank>best.rank || (PREFER && oid===PREFER)){
@@ -129,7 +151,8 @@ function query(){
           }
         }
       }
-      if(!best){ S({ev:"no_trial"}); return; }
+      if(ambiguousPaid){ S({ev:"ambiguous_paid_offer"}); return; }
+      if(!best){ S({ev:PAID_ULTRA_19 ? "no_matching_paid_offer" : "no_trial"}); return; }
       S({ev:"chosen", product:best.product, id:best.id, period:best.period});
       if (typeof LIST_ONLY !== "undefined" && LIST_ONLY) {
         S({ev:"list_only", product:best.product, id:best.id, period:best.period, token:best.token});
