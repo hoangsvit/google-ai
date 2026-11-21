@@ -1,4 +1,4 @@
-"""Interactive Textual frontend for ePlus AI Toolkit (Windows + macOS preview).
+"""Interactive Textual frontend for ePlus AI Toolkit.
 
 UI-only orchestration: the original run-all.ps1 and ultra0.py still own all
 Android, Frida, Google Play, payment and account validation. The TUI never
@@ -7,6 +7,7 @@ declares an activated subscription from launchBillingFlow or a Subscribe tap.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import signal
 from collections import deque
@@ -14,6 +15,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+from tempfile import TemporaryDirectory
 import time
 
 from rich.markup import escape
@@ -192,12 +194,16 @@ class GoogleAITUI(App[None]):
     """
 
     def __init__(self, *, repo: Path, selected_step: int = 1,
-                 start_sequence: bool = False, initial_debug: bool = False) -> None:
+                 start_sequence: bool = False, initial_debug: bool = False,
+                 show_advanced: bool = False) -> None:
         super().__init__()
         self.repo = repo.resolve()
         self.initial_step = validate_step(selected_step)
         self.macos_mode = is_macos_platform()
+        self.linux_mode = sys.platform == "linux" and not self.macos_mode
+        self.native_mode = self.macos_mode or self.linux_mode
         self.start_sequence = start_sequence
+        self.show_advanced = show_advanced
         self.debug_visible = initial_debug
         self.busy = False
         self._diagnosing = False
@@ -246,9 +252,15 @@ class GoogleAITUI(App[None]):
                     yield Button("Exit toolkit", id="exit")
                 with Vertical(id="results"):
                     with Vertical(id="welcome_panel"):
-                        yield Static("GET STARTED · READ-ONLY CHECK", id="welcome")
+                        yield Static(
+                            "GET STARTED · OFFER CHECK" if self.linux_mode
+                            else "GET STARTED · READ-ONLY CHECK",
+                            id="welcome",
+                        )
                         yield Static("Check MuMu connection and Google AI offers without opening checkout.", id="quick_hint")
                         yield Button("Check Device & Offers", id="quickstart", variant="success")
+                        yield Button("Stop after current step", id="stop", disabled=True)
+                        yield Button("Verified in Google Play → Next", id="next", disabled=True)
                         yield Button("Advanced: Run by step  +", id="advanced_toggle")
                         with Vertical(id="workflow_actions"):
                             with Horizontal(id="form_row"):
@@ -270,9 +282,6 @@ class GoogleAITUI(App[None]):
                                 yield Static("Runs one step; no next step is automatic.", id="mode_hint")
                             yield Button("Run sequence from step", id="sequence")
                             yield Button("Run all", id="run_all")
-                            yield Button("Verified in Google Play → Next",
-                                         id="next", disabled=True)
-                            yield Button("Stop after current step", id="stop", disabled=True)
                             yield Static("Steps 2–5 can open checkout and require confirmation.", id="read_only")
                         yield Static(
                             "24-month example: Step 2 (12 months) + Step 3 (6) + Step 4 (6).\n"
@@ -359,7 +368,7 @@ class GoogleAITUI(App[None]):
 
     def on_mount(self) -> None:
         self.set_interval(1, self._refresh_elapsed)
-        if self.macos_mode:
+        if self.native_mode:
             self.query_one("#device", Static).update("ANDROID DEVICE\nADB • Auto-detect")
             self.query_one("#quick_hint", Static).update(
                 "Check Android and Google AI offers before any subscription step."
@@ -367,10 +376,17 @@ class GoogleAITUI(App[None]):
             self.query_one("#read_only", Static).update(
                 "Steps 2–5 can charge money. Confirm account, future price and renewal date."
             )
+        if self.linux_mode:
+            self._set_message(
+                "An offer check can change Android settings. Use Diagnose Android connection "
+                "to check USB first."
+            )
         self.query_one("#debug_log", RichLog).display = self.debug_visible
         self.query_one("#debug", Button).label = "Hide technical details" if self.debug_visible else "Show technical details"
         if self.start_sequence:
             self.query_one("#mode", Select).value = "from"
+        if self.show_advanced:
+            self.advanced_pressed()
         self._update_run_mode()
 
     @on(Button.Pressed, "#advanced_toggle")
@@ -423,7 +439,8 @@ class GoogleAITUI(App[None]):
             idle = int(time.monotonic() - self._last_activity_at)
             if idle >= 30:
                 self.query_one("#activity", Static).update(
-                    f"No new output for {idle}s. Check MuMu or technical details."
+                    f"No new output for {idle}s. Check "
+                    f"{'Android' if self.native_mode else 'MuMu'} or technical details."
                 )
 
     def _set_workflow(self, step: int, state: str) -> None:
@@ -540,7 +557,11 @@ class GoogleAITUI(App[None]):
     @work(thread=True, exclusive=True, group="read-only-cancel")
     def terminate_readonly_child(self) -> None:
         child = self._child
-        if child is None or child.poll() is not None:
+        if child is not None:
+            self._terminate_child(child)
+
+    def _terminate_child(self, child: subprocess.Popen[str]) -> None:
+        if child.poll() is not None:
             return
         try:
             if os.name == "nt":
@@ -550,6 +571,8 @@ class GoogleAITUI(App[None]):
                     raise OSError("taskkill failed")
             else:
                 os.killpg(child.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return
         except (OSError, subprocess.TimeoutExpired) as error:
             self.call_from_thread(self._set_message,
                                   f"Cannot stop the check: {error}. Open technical details.")
@@ -623,7 +646,7 @@ class GoogleAITUI(App[None]):
         self.query_one("#offer_view", RichLog).display = False
         self.query_one("#offers_title", Static).display = False
         self.query_one("#device", Static).update(
-            "ANDROID DEVICE\nADB • Auto-detect" if self.macos_mode
+            "ANDROID DEVICE\nADB • Auto-detect" if self.native_mode
             else "ANDROID DEVICE\nMuMu • Auto-detect"
         )
         self.query_one("#account", Static).update("GOOGLE ACCOUNT\nNot checked")
@@ -633,7 +656,7 @@ class GoogleAITUI(App[None]):
         self._last_activity_at = self._started_at
         self.query_one("#elapsed", Static).update("Elapsed: 00:00")
         self.query_one("#activity", Static).update(
-            "Connecting to Android diagnostics..." if self.macos_mode
+            "Connecting to Android diagnostics..." if self.native_mode
             else "Connecting to MuMu and preparing tools..."
         )
         self.query_one("#quickstart", Button).disabled = True
@@ -650,10 +673,13 @@ class GoogleAITUI(App[None]):
         self.query_one("#step_result", Static).update(f"Step {step} · {STAGES[step].label}")
         self._set_workflow(step, "running")
         self._set_status(
-            "Running — check Android if prompted" if self.macos_mode
+            "Running — check Android if prompted" if self.native_mode
             else "Running — check MuMu if prompted"
         )
-        self._set_message("Preparing tools and checking Google Play. Missing dependencies are installed automatically.")
+        self._set_message(
+            "Checking Android over ADB. Setup may alter Frida or network settings." if self.linux_mode
+            else "Preparing tools and checking Google Play. Missing dependencies are installed automatically."
+        )
         self.run_stage(step)
 
     def _execute(self, command: list[str]) -> int:
@@ -673,6 +699,8 @@ class GoogleAITUI(App[None]):
             text=True, encoding="utf-8", errors="replace", bufsize=1, **options
         ) as child:
             self._child = child
+            if self._cancel_requested:
+                self._terminate_child(child)
             if child.stdout:
                 for line in child.stdout:
                     try:
@@ -684,7 +712,7 @@ class GoogleAITUI(App[None]):
     @work(thread=True, exclusive=True)
     def run_stage(self, step: int) -> None:
         try:
-            if not self.macos_mode and needs_setup():
+            if not self.native_mode and needs_setup():
                 self.call_from_thread(self._set_status, "Setting up...")
                 self.call_from_thread(self._set_message,
                                       "Preparing Frida and ADB. You do not need a separate setup command.")
@@ -710,12 +738,25 @@ class GoogleAITUI(App[None]):
                 return
             started = time.time()
             command = command_for_step(step, self.repo)
-            return_code = self._execute(command)
+            if self.linux_mode:
+                with TemporaryDirectory(prefix="eplus-dashboard-") as directory:
+                    result_file = Path(directory) / "result.json"
+                    return_code = self._execute([*command, "--result-file", str(result_file)])
+                    report = None
+                    if return_code == 0 and step > 0 and not self._cancel_requested:
+                        try:
+                            data = json.loads(result_file.read_text(encoding="utf-8"))
+                            if isinstance(data, dict) and isinstance(data.get("status"), str):
+                                report = data
+                        except (OSError, ValueError):
+                            pass
+            else:
+                return_code = self._execute(command)
+                report = read_fresh_report(self.repo / "ultra0-report", step, started,
+                                           expected_account=self._verified_account)
             if self._cancel_requested:
                 self.call_from_thread(self._finished, step, Outcome("cancelled", "Check stopped", "Cancelled read-only check."), None)
                 return
-            report = read_fresh_report(self.repo / "ultra0-report", step, started,
-                                       expected_account=self._verified_account)
             result = outcome_for_stage(step, return_code, report)
             self.call_from_thread(self._finished, step, result, report)
         except Exception as error:
@@ -750,6 +791,14 @@ class GoogleAITUI(App[None]):
             btn.display = True
             btn.disabled = False
             self._set_message("Complete the requested action on Android, then click Completed.")
+        if self.linux_mode:
+            if line == "Android device connected.":
+                self.query_one("#device", Static).update("ANDROID DEVICE\nADB • Connected")
+            elif line == "Google Play account verified.":
+                self.query_one("#account", Static).update("GOOGLE ACCOUNT\nVerified")
+            elif line == "Google Play account could not be verified.":
+                self.query_one("#account", Static).update("GOOGLE ACCOUNT\nUnverified")
+            return
         if re.search(r"\bDevice\s+(emulator-\d+|[0-9.]+:\d+)\s*$", line):
             self.query_one("#device", Static).update("Device  •  " + escape(line.split()[-1]))
         # Trust only the structured PowerShell "Account <email>" status line,
@@ -833,16 +882,19 @@ class GoogleAITUI(App[None]):
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="ePlus AI Toolkit Textual frontend")
-    parser.add_argument("--step", type=int, default=1)
+    parser.add_argument("--step", type=int)
     parser.add_argument("--sequence", action="store_true")
     parser.add_argument("--debug", action="store_true")
     args = parser.parse_args(argv)
+    linux = sys.platform == "linux"
+    default_step = 2 if linux and args.sequence else 1
     try:
-        selected = validate_step(args.step)
+        selected = validate_step(default_step if args.step is None else args.step)
     except ValueError as exc:
         parser.error(str(exc))
     GoogleAITUI(repo=Path(__file__).resolve().parent, selected_step=selected,
-                start_sequence=args.sequence, initial_debug=args.debug).run()
+                start_sequence=args.sequence, initial_debug=args.debug,
+                show_advanced=linux and (args.step is not None or args.sequence)).run()
     return 0
 
 

@@ -2,7 +2,7 @@
 
 **Languages:** **English** · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
-A terminal toolkit for **Windows and macOS** to inspect Google AI Pro offers through Android, ADB, Frida and Google Play. The shared Textual dashboard uses a PowerShell/Python launcher on Windows and a native Python adapter on macOS.
+A terminal toolkit for **Windows, macOS and Linux** to inspect Google AI Pro offers through Android, ADB, Frida and Google Play. The shared Textual dashboard uses a PowerShell/Python launcher on Windows and a native Python adapter on macOS and Linux.
 
 <img width="1902" height="912" alt="ePlus AI Toolkit terminal dashboard" src="https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3" />
 
@@ -22,7 +22,7 @@ Read the **[full disclaimer](DISCLAIMER.md)** and [security precautions](SECURIT
 
 ## Install and prepare
 
-**Choose the instructions for your operating system.** Windows runs PowerShell; macOS runs Terminal with a POSIX shell (zsh/bash). **PowerShell is not required or used on macOS.**
+**Choose the instructions for your operating system.** Windows runs PowerShell; macOS runs Terminal with a POSIX shell (zsh/bash). **PowerShell is not required or used on macOS.** For Ubuntu x86_64, see the Linux instructions below.
 
 | Software / configuration | Windows | macOS |
 | --- | --- | --- |
@@ -35,7 +35,7 @@ Read the **[full disclaimer](DISCLAIMER.md)** and [security precautions](SECURIT
 | Frida | **16.5.9**, prepared by the Windows setup helper as needed | **16.5.9**, installed into the local `.venv` by the Mac launcher; Android-side compatibility must be checked |
 | Start command | `.\run-all.ps1` | `sh run-macos.sh` (or `ePlus-AI-Toolkit.command`) |
 
-Both platforms need an authorized, correctly configured Android environment. The macOS implementation covers Steps 0–5 in code, but real Mac/MuMu checkout compatibility has **not** been verified. See the dedicated [Windows guide](docs/INSTALLATION.md) and [macOS guide](docs/MACOS-PREVIEW.md).
+Windows and macOS both need an authorized, correctly configured Android environment. The macOS implementation covers Steps 0–5 in code, but real Mac/MuMu checkout compatibility has **not** been verified. See the dedicated [Windows guide](docs/INSTALLATION.md) and [macOS guide](docs/MACOS-PREVIEW.md).
 
 ### Windows requirements
 
@@ -114,11 +114,32 @@ The launcher prepares Textual and Frida 16.5.9 in a local `.venv`. Optional comm
 The macOS adapter exposes **Steps 0–5**. **Steps 2–5 may initiate real Google Play charges** and require explicit confirmation. No real Mac/MuMu checkout or subscription activation has been validated. [Full macOS guide](docs/MACOS-PREVIEW.md).
 
 
-## Connection diagnostics and Offer Explorer (Windows + macOS)
+## Linux — Install and run
+
+On Ubuntu x86_64, install Git, Python 3.10+ with `venv` and `pip`, and Android SDK Platform-Tools. Put `adb` on `PATH` or set `ADB_PATH` to its executable. Connect a rooted Android phone with Google Play Store and Google One over USB. Enable USB debugging, unlock the phone, and approve the authorization prompt. Check that ADB reports one device with status `device`.
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+adb devices
+sh run-linux.sh
+```
+
+Use a source version that includes `run-linux.sh`. The launcher opens the dashboard and installs the pinned Textual and Frida 16.5.9 dependencies into a local `.venv`. If Ubuntu cannot create that environment, install `python3-venv` or the venv package for your Python version.
+
+- `sh run-linux.sh --check` runs Step 0, which can modify Android, Frida or network settings.
+- `sh run-linux.sh --list` runs Step 1 to list offers without requesting checkout. It can also prepare the Android environment.
+- `sh run-linux.sh --step 3` opens Advanced controls with Step 3 selected. `sh run-linux.sh --sequence` opens guided controls starting at Step 2. Neither starts a stage on launch.
+
+**Android 16 and later:** The Linux launcher stops before device setup because pinned Frida 16.5.9 predates Android 16 support. **Diagnose Android connection** remains available for USB checks.
+
+**Steps 2–5 can incur real Google Play charges.** Each requires separate approval, a verified current Play account and a fresh exact-match offer with a zero-priced first phase. Guided continuation requires verifying the subscription and renewal date in Google Play. Linux checkout coverage uses mocks, and an end-to-end device check is pending. [Linux setup, USB troubleshooting and verification](docs/LINUX.md).
+
+## Connection diagnostics and Offer Explorer (Windows, macOS and Linux)
 
 The dashboard includes two **inspection-first** actions, adapted from the upstream project's guided Android setup and offer overview:
 
-- **Diagnose Android connection:** checks whether an existing ADB executable is available, enumerates authorized Android transports, reads device ABI, checks for Google One and reports the host Frida version. It offers platform-specific guidance: Windows uses PowerShell and MuMu/Android Platform-Tools; macOS uses Terminal/zsh/bash and can install ADB with Homebrew. **It never installs software, connects/restarts the emulator, starts Frida or initiates billing**. Invoking `adb devices` may start the local ADB server.
+- **Diagnose Android connection:** checks whether an existing ADB executable is available, enumerates authorized Android transports, reads device ABI, checks for Google One and reports the host Frida version. It offers platform-specific guidance: Windows uses PowerShell and MuMu/Android Platform-Tools; macOS uses Terminal/zsh/bash and can install ADB with Homebrew. Linux gives USB authorization and ADB permissions guidance. **It never installs software, connects/restarts the emulator, starts Frida or initiates billing**. Invoking `adb devices` may start the local ADB server.
 - **Check Device & Offers (Step 1):** the existing Android/Frida listing flow now shows an **Offer Explorer** below live status. It displays only product ID, offer ID, first billing period and whether the first phase reports zero/nonzero pricing. No offer token, purchase token, raw account identifier, or payment card data is displayed. The query itself may perform Android setup; unlike the connection diagnostic, it is not a zero-side-effect operation.
 
 **Important:** A zero first phase does *not* prove trial eligibility, subscription activation, renewal dates or future prices. Step 1 queries the three Pro product identifiers documented by upstream (`g1.2tb.ai.subs_variant`, `g1.play.2tb.ai`, `g1.2tb.ai`) **only in list mode**; Steps 2–5 retain their existing targeted queries. The current Android report does not include the complete multi-phase renewal schedule, so the Offer Explorer deliberately labels future pricing as **unverified**. Confirm terms and charges directly with Google Play.
@@ -181,7 +202,7 @@ Neither Stop nor closing the terminal reverses an existing Google Play transacti
 
 ## PowerShell CLI (advanced)
 
-**Windows only:** These PowerShell commands apply to `run-all.ps1`, not macOS. On a Mac, use the POSIX `run-macos.sh` launcher and [Mac-specific commands](docs/MACOS-PREVIEW.md). The Windows dashboard and CLI reuse the same PowerShell/Python engine. Explicit command arguments bypass the TUI.
+**Windows only:** These PowerShell commands apply to `run-all.ps1`. See the native commands for [macOS](docs/MACOS-PREVIEW.md) and [Linux](docs/LINUX.md). The Windows dashboard and CLI reuse the same PowerShell/Python engine. Explicit command arguments bypass the TUI.
 
 ### Safe offer check and diagnostics
 
@@ -240,7 +261,7 @@ Only use a `-Serial` observed through ADB. `-Email` constrains the account expec
 
 Verify subscription, payment amount, currency and renewal terms under **[Google Play Subscriptions](https://play.google.com/store/account/subscriptions)**. For developer-facing status codes and advanced platform/Frida problems, see [Detailed setup and troubleshooting](docs/DETAILED-GUIDE.md).
 
-**Platform support:** Windows and macOS use separate launchers. The macOS port has not been validated with a real Mac/MuMu or Google Play transaction; see [macOS guide](docs/MACOS-PREVIEW.md).
+**Platform support:** See the [macOS guide](docs/MACOS-PREVIEW.md) for Mac/MuMu limitations and the [Linux guide](docs/LINUX.md) for USB authorization, permissions and Frida setup.
 
 ## Community support and related projects
 
@@ -250,12 +271,14 @@ If you need help installing or using ePlus AI Toolkit, see the [ePlus Telegram s
 
 ## Repository structure
 
-Active launchers and the Python modules they invoke stay at the repository root. **Use `run-all.ps1` on Windows or `run-macos.sh` on macOS.**
+Active launchers and the Python modules they invoke stay at the repository root. **Use `run-all.ps1` on Windows, `run-macos.sh` on macOS or `run-linux.sh` on Linux.**
 
 | Location | Purpose |
 | --- | --- |
 | `run-all.ps1` | Windows entrypoint (Textual dashboard and guided CLI) |
-| `run-macos.sh`, `ePlus-AI-Toolkit.command`, `macos_runner.py` | macOS launcher and adapter (Steps 0–5; real-device checkout not validated) |
+| `run-macos.sh`, `ePlus-AI-Toolkit.command` | macOS launchers |
+| `run-linux.sh` | Linux launcher |
+| `macos_runner.py` | Shared macOS and Linux adapter for Steps 0–5 |
 | `tui.py`, `tui_core.py`, `ultra0.py`, `setup_env.py`, `device_selector.py`, `query_sku.py` | Active Python runtime and supporting tools; kept in place for compatibility |
 | [`tools/windows/`](tools/windows/README.md) | Optional manual Windows setup shortcut; not required for normal launch |
 | [`legacy/windows/`](legacy/windows/README.md) | Historical batch shortcuts; some bypass account checks with `--force` and may initiate a **real charge**. Use the maintained launcher instead |

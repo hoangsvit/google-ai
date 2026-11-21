@@ -1,13 +1,13 @@
 # ePlus AI Toolkit — 简体中文
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+<!-- Source README.md git-blob: 0b64b84e3db82bb04d1d9bdc4034bd79d4ac595f -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · **简体中文** · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
 
 > **原始文档：**[英文 README](README.md)。中文版采用更易理解的表述，同时保留原文中的命令、技术要求和安全警告。如文档与实际运行情况不一致，请以源代码及英文原文为准。
 
-**ePlus AI Toolkit** 用于查看 Android 设备上的 Google One 和 Google Play 提供的 Google AI Pro 优惠。它支持 **Windows 和 macOS**：Windows 用户通过 PowerShell 启动，Mac 用户则使用 Terminal（zsh/bash）。Textual 图形化终端界面与命令行模式共用 Python、ADB 和 Frida 执行引擎。
+**ePlus AI Toolkit** 用于查看 Android 设备上的 Google One 和 Google Play 提供的 Google AI Pro 优惠。它支持 **Windows、macOS 和 Linux**。Windows 使用 PowerShell，macOS 和 Linux 则使用各自的终端启动脚本和共用的 Python 适配器。Textual 图形化终端界面与命令行模式共用 Python、ADB 和 Frida 执行引擎。
 
 ![ePlus AI Toolkit 界面](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
 
@@ -105,11 +105,32 @@ sh run-macos.sh
 
 `sh run-macos.sh` 打开包含 **步骤 0–5** 的 Textual 界面。`--check` 检查环境（可能改变配置）；`--list` 仅查询优惠；`--step 2` 只预选该步骤，**不会自动付款**。步骤 2–5 可能产生真实费用，必须逐步确认。**真实 Mac/MuMu 上的支付尚未验证。** 参阅 [Mac 详细指南](docs/MACOS-PREVIEW.md)。
 
-## 检查 Android 连接并查看优惠（Windows + macOS）
+## Linux — 安装和启动
+
+在 Ubuntu x86_64 上安装 Git、带有 `venv` 和 `pip` 的 Python 3.10 或更高版本，以及 Android SDK Platform-Tools。将 `adb` 加入 `PATH`，或用 `ADB_PATH` 指定可执行文件。用 USB 连接已取得 root 权限且装有 Google Play 商店和 Google One 的 Android 手机。打开 USB 调试，解锁手机并确认授权。ADB 应只显示一台状态为 `device` 的设备。
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+adb devices
+sh run-linux.sh
+```
+
+请选择包含 `run-linux.sh` 的版本。启动脚本会打开界面，并在本地 `.venv` 中安装固定版本的 Textual 和 Frida 16.5.9。如果 Ubuntu 无法创建虚拟环境，请安装 `python3-venv` 或与当前 Python 版本对应的 venv 软件包。
+
+- `sh run-linux.sh --check` 运行第 0 步，可能更改 Android、Frida 或网络设置。
+- `sh run-linux.sh --list` 运行第 1 步以查看优惠，不会发起结账，但仍可能配置 Android 环境。
+- `sh run-linux.sh --step 3` 打开高级设置并预选第 3 步。 `sh run-linux.sh --sequence` 打开从第 2 步开始的引导设置。两个命令都只打开界面，不会执行步骤。
+
+**Android 16 及更高版本：** 固定使用的 Frida 16.5.9 尚不支持 Android 16，因此 Linux 启动脚本会在配置设备前停止。仍可通过 **Diagnose Android connection** 检查 USB 连接。
+
+**第 2–5 步可能产生真实的 Google Play 费用。** 每一步都须单独确认、核实当前 Play 账号，并通过本次查询确认优惠完全匹配且首期价格为零。继续引导流程前，请在 Google Play 中核实订阅和续订日期。Linux 结账仅通过模拟测试，真机端到端验证尚未完成。 [Linux 安装、USB 故障排查和验证](docs/LINUX.md).
+
+## 检查 Android 连接并查看优惠（Windows、macOS 和 Linux）
 
 控制台提供两项检查功能，分别参考了原项目的 Android 配置流程和优惠列表：
 
-- **Diagnose Android connection（连接诊断）：** 检查电脑是否安装 ADB、列出已授权的 Android 设备，并读取设备 ABI、Google One 安装状态及电脑端 Frida 的版本。Windows 用户会看到 PowerShell、MuMu、Platform-Tools 的操作建议；macOS 用户则会看到 Terminal 和 Homebrew 的说明。此功能**不会安装软件、连接或重启模拟器、启动 Frida，也不会进行支付**。不过，执行 `adb devices` 可能会启动本地 ADB 服务。
+- **Diagnose Android connection（连接诊断）：** 检查电脑是否安装 ADB、列出已授权的 Android 设备，并读取设备 ABI、Google One 安装状态及电脑端 Frida 的版本。Windows 用户会看到 PowerShell、MuMu、Platform-Tools 的操作建议；macOS 用户则会看到 Terminal 和 Homebrew 的说明。此功能**不会安装软件、连接或重启模拟器、启动 Frida，也不会进行支付**。不过，执行 `adb devices` 可能会启动本地 ADB 服务。 Linux 的连接诊断会提示如何授权 USB 调试及检查 ADB 访问权限。
 - **Check Device & Offers (Step 1)（检查设备与优惠）：** 使用现有 Android/Frida 流程查询优惠，并在 Live Status 下方的 **Offer Explorer** 中展示结果。页面只显示产品 ID、优惠 ID、首个计费周期以及首期价格是否为零，**不会展示**优惠或购买 token、未经脱敏的账户标识和银行卡信息。与连接诊断不同，该步骤可能会准备 Android 环境，**因此并非完全没有副作用**。
 
 **首期价格为零，不等于一定可以免费使用或成功延长订阅。** Step 1 只在列表查询模式下检查 `g1.2tb.ai.subs_variant`、`g1.play.2tb.ai` 和 `g1.2tb.ai`，而 Steps 2–5 继续使用各自的查询流程。由于 Android 报告未提供后续各期的完整费用信息，Offer Explorer 会把未来价格标记为**尚未验证**。实际收费与续费条款请在 Google Play 中确认。
@@ -157,7 +178,7 @@ TUI 中**每个结账步骤均需单独批准**。当工具提示已尝试提交
 
 ## 4. PowerShell 命令行操作（高级）
 
-**仅适用于 Windows。** 以下命令在 PowerShell 中使用。Mac 用户请改用 `run-macos.sh`，并参考 [macOS 使用指南](docs/MACOS-PREVIEW.md)。启动时指定参数会直接进入 CLI 模式，而不是打开 Textual 界面。
+**仅适用于 Windows。** 以下命令在 PowerShell 中使用。Mac 用户请改用 `run-macos.sh`，并参考 [macOS 使用指南](docs/MACOS-PREVIEW.md)。启动时指定参数会直接进入 CLI 模式，而不是打开 Textual 界面。 Linux 用户请使用 `run-linux.sh` 并参阅 [Linux 指南](docs/LINUX.md)。
 
 **查询/诊断：不发起结账**
 
@@ -221,7 +242,9 @@ CLI 确认选项为 **1 = Continue（继续）、2 = End run（结束）、0 = S
 | 文件或目录 | 用途 |
 | --- | --- |
 | `run-all.ps1` | 在 Windows 上打开 Textual 界面或命令行模式 |
-| `run-macos.sh`、`ePlus-AI-Toolkit.command`、`macos_runner.py` | 在 Mac 上启动、运行 Steps 0–5；尚未验证真实支付 |
+| `run-macos.sh`、`ePlus-AI-Toolkit.command` | 在 Mac 上启动、运行 Steps 0–5；尚未验证真实支付 |
+| `run-linux.sh` | Linux 启动脚本 |
+| `macos_runner.py` | macOS 和 Linux 共用的第 0–5 步适配器 |
 | `tui.py`、`tui_core.py`、`ultra0.py`、`setup_env.py`、`device_selector.py`、`query_sku.py` | 工具当前使用的 Python 组件 |
 | [`tools/windows/`](tools/windows/README.md) | 按需使用的 Windows 手动配置工具 |
 | [`legacy/windows/`](legacy/windows/README.md) | 旧版 .bat 脚本；部分脚本使用 `--force` 跳过账户检查，**可能产生实际费用** |

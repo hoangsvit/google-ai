@@ -1,13 +1,13 @@
 # ePlus AI Toolkit — 한국어
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+<!-- Source README.md git-blob: 0b64b84e3db82bb04d1d9bdc4034bd79d4ac595f -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · **한국어** · [Español](README.es.md) · [Français](README.fr.md)
 
 
 > **원본 문서:** [영어 README](README.md). 한국어로 쉽게 읽을 수 있도록 설명을 다듬었으며, 명령어와 기술적 조건, 안전 경고는 원본에 맞추었습니다. 설명과 실제 동작이 다를 경우 소스 코드와 영어 문서를 확인하세요.
 
-**ePlus AI Toolkit**은 Android 기기의 Google One과 Google Play에 표시되는 Google AI Pro 혜택을 확인하는 도구입니다. **Windows**에서는 PowerShell로, **macOS**에서는 Terminal(zsh/bash)로 실행합니다. Textual 화면과 명령줄 방식은 모두 Python·ADB·Frida 기반의 동일한 실행 엔진을 사용합니다.
+**ePlus AI Toolkit**은 Android 기기의 Google One과 Google Play에 표시되는 Google AI Pro 혜택을 확인하는 도구입니다. **Windows**에서는 PowerShell로 실행합니다. **macOS와 Linux**는 운영체제별 실행 스크립트와 공통 Python 어댑터를 사용합니다. Textual 화면과 명령줄 방식은 모두 Python·ADB·Frida 기반의 동일한 실행 엔진을 사용합니다.
 
 ![ePlus AI Toolkit 화면](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
 
@@ -105,11 +105,32 @@ sh run-macos.sh
 
 `sh run-macos.sh`는 **0–5단계**가 포함된 Textual 대시보드를 엽니다. `--check`는 환경을 확인하며 설정을 바꿀 수 있고, `--list`는 혜택 조회만 수행합니다. `--step 2`는 화면에서 단계를 선택할 뿐 **자동 결제하지 않습니다**. 2–5단계는 실제 요금이 발생할 수 있어 단계별 승인이 필요합니다. **실제 Mac/MuMu에서 결제는 아직 검증되지 않았습니다.** [Mac 상세 안내](docs/MACOS-PREVIEW.md)를 참고하세요.
 
-## Android 연결 확인 및 혜택 조회 (Windows + macOS)
+## Linux — 설치 및 실행
+
+Ubuntu x86_64에서 Git, `venv`와 `pip`를 사용할 수 있는 Python 3.10 이상, Android SDK Platform-Tools를 설치하세요. `adb`를 `PATH`에 추가하거나 `ADB_PATH`로 실행 파일을 지정합니다. Google Play 스토어와 Google One이 설치된 루팅 Android 휴대전화를 USB로 연결하세요. USB 디버깅을 켜고 휴대전화의 잠금을 해제한 후 연결을 승인합니다. ADB에 상태가 `device`인 기기가 한 대만 표시되는지 확인하세요.
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+adb devices
+sh run-linux.sh
+```
+
+`run-linux.sh`가 포함된 버전을 사용하세요. 실행 스크립트는 대시보드를 열고 지정된 버전의 Textual과 Frida 16.5.9를 로컬 `.venv`에 설치합니다. Ubuntu에서 가상 환경을 만들 수 없다면 `python3-venv` 또는 사용 중인 Python 버전에 맞는 venv 패키지를 설치하세요.
+
+- `sh run-linux.sh --check`는 Step 0을 실행하며 Android, Frida 또는 네트워크 설정을 변경할 수 있습니다.
+- `sh run-linux.sh --list`는 Step 1을 실행해 결제 요청 없이 혜택을 조회합니다. 이 과정에서 Android 환경 설정이 이루어질 수 있습니다.
+- `sh run-linux.sh --step 3`은 Step 3이 선택된 고급 설정을 엽니다. `sh run-linux.sh --sequence`는 Step 2부터 시작하는 안내 설정을 엽니다. 두 명령 모두 단계를 자동으로 실행하지 않습니다.
+
+**Android 16 이상:** 고정 버전인 Frida 16.5.9는 Android 16을 지원하지 않으므로 Linux 실행 스크립트는 기기를 설정하기 전에 중단됩니다. **Diagnose Android connection**으로 USB 연결은 확인할 수 있습니다.
+
+**Steps 2–5에서는 Google Play에 실제 요금이 발생할 수 있습니다.** 각 단계마다 개별 승인, 현재 Play 계정 확인, 그리고 최신 조회 결과에서 정확히 일치하며 첫 기간 요금이 0인 혜택이 필요합니다. 다음 단계로 넘어가기 전에 Google Play에서 구독과 갱신일을 확인하세요. Linux 결제는 모의 테스트로 검증하며, 실기기 전체 검증은 아직 완료되지 않았습니다. [Linux 설치, USB 문제 해결 및 검증](docs/LINUX.md).
+
+## Android 연결 확인 및 혜택 조회 (Windows, macOS, Linux)
 
 대시보드에는 원본 프로젝트의 Android 설정 안내와 혜택 목록을 바탕으로 만든 두 가지 확인 기능이 있습니다.
 
-- **Diagnose Android connection — Android 연결 진단:** ADB 설치 여부와 연결이 승인된 Android 기기를 확인하고, 기기의 ABI 아키텍처, Google One 설치 상태, 컴퓨터의 Frida 버전을 표시합니다. Windows에서는 PowerShell·MuMu·Platform-Tools, macOS에서는 Terminal·Homebrew를 이용한 안내를 제공합니다. **소프트웨어 설치, 에뮬레이터 연결·재시작, Frida 실행, 결제는 수행하지 않습니다.** 단, `adb devices` 명령으로 로컬 ADB 서버가 시작될 수 있습니다.
+- **Diagnose Android connection — Android 연결 진단:** ADB 설치 여부와 연결이 승인된 Android 기기를 확인하고, 기기의 ABI 아키텍처, Google One 설치 상태, 컴퓨터의 Frida 버전을 표시합니다. Windows에서는 PowerShell·MuMu·Platform-Tools, macOS에서는 Terminal·Homebrew를 이용한 안내를 제공합니다. **소프트웨어 설치, 에뮬레이터 연결·재시작, Frida 실행, 결제는 수행하지 않습니다.** 단, `adb devices` 명령으로 로컬 ADB 서버가 시작될 수 있습니다. Linux에서는 USB 디버깅 승인과 ADB 접근 권한을 확인하는 방법을 안내합니다.
 - **Check Device & Offers (Step 1) — 기기 및 혜택 확인:** 기존 Android/Frida 조회 기능으로 혜택을 가져와 Live Status 아래의 **Offer Explorer**에 표시합니다. 상품 ID, 혜택 ID, 첫 결제 기간, 첫 기간의 요금이 0인지 여부만 보여 줍니다. 혜택·구매 토큰이나 원본 계정 식별 정보, 카드 정보는 표시하지 않습니다. 이 단계는 Android 환경을 준비하면서 **일부 설정을 변경할 수 있으므로**, 연결 진단과 달리 완전히 읽기 전용은 아닙니다.
 
 **첫 기간의 요금이 0이라고 해서 무료 이용이나 구독 기간 연장이 보장되지는 않습니다.** Step 1에서는 목록 조회 용도로만 `g1.2tb.ai.subs_variant`, `g1.play.2tb.ai`, `g1.2tb.ai`를 확인합니다. Steps 2–5는 각 단계에 맞는 조회를 그대로 사용합니다. Android 보고서에는 이후 결제 기간의 요금이 모두 포함되지 않으므로, Offer Explorer에서는 미래 요금을 **미확인**으로 표시합니다. 실제 청구 금액과 갱신 조건은 Google Play에서 직접 확인하세요.
@@ -157,7 +178,7 @@ TUI에서 **각 결제 단계는 별도 승인이 필요합니다**. 도구가 �
 
 ## 4. PowerShell 명령어 (고급)
 
-**Windows 전용 명령어입니다.** Mac에서는 PowerShell 대신 `run-macos.sh`와 [macOS 안내](docs/MACOS-PREVIEW.md)를 사용하세요. 실행할 때 매개변수를 지정하면 Textual 화면 대신 CLI 모드가 열립니다.
+**Windows 전용 명령어입니다.** Mac에서는 PowerShell 대신 `run-macos.sh`와 [macOS 안내](docs/MACOS-PREVIEW.md)를 사용하세요. 실행할 때 매개변수를 지정하면 Textual 화면 대신 CLI 모드가 열립니다. Linux에서는 `run-linux.sh`와 [Linux 안내](docs/LINUX.md)를 사용하세요.
 
 **조회/진단(구독 결제 없음):**
 
@@ -221,7 +242,9 @@ ePlus AI Toolkit 설치나 사용에 문제가 있다면 [ePlus Telegram 지원�
 | 파일 또는 폴더 | 역할 |
 | --- | --- |
 | `run-all.ps1` | Windows에서 Textual 대시보드 또는 CLI 실행 |
-| `run-macos.sh`, `ePlus-AI-Toolkit.command`, `macos_runner.py` | Mac에서 Steps 0–5 실행 및 제어. 실기기 결제는 미검증 |
+| `run-macos.sh`, `ePlus-AI-Toolkit.command` | Mac에서 Steps 0–5 실행 및 제어. 실기기 결제는 미검증 |
+| `run-linux.sh` | Linux 실행 스크립트 |
+| `macos_runner.py` | macOS와 Linux의 Steps 0–5 공통 어댑터 |
 | `tui.py`, `tui_core.py`, `ultra0.py`, `setup_env.py`, `device_selector.py`, `query_sku.py` | 현재 사용하는 Python 모듈과 보조 도구 |
 | [`tools/windows/`](tools/windows/README.md) | 필요한 경우 사용하는 Windows 수동 설정 |
 | [`legacy/windows/`](legacy/windows/README.md) | 이전 .bat 파일. 일부는 `--force`로 계정 확인을 건너뛰므로 **실제 요금이 발생할 수 있음** |

@@ -314,7 +314,8 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
         from tui import GoogleAITUI
 
         with tempfile.TemporaryDirectory() as directory:
-            app = GoogleAITUI(repo=Path(directory))
+            with patch("tui.sys.platform", "win32"):
+                app = GoogleAITUI(repo=Path(directory))
             with patch.object(GoogleAITUI, "run_stage"):
                 async with app.run_test(size=(110, 35)):
                     app._received("Message about Account other@example.com")

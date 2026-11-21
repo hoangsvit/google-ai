@@ -17,7 +17,7 @@
 
 Verify subscription, payment amount, currency and renewal terms under **[Google Play Subscriptions](https://play.google.com/store/account/subscriptions)**. For developer-facing status codes and advanced platform/Frida problems, see [Detailed setup and troubleshooting](DETAILED-GUIDE.md).
 
-**Platform support:** The repository contains Windows and macOS launchers. Mac host CI does not establish real Android/MuMu compatibility or Google Play payment success; see the [Mac setup and limitations](MACOS-PREVIEW.md).
+**Platform support:** See the [Mac setup and limitations](MACOS-PREVIEW.md) and [Linux setup and USB troubleshooting](LINUX.md). Real Mac/MuMu checkout and Linux end-to-end device validation remain pending.
 
 ## Community support and related projects
 

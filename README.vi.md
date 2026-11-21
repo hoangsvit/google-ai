@@ -1,13 +1,13 @@
 # ePlus AI Toolkit — Tiếng Việt
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+<!-- Source README.md git-blob: 0b64b84e3db82bb04d1d9bdc4034bd79d4ac595f -->
 
 [English](README.md) · **Tiếng Việt** · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
 
 > **Tài liệu gốc:** [README tiếng Anh](README.md). Nội dung bên dưới được diễn đạt bằng tiếng Việt để dễ theo dõi, đồng thời giữ nguyên các lệnh, điều kiện và lưu ý an toàn. Khi thông tin khác với chương trình thực tế, hãy ưu tiên kiểm tra mã nguồn và tài liệu gốc.
 
-**ePlus AI Toolkit** giúp bạn kiểm tra các ưu đãi Google AI Pro được hiển thị qua Google One và Google Play trên thiết bị Android. Công cụ chạy trên **Windows và macOS**: Windows sử dụng PowerShell, còn macOS sử dụng Terminal (zsh/bash). Cả giao diện Textual lẫn chế độ dòng lệnh đều dùng chung bộ xử lý Python, ADB và Frida.
+**ePlus AI Toolkit** giúp bạn kiểm tra các ưu đãi Google AI Pro được hiển thị qua Google One và Google Play trên thiết bị Android. Công cụ chạy trên **Windows, macOS và Linux**. Windows sử dụng PowerShell, còn macOS và Linux dùng trình bao dòng lệnh và bộ điều phối Python dùng chung. Cả giao diện Textual lẫn chế độ dòng lệnh đều dùng chung bộ xử lý Python, ADB và Frida.
 
 ![Giao diện ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
 
@@ -107,11 +107,32 @@ sh run-macos.sh
 
 Lệnh `sh run-macos.sh` mở cùng giao diện Textual với **Steps 0–5**. `--check` kiểm tra môi trường (có thể thay đổi cấu hình), `--list` chỉ liệt kê ưu đãi, và `--step 2` chỉ mở TUI với Step 2 được chọn — **không tự thanh toán**. Các Steps 2–5 có thể phát sinh phí thật và yêu cầu xác nhận riêng. **Chưa kiểm thử giao dịch trên Mac/MuMu thực tế.** Xem [hướng dẫn Mac chi tiết](docs/MACOS-PREVIEW.md).
 
-## Kiểm tra kết nối Android và xem ưu đãi (Windows + macOS)
+## Linux — Cài đặt và khởi chạy
+
+Trên Ubuntu x86_64, hãy cài Git, Python 3.10 trở lên kèm `venv` và `pip`, cùng Android SDK Platform-Tools. Thêm `adb` vào `PATH` hoặc đặt `ADB_PATH` trỏ tới tệp thực thi. Kết nối qua USB với điện thoại Android đã root và có Google Play Store, Google One. Bật gỡ lỗi USB, mở khóa điện thoại và chấp nhận yêu cầu cấp quyền. ADB phải hiển thị một thiết bị ở trạng thái `device`.
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+adb devices
+sh run-linux.sh
+```
+
+Dùng phiên bản có tệp `run-linux.sh`. Tập lệnh mở giao diện và cài các phiên bản Textual và Frida 16.5.9 đã định sẵn vào `.venv` cục bộ. Nếu Ubuntu không tạo được môi trường, hãy cài `python3-venv` hoặc gói venv dành cho phiên bản Python đang dùng.
+
+- `sh run-linux.sh --check` chạy Bước 0 và có thể thay đổi cài đặt Android, Frida hoặc mạng.
+- `sh run-linux.sh --list` chạy Bước 1 để xem ưu đãi mà không yêu cầu thanh toán. Lệnh vẫn có thể thiết lập môi trường Android.
+- `sh run-linux.sh --step 3` mở phần nâng cao với Bước 3 đã chọn. `sh run-linux.sh --sequence` mở chế độ hướng dẫn từ Bước 2. Cả hai lệnh chỉ mở giao diện.
+
+**Android 16 trở lên:** Tập lệnh Linux dừng trước khi thiết lập thiết bị vì Frida 16.5.9 chưa hỗ trợ Android 16. Bạn vẫn có thể kiểm tra USB bằng **Diagnose Android connection**.
+
+**Các bước 2–5 có thể phát sinh khoản thanh toán thật trên Google Play.** Mỗi bước cần xác nhận riêng, tài khoản Play đang dùng đã được xác minh, và kết quả mới chứa đúng ưu đãi có kỳ đầu giá 0. Trước khi tiếp tục chuỗi, hãy xác minh gói thuê bao và ngày gia hạn trong Google Play. Luồng thanh toán trên Linux được kiểm thử bằng mô phỏng. Kiểm tra trọn quy trình trên thiết bị thật vẫn chưa hoàn tất. [Cài đặt Linux, xử lý lỗi USB và kiểm tra](docs/LINUX.md).
+
+## Kiểm tra kết nối Android và xem ưu đãi (Windows, macOS và Linux)
 
 Trên bảng điều khiển có hai chức năng kiểm tra được phát triển từ hướng dẫn cấu hình Android và danh sách ưu đãi của dự án gốc:
 
-- **Diagnose Android connection — Kiểm tra kết nối Android:** Xác định ADB đã có trên máy hay chưa, liệt kê thiết bị Android đã cấp quyền kết nối, đọc kiến trúc ABI, kiểm tra ứng dụng Google One và phiên bản Frida trên máy tính. Tùy hệ điều hành, công cụ sẽ hướng dẫn thiết lập bằng PowerShell/MuMu trên Windows hoặc Terminal/Homebrew trên macOS. Chức năng này **không tự cài phần mềm, kết nối hay khởi động lại máy ảo, chạy Frida hoặc thực hiện thanh toán**. Tuy nhiên, lệnh `adb devices` có thể khởi động ADB server trên máy.
+- **Diagnose Android connection — Kiểm tra kết nối Android:** Xác định ADB đã có trên máy hay chưa, liệt kê thiết bị Android đã cấp quyền kết nối, đọc kiến trúc ABI, kiểm tra ứng dụng Google One và phiên bản Frida trên máy tính. Tùy hệ điều hành, công cụ sẽ hướng dẫn thiết lập bằng PowerShell/MuMu trên Windows hoặc Terminal/Homebrew trên macOS. Chức năng này **không tự cài phần mềm, kết nối hay khởi động lại máy ảo, chạy Frida hoặc thực hiện thanh toán**. Tuy nhiên, lệnh `adb devices` có thể khởi động ADB server trên máy. Trên Linux, phần chẩn đoán hướng dẫn cấp quyền gỡ lỗi USB và kiểm tra quyền truy cập của ADB.
 - **Check Device & Offers (Step 1) — Kiểm tra thiết bị và ưu đãi:** Dùng quy trình Android/Frida hiện có để lấy danh sách ưu đãi rồi hiển thị trong **Offer Explorer** bên dưới Live Status. Màn hình chỉ cho biết mã sản phẩm, mã ưu đãi, kỳ thanh toán đầu tiên và việc giá kỳ đầu có bằng 0 hay không. Công cụ **không hiển thị** offer token, purchase token, thông tin tài khoản đầy đủ hoặc dữ liệu thẻ. Khác với tính năng chẩn đoán kết nối, bước này có thể thiết lập lại một số thành phần Android nên **không hoàn toàn chỉ đọc**.
 
 **Giá kỳ đầu bằng 0 không đồng nghĩa với việc được dùng miễn phí hoặc gia hạn thành công.** Step 1 chỉ truy vấn danh sách của ba mã sản phẩm `g1.2tb.ai.subs_variant`, `g1.play.2tb.ai` và `g1.2tb.ai`; các bước 2–5 vẫn truy vấn đúng ưu đãi dành cho từng bước. Vì báo cáo Android chưa có đủ thông tin về những kỳ thanh toán tiếp theo, Offer Explorer đánh dấu giá tương lai là **chưa được xác minh**. Hãy đối chiếu các điều khoản và số tiền thực tế ngay trong Google Play.
@@ -160,7 +181,7 @@ Khi một bước đang chạy, các nút **Check Device & Offers**, **Run** và
 
 ## 4. PowerShell CLI (nâng cao)
 
-**Chỉ dành cho Windows.** Các lệnh PowerShell không áp dụng cho macOS; Mac dùng `run-macos.sh` và [hướng dẫn riêng](docs/MACOS-PREVIEW.md). Khi truyền tham số cụ thể, lệnh sẽ chạy ở chế độ CLI thay vì mở giao diện Textual.
+**Chỉ dành cho Windows.** Các lệnh PowerShell không áp dụng cho macOS; Mac dùng `run-macos.sh` và [hướng dẫn riêng](docs/MACOS-PREVIEW.md). Khi truyền tham số cụ thể, lệnh sẽ chạy ở chế độ CLI thay vì mở giao diện Textual. Trên Linux, dùng `run-linux.sh` và xem [hướng dẫn Linux](docs/LINUX.md).
 
 **Kiểm tra, không mua hàng:**
 
@@ -229,7 +250,9 @@ Các tệp khởi chạy và mô-đun Python chính vẫn nằm tại thư mục
 | Đường dẫn | Vai trò |
 | --- | --- |
 | `run-all.ps1` | Khởi chạy giao diện Textual và chế độ CLI trên Windows |
-| `run-macos.sh`, `ePlus-AI-Toolkit.command`, `macos_runner.py` | Khởi chạy và điều phối các bước 0–5 trên Mac; chưa xác minh thanh toán trên thiết bị thật |
+| `run-macos.sh`, `ePlus-AI-Toolkit.command` | Khởi chạy và điều phối các bước 0–5 trên Mac; chưa xác minh thanh toán trên thiết bị thật |
+| `run-linux.sh` | Tập lệnh khởi chạy trên Linux |
+| `macos_runner.py` | Bộ điều phối các bước 0–5 dùng chung cho macOS và Linux |
 | `tui.py`, `tui_core.py`, `ultra0.py`, `setup_env.py`, `device_selector.py`, `query_sku.py` | Các mô-đun Python đang được sử dụng |
 | [`tools/windows/`](tools/windows/README.md) | Công cụ thiết lập Windows thủ công, chỉ dùng khi cần |
 | [`legacy/windows/`](legacy/windows/README.md) | Các tệp .bat cũ; một số sử dụng `--force` để bỏ qua bước đối chiếu tài khoản, có thể **phát sinh phí thật**. Nên dùng launcher được duy trì |

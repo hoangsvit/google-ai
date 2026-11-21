@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve the Windows and macOS implementations of this toolkit. The original implementation comes from [gylive/google-ultra](https://github.com/gylive/google-ultra); current maintenance is by [David Nguyen (@hoangsvit)](https://github.com/hoangsvit).
+Thanks for helping improve the Windows, macOS and Linux implementations of this toolkit. The original implementation comes from [gylive/google-ultra](https://github.com/gylive/google-ultra); current maintenance is by [David Nguyen (@hoangsvit)](https://github.com/hoangsvit).
 
 ## Report an issue
 
@@ -16,6 +16,10 @@ Use [GitHub Issues](https://github.com/hoangsvit/google-ai/issues) and include t
 ## macOS preview contributions
 
 The experimental [full macOS port](docs/MACOS-PREVIEW.md) includes Steps 0–5 and per-stage checkout safeguards. Changes must include mock-only tests for account/offer validation, approval and error paths on Mac runners. Never attempt live checkout in CI or claim real-device compatibility from mocks. Send PRs to `dev` first.
+
+## Linux contributions
+
+The [Linux launcher](docs/LINUX.md) shares the native stage adapter with macOS. CI runs offline tests on Ubuntu with Python 3.11 and 3.13. Validate device compatibility separately on a rooted test phone and stop the hardware test if the phone becomes unstable.
 
 ## Propose a change
 

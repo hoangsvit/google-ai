@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Español
 
-<!-- Source README.md git-blob: 52a6b829e68d1c83f2ffba023a0d43364ea8b6eb -->
+<!-- Source README.md git-blob: 0b64b84e3db82bb04d1d9bdc4034bd79d4ac595f -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · **Español** · [Français](README.fr.md)
 
@@ -8,7 +8,7 @@
 
 > **Documento de referencia:** [README original en inglés](README.md). Esta versión está redactada en español para que resulte más fácil de seguir, sin cambiar las instrucciones técnicas ni las advertencias. Si encuentras alguna diferencia, consulta el código y la documentación original.
 
-**ePlus AI Toolkit** permite consultar las ofertas de Google AI Pro disponibles a través de Google One y Google Play en un dispositivo Android. Funciona en **Windows y macOS**: en Windows se inicia desde PowerShell y en Mac desde Terminal (zsh/bash). Tanto la interfaz Textual como los comandos de terminal utilizan el mismo motor basado en Python, ADB y Frida.
+**ePlus AI Toolkit** permite consultar las ofertas de Google AI Pro disponibles a través de Google One y Google Play en un dispositivo Android. Funciona en **Windows, macOS y Linux**. En Windows se inicia desde PowerShell. macOS y Linux tienen sus propios scripts de inicio y comparten un adaptador de Python. Tanto la interfaz Textual como los comandos de terminal utilizan el mismo motor basado en Python, ADB y Frida.
 
 ![Interfaz de ePlus AI Toolkit](https://github.com/user-attachments/assets/f16cde7e-022f-43bc-97fe-310012b0a5d3)
 
@@ -106,11 +106,32 @@ sh run-macos.sh
 
 `sh run-macos.sh` abre el panel Textual con **pasos 0–5**. `--check` revisa el entorno (puede modificar ajustes), `--list` solo consulta ofertas y `--step 2` solo selecciona el paso, **sin pagar automáticamente**. Los pasos 2–5 pueden generar cargos reales y requieren aprobación individual. **Los pagos en un Mac/MuMu real aún no se han verificado.** Consulta la [guía Mac completa](docs/MACOS-PREVIEW.md).
 
-## Comprobar la conexión y consultar ofertas (Windows + macOS)
+## Linux — Instalación y ejecución
+
+En Ubuntu x86_64, instala Git, Python 3.10 o posterior con `venv` y `pip`, y Android SDK Platform-Tools. Agrega `adb` a `PATH` o indica la ruta del ejecutable en `ADB_PATH`. Conecta por USB un teléfono Android con acceso root, Google Play Store y Google One. Activa la depuración USB, desbloquea el teléfono y autoriza la conexión. Comprueba que ADB muestre un solo dispositivo con estado `device`.
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+adb devices
+sh run-linux.sh
+```
+
+Usa una versión que incluya `run-linux.sh`. El script abre el panel e instala las versiones fijadas de Textual y Frida 16.5.9 en un entorno local `.venv`. Si Ubuntu no puede crearlo, instala `python3-venv` o el paquete venv de tu versión de Python.
+
+- `sh run-linux.sh --check` ejecuta el paso 0 y puede modificar ajustes de Android, Frida o la red.
+- `sh run-linux.sh --list` ejecuta el paso 1 y lista las ofertas sin iniciar el pago, aunque puede preparar el entorno de Android.
+- `sh run-linux.sh --step 3` abre los controles avanzados con el paso 3 seleccionado. `sh run-linux.sh --sequence` abre los controles guiados desde el paso 2. Ninguno inicia un paso automáticamente.
+
+**Android 16 y versiones posteriores.** El script de Linux se detiene antes de configurar el dispositivo porque Frida 16.5.9 es anterior a la compatibilidad con Android 16. Puedes comprobar la conexión USB con **Diagnose Android connection**.
+
+**Los pasos 2–5 pueden generar cargos reales en Google Play.** Cada uno requiere su propia aprobación, la verificación de la cuenta de Play activa y una consulta reciente que identifique exactamente la oferta con un primer período de precio cero. Antes de avanzar, verifica la suscripción y la fecha de renovación en Google Play. Los pagos en Linux se comprueban con simulaciones. Sigue pendiente la validación completa en un dispositivo real. [Instalación en Linux, solución de problemas de USB y verificación](docs/LINUX.md).
+
+## Comprobar la conexión y consultar ofertas (Windows, macOS y Linux)
 
 El panel incorpora dos funciones de consulta inspiradas en la configuración de Android y el listado de ofertas del proyecto original:
 
-- **Diagnose Android connection — Diagnosticar la conexión:** Comprueba si ADB está disponible, muestra los dispositivos Android autorizados, obtiene su arquitectura ABI y verifica la presencia de Google One y la versión de Frida instalada en el equipo. Ofrece instrucciones adaptadas a Windows (PowerShell, MuMu y Platform-Tools) o macOS (Terminal y Homebrew). **No instala programas, conecta ni reinicia el emulador, inicia Frida ni realiza pagos**. Ten en cuenta que `adb devices` sí puede poner en marcha el servidor ADB local.
+- **Diagnose Android connection — Diagnosticar la conexión:** Comprueba si ADB está disponible, muestra los dispositivos Android autorizados, obtiene su arquitectura ABI y verifica la presencia de Google One y la versión de Frida instalada en el equipo. Ofrece instrucciones adaptadas a Windows (PowerShell, MuMu y Platform-Tools) o macOS (Terminal y Homebrew). **No instala programas, conecta ni reinicia el emulador, inicia Frida ni realiza pagos**. Ten en cuenta que `adb devices` sí puede poner en marcha el servidor ADB local. En Linux, el diagnóstico ayuda a autorizar la depuración USB y comprobar los permisos de ADB.
 - **Check Device & Offers (Step 1) — Comprobar dispositivo y ofertas:** Consulta las ofertas con el sistema Android/Frida existente y las muestra en **Offer Explorer**, debajo de Live Status. Solo aparecen el identificador de producto, el identificador de oferta, el primer período de facturación y si el precio inicial es cero. No se muestran tokens de ofertas o compras, datos completos de la cuenta ni información de tarjetas. Esta consulta **puede preparar el entorno Android**, así que no es una operación completamente libre de efectos secundarios.
 
 **Que el precio inicial sea cero no significa que tengas una suscripción gratuita ni que se haya ampliado su duración.** Step 1 consulta, únicamente en modo de listado, los productos `g1.2tb.ai.subs_variant`, `g1.play.2tb.ai` y `g1.2tb.ai`. Los pasos 2–5 mantienen sus consultas específicas. Como el informe de Android no incluye todas las tarifas de los períodos posteriores, Offer Explorer indica que los precios futuros están **sin verificar**. Comprueba siempre los importes y las condiciones directamente en Google Play.
@@ -158,7 +179,7 @@ El TUI exige **aprobación explícita por cada paso de pago**. Aunque aparezca u
 
 ## 4. Comandos de PowerShell (avanzado)
 
-**Solo para Windows.** Estos comandos utilizan PowerShell; en macOS debes usar `run-macos.sh` y las [instrucciones para Mac](docs/MACOS-PREVIEW.md). Si indicas parámetros, se abre el modo CLI en lugar del panel Textual.
+**Solo para Windows.** Estos comandos utilizan PowerShell; en macOS debes usar `run-macos.sh` y las [instrucciones para Mac](docs/MACOS-PREVIEW.md). Si indicas parámetros, se abre el modo CLI en lugar del panel Textual. En Linux, usa `run-linux.sh` y consulta la [guía de Linux](docs/LINUX.md).
 
 **Consulta y diagnóstico, sin pago:**
 
@@ -221,7 +242,9 @@ Los scripts de inicio y los módulos Python principales siguen en la carpeta ra�
 | Archivo o carpeta | Para qué sirve |
 | --- | --- |
 | `run-all.ps1` | Abre el panel Textual o el modo CLI de Windows |
-| `run-macos.sh`, `ePlus-AI-Toolkit.command`, `macos_runner.py` | Inicio y ejecución de los pasos 0–5 en Mac; los pagos reales no se han verificado |
+| `run-macos.sh`, `ePlus-AI-Toolkit.command` | Inicio y ejecución de los pasos 0–5 en Mac; los pagos reales no se han verificado |
+| `run-linux.sh` | Script de inicio para Linux |
+| `macos_runner.py` | Adaptador de los pasos 0–5 compartido por macOS y Linux |
 | `tui.py`, `tui_core.py`, `ultra0.py`, `setup_env.py`, `device_selector.py`, `query_sku.py` | Componentes Python que utiliza actualmente la herramienta |
 | [`tools/windows/`](tools/windows/README.md) | Configuración manual opcional para Windows |
 | [`legacy/windows/`](legacy/windows/README.md) | Archivos .bat antiguos; algunos usan `--force` para omitir la comprobación de cuenta y pueden provocar **cargos reales** |
