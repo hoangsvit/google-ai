@@ -9,7 +9,10 @@
 1. Click **Check Device & Offers** on the welcome screen. It invokes **Step 1 — Available offers**, intended to *list* offers rather than initiate checkout.
 2. Watch **Live Status** for the stage, elapsed time, current activity and result. **Show technical details** reveals execution output. A warning after 30 seconds without new output indicates inactivity, **not proof of a hang**.
 3. Check the account and offer information on the Android screen. A listed offer is **not** a guarantee of eligibility or a successful subscription.
-4. Expand **Advanced: Run by step** only when you deliberately need to select a different stage.
+4. If the verified account has a listed 12-month offer with a zero-priced first phase, choose **Continue to Step 2** in the completion dialog or on the main screen. A separate approval explains the payment risk before the step starts. If the offer is absent, review the listed offers instead.
+5. Expand **Advanced: Run by step** only when you deliberately need to select a different stage.
+
+Steps 2–5 stay locked until a fresh offer check returns offers and verifies the Play account. A new check or failed paid stage locks them again. The engine rechecks the device, account and chosen offer before a paid action; the earlier check does not guarantee eligibility or connectivity.
 
 **Important distinction:** Step 1 does not initiate a purchase, but underlying environment preflight can still install or repair ADB/Frida and change emulator/network settings. **Step 0 — Environment** is a setup/diagnostics stage, not a purchase-free guarantee of zero local side effects.
 

@@ -19,7 +19,7 @@ import time
 from rich.markup import escape
 from textual import on, work
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Header, Link, RichLog, Select, Static
 
@@ -59,6 +59,58 @@ class Approval(ModalScreen[bool]):
     @on(Button.Pressed, "#approval_actions Button")
     def approve(self, event: Button.Pressed) -> None:
         self.dismiss(event.button.id == "approve")
+
+
+class CheckComplete(ModalScreen[bool]):
+    """Offer a clear next action; this dialog never authorizes checkout."""
+    CSS = """
+    CheckComplete { align: center middle; }
+    #check_card { width: 64; max-width: 94%; height: auto; max-height: 90%;
+                  padding: 1 2; background: #15243a; border: round #3d6383; }
+    #check_scroll { height: auto; max-height: 1fr; }
+    #check_actions { height: 3; align-horizontal: right; }
+    #check_actions Button { margin-left: 1; }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="check_card"):
+            with VerticalScroll(id="check_scroll"):
+                yield Static("Device and offer check complete", classes="section")
+                yield Static("The 12-month offer has a zero-priced first phase. "
+                             "This does not confirm eligibility or final cost. "
+                             "Continue to review Step 2; a separate approval is required.")
+            with Horizontal(id="check_actions"):
+                yield Button("Later", id="check_later")
+                yield Button("Continue to Step 2", id="check_continue", variant="primary")
+
+    @on(Button.Pressed, "#check_actions Button")
+    def choose(self, event: Button.Pressed) -> None:
+        self.dismiss(event.button.id == "check_continue")
+
+
+class SetupNotice(ModalScreen[None]):
+    CSS = """
+    SetupNotice { align: center middle; }
+    #notice_card { width: 64; max-width: 94%; height: auto; max-height: 90%;
+                   padding: 1 2; background: #15243a; border: round #d6a34f; }
+    #notice_scroll { height: auto; max-height: 1fr; }
+    #notice_close { width: 100%; }
+    """
+
+    def __init__(self, title: str, instruction: str) -> None:
+        super().__init__()
+        self.notice_title, self.instruction = title, instruction
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="notice_card"):
+            with VerticalScroll(id="notice_scroll"):
+                yield Static(self.notice_title, classes="section")
+                yield Static(self.instruction)
+            yield Button("Got it", id="notice_close", variant="primary")
+
+    @on(Button.Pressed, "#notice_close")
+    def close_notice(self) -> None:
+        self.dismiss(None)
 
 
 def is_macos_platform() -> bool:
@@ -212,6 +264,7 @@ class GoogleAITUI(App[None]):
         self._last_outcome: Outcome | None = None
         self._verified_account: str | None = None
         self._offer_check_ready = False
+        self._initial_offer_ready = False
         self._started_at: float | None = None
         self._last_activity_at: float | None = None
         self.advanced_visible = False
@@ -250,6 +303,7 @@ class GoogleAITUI(App[None]):
                         yield Static("GET STARTED · READ-ONLY CHECK", id="welcome")
                         yield Static("Check MuMu connection and Google AI offers without opening checkout.", id="quick_hint")
                         yield Button("Check Device & Offers", id="quickstart", variant="success")
+                        yield Button("Verified in Google Play → Next", id="next", disabled=True)
                         yield Button("Advanced: Run by step  +", id="advanced_toggle")
                         with Vertical(id="workflow_actions"):
                             with Horizontal(id="form_row"):
@@ -271,8 +325,6 @@ class GoogleAITUI(App[None]):
                                 yield Static("Runs one step; no next step is automatic.", id="mode_hint")
                             yield Button("Run sequence from step", id="sequence")
                             yield Button("Run all", id="run_all")
-                            yield Button("Verified in Google Play → Next",
-                                         id="next", disabled=True)
                             yield Button("Stop after current step", id="stop", disabled=True)
                             yield Static("Steps 2–5 can open checkout and require confirmation.", id="read_only")
                         yield Static(
@@ -326,9 +378,15 @@ class GoogleAITUI(App[None]):
         if self.busy or self._diagnosing:
             return
         self._offer_check_ready = False
+        self._initial_offer_ready = False
+        self.query_one("#quickstart", Button).label = "Check Device & Offers"
         self._diagnosing = True
         self.query_one("#diagnose", Button).disabled = True
         self.query_one("#quickstart", Button).disabled = True
+        self.query_one("#quickstart", Button).display = True
+        self.query_one("#next", Button).display = False
+        self.query_one("#next", Button).disabled = True
+        self.sequence = False
         self.query_one("#run", Button).disabled = True
         self._set_status("Inspecting Android connection...")
         self._set_message(
@@ -490,7 +548,10 @@ class GoogleAITUI(App[None]):
 
     @on(Button.Pressed, "#quickstart")
     def quickstart_pressed(self) -> None:
-        self._confirm_stage(1, False)
+        if self._initial_offer_ready and self._offer_check_ready:
+            self._confirm_stage(2, True)
+        else:
+            self._confirm_stage(1, False)
 
     @on(Button.Pressed, "#run")
     def selected_pressed(self) -> None:
@@ -625,6 +686,10 @@ class GoogleAITUI(App[None]):
             return
         if step <= 1:
             self._offer_check_ready = False
+            self._initial_offer_ready = False
+        else:
+            self._initial_offer_ready = False
+        self.query_one("#quickstart", Button).label = "Check Device & Offers"
         self.busy = True
         self.sequence = sequence
         self.current_step = step
@@ -655,6 +720,7 @@ class GoogleAITUI(App[None]):
         )
         self.query_one("#quickstart", Button).disabled = True
         self.query_one("#diagnose", Button).disabled = True
+        self.query_one("#quickstart", Button).display = True
         self.query_one("#run", Button).disabled = True
         self.query_one("#sequence", Button).disabled = True
         self.query_one("#mode", Select).disabled = True
@@ -804,12 +870,20 @@ class GoogleAITUI(App[None]):
                 outcome.code == "listed" and isinstance(offers, list) and offers
                 and verified and (not detected or detected == verified)
             )
+            self._initial_offer_ready = bool(self._offer_check_ready and any(
+                isinstance(offer, dict) and offer.get("id") == "12months-eft"
+                and str(offer.get("micros")) == "0" for offer in offers
+            ))
         elif step == 0 or outcome.code != "checkout_requested":
             self._offer_check_ready = False
+            self._initial_offer_ready = False
         self._last_outcome = outcome
         self.query_one("#manual", Button).display = False
         self.query_one("#manual", Button).disabled = True
         self.query_one("#quickstart", Button).disabled = False
+        self.query_one("#quickstart", Button).label = (
+            "Continue to Step 2" if self._initial_offer_ready else "Check Device & Offers"
+        )
         self.query_one("#diagnose", Button).disabled = False
         self.query_one("#run", Button).disabled = False
         self.query_one("#sequence", Button).disabled = False
@@ -826,6 +900,8 @@ class GoogleAITUI(App[None]):
         instruction = outcome.instruction
         if step == 1 and outcome.code == "listed" and not self._offer_check_ready:
             instruction += " Verify the Play account and run the check again before starting a paid step."
+        elif step == 1 and self._offer_check_ready and not self._initial_offer_ready:
+            instruction += " The 12-month offer was not found with a zero-priced first phase; review available offers."
         if outcome.code in ("tool_error", "exception", "missing_report", "setup_failed"):
             diagnostic = self._visible_failure()
             if diagnostic:
@@ -849,12 +925,27 @@ class GoogleAITUI(App[None]):
         if outcome.can_review and self.sequence and step < 5 and not self._stop_after_step:
             self.query_one("#next", Button).disabled = False
             self.query_one("#next", Button).display = True
+            self.query_one("#quickstart", Button).display = False
         else:
             self.query_one("#next", Button).disabled = True
             self.query_one("#next", Button).display = False
+            self.query_one("#quickstart", Button).display = True
             self.sequence = False
         if self._exit_after_step:
             self.exit()
+            return
+        if step == 1 and self._initial_offer_ready:
+            self.push_screen(CheckComplete(), lambda proceed: self._confirm_stage(2, True) if proceed else None)
+            return
+        if step == 1 and outcome.code == "listed" and not self._initial_offer_ready:
+            self.push_screen(SetupNotice("Review the offer check", instruction))
+            return
+        if step <= 1 and outcome.code in {
+            "device_missing", "device_ambiguous", "app_missing", "adb_missing",
+            "python_missing", "runtime_lookup_failed", "account_unavailable",
+            "account_mismatch", "offer_query_failed", "offers_unavailable",
+        }:
+            self.push_screen(SetupNotice(outcome.title, outcome.instruction))
             return
         if outcome.code == "checkout_requested":
             self.notify("Review the actual subscription in Google Play.", severity="warning")

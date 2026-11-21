@@ -556,6 +556,62 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                               {"offers": [{"id": "test"}], "detected_play_account": "other@example.com"})
                 self.assertFalse(app._offer_check_ready)
 
+    async def test_success_prompts_next_but_requires_separate_checkout_approval(self):
+        from textual.widgets import Button
+        from tui import GoogleAITUI, Approval, CheckComplete
+        from tui_core import Outcome
+        for size in ((110, 35), (90, 20)):
+            with self.subTest(size=size), tempfile.TemporaryDirectory() as directory:
+                app = GoogleAITUI(repo=Path(directory))
+                with patch.object(GoogleAITUI, "run_stage") as run:
+                    async with app.run_test(size=size) as pilot:
+                        app._verified_account = "test@example.com"
+                        app._finished(1, Outcome("listed", "Offers loaded", "Review"), {
+                            "offers": [{"id": "12months-eft", "micros": "0"}],
+                            "detected_play_account": "test@example.com"})
+                        await pilot.pause()
+                        self.assertIsInstance(app.screen, CheckComplete)
+                        run.assert_not_called()
+                        await pilot.click("#check_continue")
+                        await pilot.pause()
+                        self.assertIsInstance(app.screen, Approval)
+                        run.assert_not_called()
+                        await pilot.click("#cancel")
+                        await pilot.pause()
+                        self.assertIn("Step 2", str(app.query_one("#quickstart", Button).label))
+
+    async def test_setup_error_shows_actionable_notice(self):
+        from tui import GoogleAITUI, SetupNotice
+        from tui_core import cli_issue_outcome
+        with tempfile.TemporaryDirectory() as directory:
+            app = GoogleAITUI(repo=Path(directory))
+            async with app.run_test(size=(90, 20)) as pilot:
+                app._finished(1, cli_issue_outcome(["EPLUS_ISSUE:device_missing"], 1), None)
+                await pilot.pause()
+                self.assertIsInstance(app.screen, SetupNotice)
+                self.assertIn("ADB", app.screen.instruction)
+                await pilot.click("#notice_close")
+
+    async def test_next_checkout_action_is_visible_outside_advanced(self):
+        from textual.widgets import Button
+        from tui import GoogleAITUI, Approval
+        from tui_core import Outcome
+        with tempfile.TemporaryDirectory() as directory:
+            app = GoogleAITUI(repo=Path(directory))
+            with patch.object(GoogleAITUI, "run_stage") as run:
+                async with app.run_test(size=(110, 35)) as pilot:
+                    app._offer_check_ready = True
+                    app.sequence = True
+                    app.current_step = 2
+                    app._finished(2, Outcome("checkout_requested", "Check Google Play", "Verify", True), {})
+                    await pilot.pause()
+                    self.assertFalse(app.query_one("#workflow_actions").display)
+                    self.assertTrue(app.query_one("#next", Button).display)
+                    await pilot.click("#next")
+                    await pilot.pause()
+                    self.assertIsInstance(app.screen, Approval)
+                    run.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

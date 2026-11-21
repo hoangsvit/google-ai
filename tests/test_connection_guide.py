@@ -1,5 +1,7 @@
 """Offline tests for non-purchasing connection diagnostics."""
 import subprocess
+import tempfile
+from pathlib import Path
 import unittest
 from unittest.mock import patch
 
@@ -11,6 +13,14 @@ def result(stdout="", returncode=0):
 
 
 class ConnectionGuideTests(unittest.TestCase):
+    def test_adb_path_configuration_is_used(self):
+        with tempfile.TemporaryDirectory() as folder:
+            adb = Path(folder) / "adb.exe"
+            adb.touch()
+            with patch.dict(diag.os.environ, {"ADB_PATH": str(adb)}), \
+                 patch.object(diag.shutil, "which", return_value=None):
+                self.assertEqual(diag.locate_adb("win32"), str(adb))
+
     def test_missing_adb_gives_native_macos_guidance(self):
         with patch.object(diag, "locate_adb", return_value=None), \
              patch.object(diag.metadata, "version", side_effect=diag.metadata.PackageNotFoundError):
@@ -52,6 +62,8 @@ class ConnectionGuideTests(unittest.TestCase):
                 return result("arm64-v8a\n")
             if args[-3:] == ["pm", "path", diag.GOOGLE_ONE]:
                 return result("package:/data/app/google-one/base.apk\n")
+            if args[-3:] == ["pm", "path", diag.GOOGLE_PLAY]:
+                return result("package:/data/app/play/base.apk\n")
             if args[-1:] == ["id"]:
                 return result("uid=2000(shell) gid=2000(shell)\n")
             raise AssertionError(args)
@@ -62,7 +74,7 @@ class ConnectionGuideTests(unittest.TestCase):
         self.assertEqual(found.status, "connected")
         self.assertIn("Basic Android", found.headline)
         self.assertIn("unverified", found.guidance)
-        self.assertEqual(len(calls), 4)
+        self.assertEqual(len(calls), 5)
         flattened = str(calls).lower()
         for unsafe in ("connect", "install", "push", "root", "force-stop", "billing", "frida-server", "tap"):
             self.assertNotIn(unsafe, flattened)
@@ -71,6 +83,8 @@ class ConnectionGuideTests(unittest.TestCase):
         def fake_run(adb, args):
             if args == ["devices"]:
                 return result("List of devices attached\nemulator-5554 device\n")
+            if args[-3:] == ["pm", "path", diag.GOOGLE_PLAY]:
+                return result("package:/data/app/play/base.apk\n")
             return result("", 1)
         with patch.object(diag, "locate_adb", return_value="adb"), \
              patch.object(diag.metadata, "version", return_value="16.5.9"), \
@@ -78,6 +92,19 @@ class ConnectionGuideTests(unittest.TestCase):
             found = diag.inspect_connection("win32")
         self.assertEqual(found.status, "missing_google_one")
         self.assertIn("not detected", " ".join(found.details))
+
+    def test_missing_play_store_is_reported(self):
+        def fake_run(adb, args):
+            if args == ["devices"]:
+                return result("List of devices attached\nemulator-5554 device\n")
+            if args[-3:] == ["pm", "path", diag.GOOGLE_ONE]:
+                return result("package:/data/app/one/base.apk\n")
+            return result("", 1)
+        with patch.object(diag, "locate_adb", return_value="adb"), \
+             patch.object(diag.metadata, "version", return_value="16.5.9"), \
+             patch.object(diag, "_run", side_effect=fake_run):
+            found = diag.inspect_connection("win32")
+        self.assertEqual(found.status, "missing_google_play")
 
     def test_safe_text_does_not_echo_unsupported_data(self):
         self.assertEqual(diag._clean("secret\nanother"), "unknown")

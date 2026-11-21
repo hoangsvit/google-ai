@@ -18,6 +18,7 @@ import sys
 
 FRIDA_REQUIRED = "16.5.9"
 GOOGLE_ONE = "com.google.android.apps.subscriptions.red"
+GOOGLE_PLAY = "com.android.vending"
 SAFE_TEXT = re.compile(r"^[a-zA-Z0-9._:/-]{1,90}$")
 
 
@@ -37,14 +38,25 @@ def _clean(value: str, fallback: str = "unknown") -> str:
 def locate_adb(platform_name: str | None = None) -> str | None:
     """Find an already-installed ADB binary; never download anything."""
     platform_name = platform_name or sys.platform
+    configured = os.environ.get("ADB_PATH")
+    if configured and Path(configured).is_file():
+        return configured
     found = shutil.which("adb")
     if found:
         return found
     home = Path.home()
     if platform_name == "win32":
         paths = [
+            Path(__file__).resolve().parent / "platform-tools/adb.exe",
+            Path(os.environ.get("LOCALAPPDATA") or home / ".cache") / "google-ai/platform-tools/adb.exe",
             home / "AppData/Local/Android/Sdk/platform-tools/adb.exe",
             Path(os.environ.get("LOCALAPPDATA") or home) / "Android/Sdk/platform-tools/adb.exe",
+            Path("C:/Program Files/Netease/MuMuPlayer-12.0/shell/adb.exe"),
+            Path("C:/Program Files/Netease/MuMuPlayerGlobal-12.0/shell/adb.exe"),
+            Path("C:/Program Files (x86)/Netease/MuMuPlayer-12.0/shell/adb.exe"),
+            Path("D:/Program Files/Netease/MuMu/nx_main/adb.exe"),
+            Path("D:/Program Files/Netease/MuMu/nx_device/12.0/shell/adb.exe"),
+            Path("C:/Program Files/Netease/MuMu/nx_main/adb.exe"),
             Path(os.environ.get("PROGRAMFILES") or "C:/Program Files")
             / "Netease/MuMu Player 12/shell/adb.exe",
         ]
@@ -123,6 +135,9 @@ def inspect_connection(platform_name: str | None = None) -> ConnectionDiagnosis:
     abi = _run(adb, ["-s", serial, "shell", "getprop", "ro.product.cpu.abi"])
     if abi is not None and abi.returncode == 0:
         details.append(f"Android ABI: {_clean(abi.stdout)}")
+    play = _run(adb, ["-s", serial, "shell", "pm", "path", GOOGLE_PLAY])
+    play_installed = play is not None and play.returncode == 0 and "package:" in play.stdout
+    details.append("Google Play Store: installed" if play_installed else "Google Play Store: not detected")
     app = _run(adb, ["-s", serial, "shell", "pm", "path", GOOGLE_ONE])
     installed = app is not None and app.returncode == 0 and "package:" in app.stdout
     details.append("Google One: installed" if installed else "Google One: not detected")
@@ -131,6 +146,11 @@ def inspect_connection(platform_name: str | None = None) -> ConnectionDiagnosis:
         details.append(
             "ADB shell: root" if "uid=0(" in root.stdout
             else "ADB shell: non-root (root may be available through su)"
+        )
+    if not play_installed:
+        return ConnectionDiagnosis(
+            "missing_google_play", "Google Play Store not detected", tuple(details),
+            "Enable Google Play Store or use an emulator image that includes Google Play. Billing was not checked.",
         )
     if not installed:
         return ConnectionDiagnosis(
