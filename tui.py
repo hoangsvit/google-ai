@@ -20,6 +20,7 @@ from rich.markup import escape
 from textual import on, work
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
+from textual.css.query import NoMatches
 from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Header, Link, RichLog, Select, Static
 
@@ -417,12 +418,20 @@ class GoogleAITUI(App[None]):
     def _refresh_elapsed(self) -> None:
         if not self.busy or self._started_at is None:
             return
+        # The interval timer can fire while the app is shutting down (a test
+        # exits run_test, or the user quits mid-check) and the widgets are
+        # already unmounted. A status tick must never crash the app.
+        try:
+            elapsed_node = self.query_one("#elapsed", Static)
+            activity_node = self.query_one("#activity", Static)
+        except NoMatches:
+            return
         elapsed = int(time.monotonic() - self._started_at)
-        self.query_one("#elapsed", Static).update(f"Elapsed: {elapsed // 60:02d}:{elapsed % 60:02d}")
+        elapsed_node.update(f"Elapsed: {elapsed // 60:02d}:{elapsed % 60:02d}")
         if self._last_activity_at is not None:
             idle = int(time.monotonic() - self._last_activity_at)
             if idle >= 30:
-                self.query_one("#activity", Static).update(
+                activity_node.update(
                     f"No new output for {idle}s. Check MuMu or technical details."
                 )
 
