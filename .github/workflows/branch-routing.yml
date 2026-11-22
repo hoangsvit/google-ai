@@ -31,6 +31,8 @@ jobs:
               echo "Branch routing OK: main-based error-message fix for PR #67"
             elif [[ "$PR_NUMBER" == "70" && "$HEAD" == "fix/checkout-error-followup-review" && "$HEAD_REPO" == "$TARGET_REPO" ]]; then
               echo "Branch routing OK: scoped checkout safety fix PR #70"
+            elif [[ "$PR_NUMBER" == "75" && "$HEAD" == "codex/emergency-stop-main-pr74" && "$HEAD_REPO" == "$TARGET_REPO" ]]; then
+              echo "Branch routing OK: main-based emergency stop fix PR #75"
             elif [[ "$HEAD" != "dev" || "$HEAD_REPO" != "$TARGET_REPO" ]]; then
               echo "::error::Only the repository's dev branch may be promoted into main."
               exit 1

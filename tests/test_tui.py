@@ -960,10 +960,10 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
         with tempfile.TemporaryDirectory() as directory:
             app = GoogleAITUI(repo=Path(directory))
             with patch.object(GoogleAITUI, "terminate_readonly_child") as stop:
-                async with app.run_test(size=(110, 35)):
+                async with app.run_test(size=(110, 35)) as pilot:
                     app.busy = True
                     app.current_step = 3
-                    app.action_quit_safely()
+                    await pilot.press("ctrl+c")
                     self.assertTrue(app._exit_after_step)
                     self.assertTrue(app._stop_after_step)
                     self.assertFalse(app._cancel_requested)
@@ -975,10 +975,10 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
         with tempfile.TemporaryDirectory() as directory:
             app = GoogleAITUI(repo=Path(directory))
             with patch.object(GoogleAITUI, "terminate_readonly_child") as stop:
-                async with app.run_test(size=(110, 35)):
+                async with app.run_test(size=(110, 35)) as pilot:
                     app.busy = True
                     app.current_step = 0
-                    app.action_quit_safely()
+                    self.assertTrue(await pilot.click("#exit"))
                     self.assertTrue(app._exit_after_step)
                     self.assertTrue(app._cancel_requested)
                     stop.assert_called_once()

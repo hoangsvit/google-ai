@@ -69,7 +69,7 @@ The action panel fits its controls, and **Live Status** fills the remaining heig
 
 - **Stop check (Steps 0–1):** requests cancellation of the local process tree. Cancellation can fail if a child process is stuck; inspect technical details.
 - **Stop after this step (Steps 2–5):** prevents further stages, but **does not force-kill a checkout in progress**. The remote payment outcome could otherwise become unknown.
-- **Exit toolkit / Q:** exits immediately while idle; during Steps 0–1 it requests cancellation and exits afterward, and during Steps 2–5 it queues exit after the current stage.
+- **Emergency stop / Ctrl+C / Q:** exits immediately while idle; during Steps 0–1 it requests cancellation and exits afterward, and during Steps 2–5 it queues exit after the current stage.
 - **D** toggles technical details. Opening the log jumps to the latest line and follows new output. **R** uses the selected advanced run mode. A **Next** button is available only for a reviewable checkout outcome in a guided sequence.
 
 Neither Stop nor closing the terminal reverses an existing Google Play transaction. Always verify the real transaction and subscription status directly.
