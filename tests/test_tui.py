@@ -136,6 +136,30 @@ class CoreTests(unittest.TestCase):
 
 
 class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
+    async def test_ultra_group_is_independent_of_pro_steps(self):
+        from textual.widgets import Link, Select
+        from tui import GoogleAITUI
+
+        with tempfile.TemporaryDirectory() as tmp:
+            for size in ((90, 20), (110, 35)):
+                with self.subTest(size=size):
+                    app = GoogleAITUI(repo=Path(tmp))
+                    async with app.run_test(size=size) as pilot:
+                        group = app.query_one("#ultra_plans")
+                        self.assertFalse(group.display)
+                        await pilot.click("#advanced_toggle")
+                        self.assertTrue(group.display)
+                        link = group.query_one("#ultra_link", Link)
+                        self.assertEqual(link.url, "https://one.google.com/about/google-ai-plans/")
+                        app.query_one("#step", Select).value = 5
+                        await pilot.pause()
+                        self.assertTrue(group.display)
+                        self.assertTrue(app.query_one("#step5_plans", Link).display)
+                        app.query_one("#mode", Select).value = "all"
+                        await pilot.pause()
+                        self.assertTrue(group.display)
+                        self.assertFalse(app.query_one("#step5_plans", Link).display)
+
     async def test_step5_links_to_google_one_plans(self):
         from textual.widgets import Link, Select
         from tui import GoogleAITUI

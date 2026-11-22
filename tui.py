@@ -29,6 +29,9 @@ from tui_core import STAGES, Outcome, command_for_step, mask_email, \
 from device_diagnostics import ConnectionDiagnosis, inspect_connection
 
 
+GOOGLE_ONE_AI_PLANS = "https://one.google.com/about/google-ai-plans/"
+
+
 class Approval(ModalScreen[bool]):
     """Clickable approval without long typed phrases."""
 
@@ -143,6 +146,13 @@ class GoogleAITUI(App[None]):
         padding: 0 1;
     }
     #step5_plans { display: none; height: 1; margin-top: 1; }
+    #ultra_plans {
+        display: none; height: auto; margin-top: 1; padding: 0 1;
+        border-left: solid #8f9afa; background: #1c2a50;
+    }
+    #ultra_title { color: #c9cfff; text-style: bold; height: 1; }
+    #ultra_variants { color: #c5ddee; height: auto; }
+    #ultra_link { height: 1; }
     #next, #stop { display: none; width: 100%; height: 3; margin-top: 1; }
     #status_panel {
         height: 1fr; min-height: 0; border: round #285a80;
@@ -269,15 +279,20 @@ class GoogleAITUI(App[None]):
                             with Horizontal(id="run_row"):
                                 yield Button("Run selected step", id="run", variant="primary")
                                 yield Static("Runs one step; no next step is automatic.", id="mode_hint")
-                            yield Link("Pro 3 months / Ultra on Google One",
-                                       url="https://one.google.com/about/google-ai-plans/",
-                                       id="step5_plans")
+                            yield Link("Check Pro 3 months on Google One",
+                                       url=GOOGLE_ONE_AI_PLANS, id="step5_plans")
                             yield Button("Run sequence from step", id="sequence")
                             yield Button("Run all", id="run_all")
                             yield Button("Verified in Google Play → Next",
                                          id="next", disabled=True)
                             yield Button("Stop after current step", id="stop", disabled=True)
                             yield Static("Steps 2–5 can open checkout and require confirmation.", id="read_only")
+                        with Vertical(id="ultra_plans"):
+                            yield Static("GOOGLE AI ULTRA · PAID PLANS", id="ultra_title")
+                            yield Static("Toolkit variants: 5x (20 TB) and 20x (30 TB).",
+                                         id="ultra_variants")
+                            yield Link("Check Ultra plans and pricing",
+                                       url=GOOGLE_ONE_AI_PLANS, id="ultra_link")
                         yield Static(
                             "24-month example: Step 2 (12 months) + Step 3 (6) + Step 4 (6).\n"
                             "Have at least US$3 available: 3 separate US$1 card checks, "
@@ -380,8 +395,8 @@ class GoogleAITUI(App[None]):
     @on(Button.Pressed, "#advanced_toggle")
     def advanced_pressed(self) -> None:
         self.advanced_visible = not self.advanced_visible
-        panel = self.query_one("#workflow_actions", Vertical)
-        panel.display = self.advanced_visible
+        self.query_one("#workflow_actions", Vertical).display = self.advanced_visible
+        self.query_one("#ultra_plans", Vertical).display = self.advanced_visible
         self.query_one("#advanced_toggle", Button).label = (
             "Hide advanced steps  −" if self.advanced_visible
             else "Advanced: Run by step  +"
@@ -413,10 +428,7 @@ class GoogleAITUI(App[None]):
             self.query_one("#step", Select).disabled = False
             self.query_one("#run", Button).label = "Run selected step"
             hint = "Run only this step. Steps 2-5 can request real payment."
-        show_step5_plans = step == 5 and mode != "all"
-        self.query_one("#step5_plans", Link).display = show_step5_plans
-        if show_step5_plans:
-            hint += " Check Pro 3 months and Ultra availability in Google One."
+        self.query_one("#step5_plans", Link).display = step == 5 and mode != "all"
         self.query_one("#mode_hint", Static).update(hint)
 
     def action_toggle_advanced(self) -> None:

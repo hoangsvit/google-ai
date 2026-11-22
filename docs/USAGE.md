@@ -36,6 +36,10 @@ All checkout stages on the dashboard require **explicit approval per stage**. Af
 
 If Google Play already shows an active subscription, do **not** repeat Step 2. The names and durations of offers are historical labels, not guaranteed entitlements or extensions.
 
+### Google AI Ultra plans
+
+Open **Advanced: Run by step** and find **Google AI Ultra · Paid plans** below the step controls. **Check Ultra plans and pricing** opens Google One so you can review offers for your account. **Check Pro 3 months on Google One** appears when you select Step 5.
+
 ### Controls, Stop and Exit
 
 While a stage is running, **Check Device & Offers**, Run, Run mode and Step selection are locked so another stage cannot be started. Help and technical details remain accessible.
