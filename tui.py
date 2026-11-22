@@ -159,7 +159,7 @@ class GoogleAITUI(App[None]):
     }
     #elapsed, #activity { color: #95c4dd; }
     #debug_log {
-        display: none; height: 1fr; min-height: 3;
+        display: none; height: 7;
         border: round #294b67; background: #071528;
     }
     #manual { display: none; width: 100%; height: 3; }
@@ -171,6 +171,7 @@ class GoogleAITUI(App[None]):
     Screen.compact #welcome_panel { padding: 0 1; }
     Screen.compact #quick_hint, Screen.compact #read_only { display: none; }
     Screen.compact #welcome { display: none; }
+    Screen.compact #debug_log { height: 5; }
     Screen.compact #welcome_panel { padding: 0 1; }
     Screen.compact #quickstart, Screen.compact #advanced_toggle { height: 3; }
     Screen.narrow #form_row { layout: vertical; }
@@ -243,6 +244,7 @@ class GoogleAITUI(App[None]):
                     yield Button("Show technical details", id="debug")
                     yield Button("Exit toolkit", id="exit")
                 with Vertical(id="results"):
+                    yield RichLog(id="debug_log", wrap=True, highlight=False, markup=False)
                     with Vertical(id="welcome_panel"):
                         yield Static("GET STARTED · READ-ONLY CHECK", id="welcome")
                         yield Static("Check MuMu connection and Google AI offers without opening checkout.", id="quick_hint")
@@ -282,7 +284,6 @@ class GoogleAITUI(App[None]):
                         yield Static("Elapsed: --", id="elapsed")
                         yield Static("Waiting for your action.", id="activity")
                         yield Button("Completed action on Android", id="manual", disabled=True)
-                        yield RichLog(id="debug_log", wrap=True, highlight=False, markup=False)
                         yield Static("Review Google Play pricing and renewal terms "
                                      "before each checkout.", id="hint")
         yield Footer()
@@ -567,13 +568,15 @@ class GoogleAITUI(App[None]):
     def action_toggle_debug(self) -> None:
         self.debug_visible = not self.debug_visible
         log = self.query_one("#debug_log", RichLog)
+        log.display = self.debug_visible
         if self.debug_visible:
             # Rebuild from the bounded current-run buffer: lines received while
             # details were hidden must not disappear or be duplicated.
             log.clear()
-            for line in self._last_output:
-                log.write(line)
-        log.display = self.debug_visible
+            last_index = len(self._last_output) - 1
+            for index, line in enumerate(self._last_output):
+                log.write(line, scroll_end=index == last_index)
+            self.query_one("#results").scroll_home(animate=False)
         self.query_one("#debug", Button).label = (
             "Hide technical details" if self.debug_visible else "Show technical details"
         )
@@ -740,7 +743,7 @@ class GoogleAITUI(App[None]):
             phase = "Process responding. Details available in technical log."
         self.query_one("#activity", Static).update(phase)
         if self.debug_visible:
-            self.query_one("#debug_log", RichLog).write(line)
+            self.query_one("#debug_log", RichLog).write(line, scroll_end=True)
         if re.search(r"Action required:|Press Enter to continue", line, re.I):
             btn = self.query_one("#manual", Button)
             btn.display = True

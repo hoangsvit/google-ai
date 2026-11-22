@@ -136,6 +136,30 @@ class CoreTests(unittest.TestCase):
 
 
 class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
+    async def test_technical_log_reveals_and_follows_latest_output(self):
+        from textual.widgets import RichLog
+        from tui import GoogleAITUI
+
+        for size in ((90, 20), (110, 35)):
+            with self.subTest(size=size), tempfile.TemporaryDirectory() as directory:
+                app = GoogleAITUI(repo=Path(directory))
+                async with app.run_test(size=size) as pilot:
+                    for number in range(40):
+                        app._received(f"Log line {number}")
+                    app.action_toggle_debug()
+                    await pilot.pause(0.2)
+                    log = app.query_one("#debug_log", RichLog)
+                    results = app.query_one("#results")
+                    self.assertGreater(log.max_scroll_y, 0)
+                    self.assertEqual(log.scroll_y, log.max_scroll_y)
+                    self.assertGreaterEqual(results.content_region.bottom, log.region.bottom)
+                    self.assertIn("Log line 39", log.lines[-1].text)
+                    log.scroll_home(animate=False, immediate=True)
+                    app._received("Newest log line")
+                    await pilot.pause(0.2)
+                    self.assertEqual(log.scroll_y, log.max_scroll_y)
+                    self.assertIn("Newest log line", log.lines[-1].text)
+
     async def test_quick_check_shows_elapsed_seconds_while_disabled(self):
         from textual.widgets import Button
         from tui import GoogleAITUI
