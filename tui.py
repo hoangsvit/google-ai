@@ -122,11 +122,6 @@ class GoogleAITUI(App[None]):
     }
     #welcome { color: #91e3ff; text-style: bold; height: 1; }
     #quick_hint { color: #afcce3; height: auto; margin: 0 0 1 0; }
-    #payment_notice {
-        height: auto; margin: 1 0 0 0; padding: 0 1;
-        color: #e2ecf4; background: #233248; border-left: solid #d6a34f;
-    }
-    #payment_notice_compact { display: none; }
     #read_only { color: #81c6df; height: auto; margin-top: 1; }
     #workflow_actions { height: auto; }
     #form_row { height: auto; }
@@ -169,11 +164,6 @@ class GoogleAITUI(App[None]):
     Screen.compact #welcome_panel { padding: 0 1; }
     Screen.compact #quick_hint, Screen.compact #read_only { display: none; }
     Screen.compact #welcome { display: none; }
-    Screen.compact #payment_notice { display: none; }
-    Screen.compact #payment_notice_compact {
-        display: block; height: 1; margin: 0;
-        color: #ffe0a0; background: #283047;
-    }
     Screen.compact #welcome_panel { padding: 0 1; }
     Screen.compact #quickstart, Screen.compact #advanced_toggle { height: 3; }
     Screen.narrow #form_row { layout: vertical; }
@@ -211,6 +201,7 @@ class GoogleAITUI(App[None]):
         self._exit_after_step = False
         self._last_outcome: Outcome | None = None
         self._verified_account: str | None = None
+        self._device_serial: str | None = None
         self._started_at: float | None = None
         self._last_activity_at: float | None = None
         self.advanced_visible = False
@@ -274,18 +265,6 @@ class GoogleAITUI(App[None]):
                                          id="next", disabled=True)
                             yield Button("Stop after current step", id="stop", disabled=True)
                             yield Static("Steps 2–5 can open checkout and require confirmation.", id="read_only")
-                        yield Static(
-                            "24-month example: Step 2 (12 months) + Step 3 (6) + Step 4 (6).\n"
-                            "Have at least US$3 available: 3 separate US$1 card checks, "
-                            "not one US$3 payment.\n"
-                            "These may be temporary holds. Verify each step in Google Play; "
-                            "24 months is not guaranteed.",
-                            id="payment_notice",
-                        )
-                        yield Static(
-                            "3 separate US$1 checks (not one US$3); 24 months not guaranteed.",
-                            id="payment_notice_compact",
-                        )
                     with Vertical(id="status_panel"):
                         yield Static("LIVE STATUS", classes="section")
                         yield Static("Ready — no check started", id="state")
@@ -466,6 +445,8 @@ class GoogleAITUI(App[None]):
                 "Verify the amount and renewal date in Google Play. "
                 "24 months is not guaranteed."
             )
+            if step == 2:
+                message += " Have at least US$3 available for the reported three-step sequence."
         elif step == 5:
             message += (
                 "\n\nStep 5 is optional, outside the 3 x US$1 / 24-month example. "
@@ -616,6 +597,8 @@ class GoogleAITUI(App[None]):
         self._exit_after_step = False
         self._last_outcome = None
         self._verified_account = None
+        self._device_serial = None
+        self.query_one("#device", Static).tooltip = None
         self._last_output.clear()
         self._run_output.clear()
         self.query_one("#debug_log", RichLog).clear()
@@ -750,8 +733,22 @@ class GoogleAITUI(App[None]):
             btn.display = True
             btn.disabled = False
             self._set_message("Complete the requested action on Android, then click Completed.")
-        if re.search(r"\bDevice\s+(emulator-\d+|[0-9.]+:\d+)\s*$", line):
-            self.query_one("#device", Static).update("Device  •  " + escape(line.split()[-1]))
+        device = re.fullmatch(r"\s*Device\s+([A-Za-z0-9._:/-]{1,90})\s*", line)
+        if device:
+            self._device_serial = device.group(1)
+            card = self.query_one("#device", Static)
+            card.update("Device  •  " + escape(self._device_serial))
+            card.tooltip = self._device_serial
+        android = re.fullmatch(
+            r"\s*Android\s+([A-Za-z0-9._-]{1,16}) \(SDK ([0-9]{1,4})\), ABI ([A-Za-z0-9_-]{1,24})\s*",
+            line,
+        )
+        if android and self._device_serial:
+            release, sdk, abi = android.groups()
+            details = f"Android {release} · SDK {sdk} · {abi}"
+            card = self.query_one("#device", Static)
+            card.update(f"{details} · {escape(self._device_serial)}")
+            card.tooltip = f"{details}\nADB: {self._device_serial}"
         # Trust only the structured PowerShell "Account <email>" status line,
         # not arbitrary log messages containing an email address.
         account = re.match(

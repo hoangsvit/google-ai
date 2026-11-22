@@ -78,6 +78,21 @@ def preflight() -> tuple[str, str]:
     return adb, serial
 
 
+def show_android_details(adb: str, serial: str) -> None:
+    try:
+        result = subprocess.run(
+            [adb, "-s", serial, "shell",
+             "getprop ro.build.version.release; getprop ro.build.version.sdk; getprop ro.product.cpu.abi"],
+            capture_output=True, text=True, errors="replace", timeout=5, check=True,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return
+    properties = [line.strip() for line in result.stdout.splitlines()]
+    if len(properties) == 3 and all(properties):
+        release, sdk, abi = properties
+        print(f"Android {release} (SDK {sdk}), ABI {abi}", flush=True)
+
+
 def run_engine(command: list[str], env: dict[str, str]) -> int:
     return subprocess.call(command, cwd=ROOT, env=env)
 
@@ -198,6 +213,7 @@ def main(argv: list[str] | None = None) -> int:
         env["PYTHONIOENCODING"] = "utf-8:backslashreplace"
         env["PYTHONUTF8"] = "1"
         print(f"Device {serial}", flush=True)
+        show_android_details(adb, serial)
         return run_stage(args.step, serial, env, args.confirmed, args.active_confirmed)
     except (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired) as error:
         print(f"Stage stopped: {type(error).__name__}: {error}", file=sys.stderr, flush=True)

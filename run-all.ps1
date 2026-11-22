@@ -272,7 +272,10 @@ try {
     $AndroidVersion = ((& $Adb -s $Serial shell getprop ro.build.version.release) | Out-String).Trim()
     $AndroidSdk = ((& $Adb -s $Serial shell getprop ro.build.version.sdk) | Out-String).Trim()
     $AndroidAbi = ((& $Adb -s $Serial shell getprop ro.product.cpu.abi) | Out-String).Trim()
-    Note ("Android {0} (SDK {1}), ABI {2}, activity lookup {3}" -f $AndroidVersion, $AndroidSdk, $AndroidAbi, $ActivityMethod)
+    if ($AndroidVersion -and $AndroidSdk -and $AndroidAbi) {
+        Show-Status "Android" ("{0} (SDK {1}), ABI {2}" -f $AndroidVersion, $AndroidSdk, $AndroidAbi)
+    }
+    Note ("Activity lookup: {0}" -f $ActivityMethod)
 
     Stage "Preflight: Verify required Android apps"
     foreach ($package in @("com.android.vending", "com.google.android.apps.subscriptions.red")) {

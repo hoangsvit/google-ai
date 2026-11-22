@@ -2,6 +2,7 @@
 import base64
 import json
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import time
@@ -13,6 +14,14 @@ from tui_core import command_for_step
 
 
 class MacStageAdapterTests(unittest.TestCase):
+    def test_android_details_query_uses_selected_device(self):
+        result = subprocess.CompletedProcess([], 0, "14\n34\narm64-v8a\n", "")
+        with patch("macos_runner.subprocess.run", return_value=result) as run:
+            with patch("builtins.print") as output:
+                macos_runner.show_android_details("/tools/adb", "emulator-5554")
+        self.assertEqual(run.call_args.args[0][:4], ["/tools/adb", "-s", "emulator-5554", "shell"])
+        output.assert_called_once_with("Android 14 (SDK 34), ABI arm64-v8a", flush=True)
+
     def test_six_stage_mapping_and_no_force(self):
         offers = {
             2: ("pro12", "12months-eft", False),

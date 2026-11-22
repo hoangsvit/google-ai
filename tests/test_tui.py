@@ -136,6 +136,28 @@ class CoreTests(unittest.TestCase):
 
 
 class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
+    async def test_android_details_are_visible_and_reset_on_new_check(self):
+        from textual.widgets import Static
+        from tui import GoogleAITUI
+
+        for size in ((90, 20), (110, 35)):
+            with self.subTest(size=size), tempfile.TemporaryDirectory() as directory:
+                app = GoogleAITUI(repo=Path(directory))
+                async with app.run_test(size=size) as pilot:
+                    card = app.query_one("#device", Static)
+                    app._received("  Device      emulator-5554")
+                    app._received("  Android     12 (SDK 31), ABI x86_64")
+                    await pilot.pause()
+                    self.assertIn("Android 12 · SDK 31 · x86_64", card.render().plain)
+                    self.assertEqual(card.tooltip, "Android 12 · SDK 31 · x86_64\nADB: emulator-5554")
+                    self.assertGreaterEqual(card.content_region.width, len("Android 12 · SDK 31 · x86_64"))
+                    with patch.object(app, "run_stage"):
+                        app._start(1, False)
+                    self.assertIsNone(card.tooltip)
+                    self.assertNotIn("Android 12", card.render().plain)
+                    app._received("Device emulator-5556")
+                    self.assertEqual(card.tooltip, "emulator-5556")
+
     async def test_application_branding(self):
         from tui import GoogleAITUI
         self.assertEqual(GoogleAITUI.TITLE, "ePlus AI Toolkit")
@@ -413,8 +435,7 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                 app.advanced_pressed()
                 self.assertFalse(app.query_one("#workflow_actions").display)
 
-    async def test_reported_payment_notice_is_visible_without_checkout(self):
-        from textual.widgets import Static
+    async def test_welcome_keeps_checkout_notice_out_of_the_read_only_view(self):
         from tui import GoogleAITUI
 
         for size in ((110, 35), (90, 20)):
@@ -423,28 +444,8 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                 with patch("tui.subprocess.Popen") as launch:
                     async with app.run_test(size=size) as pilot:
                         await pilot.pause()
-                        notice = app.query_one("#payment_notice", Static)
-                        compact = app.query_one("#payment_notice_compact", Static)
-                        if size[1] < 27:
-                            self.assertFalse(notice.display)
-                            self.assertTrue(compact.display)
-                            wording = str(compact.render())
-                            self.assertIn("3 separate US$1 checks", wording)
-                            self.assertIn("not one US$3", wording)
-                            self.assertIn("24 months not guaranteed", wording)
-                            self.assertGreater(app.query_one("#status_panel").region.height, 3)
-                        else:
-                            self.assertTrue(notice.display)
-                            self.assertFalse(compact.display)
-                            wording = str(notice.render())
-                            self.assertIn("Step 2 (12 months)", wording)
-                            self.assertIn("Step 3 (6)", wording)
-                            self.assertIn("Step 4 (6)", wording)
-                            self.assertIn("at least US$3 available", wording)
-                            self.assertIn("3 separate US$1 card checks", wording)
-                            self.assertIn("not one US$3 payment", wording)
-                            self.assertIn("temporary holds", wording)
-                            self.assertIn("24 months is not guaranteed", wording)
+                        self.assertFalse(app.query("#payment_notice, #payment_notice_compact"))
+                        self.assertGreater(app.query_one("#status_panel").region.height, 3)
                         self.assertTrue(app.query_one("#quickstart").display)
                     launch.assert_not_called()
 
@@ -466,6 +467,8 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                             self.assertIn("NOT one US$3 payment", wording)
                             self.assertIn("temporary hold", wording)
                             self.assertIn("not guaranteed", wording)
+                            if step == 2:
+                                self.assertIn("at least US$3 available", wording)
                         else:
                             self.assertIn("Step 5 is optional", wording)
                             self.assertIn("outside the 3 x US$1", wording)

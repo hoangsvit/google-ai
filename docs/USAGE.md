@@ -15,6 +15,8 @@
 
 The sidebar lists the six stages. Android Device / Google Account cards update from observed output; account identifiers are masked. Original-author and maintainer credits link to their GitHub profiles in supported terminals.
 
+After **Check Device & Offers** reads the Android device, the **Device** card shows the Android version, SDK level, CPU ABI and ADB serial when available. Hover over the card for the full details if the terminal clips the line.
+
 ### Advanced run modes
 
 | Mode | Behavior |
