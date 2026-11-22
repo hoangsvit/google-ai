@@ -29,6 +29,9 @@ from tui_core import STAGES, Outcome, command_for_step, mask_email, \
 from device_diagnostics import ConnectionDiagnosis, inspect_connection
 
 
+QUICK_CHECK_LABEL = "Check Device & Offers"
+
+
 class Approval(ModalScreen[bool]):
     """Clickable approval without long typed phrases."""
 
@@ -112,6 +115,10 @@ class GoogleAITUI(App[None]):
     }
     #nav_home, #nav_quick, #advanced, #sequence, #run_all { display: none; }
     #quickstart { display: block; width: 100%; height: 3; margin: 0 0 1 0; }
+    #quickstart.checking:disabled {
+        background: #123b31; color: #e5fff2; text-style: bold;
+        text-opacity: 1; opacity: 1;
+    }
     #advanced_toggle { width: 100%; height: 3; margin: 0; }
     #workflow_actions { display: none; height: auto; margin-top: 1; border-top: solid #285d83; padding-top: 1; }
     #status_panel { min-height: 8; overflow-y: auto; scrollbar-size: 1 1; }
@@ -239,7 +246,7 @@ class GoogleAITUI(App[None]):
                     with Vertical(id="welcome_panel"):
                         yield Static("GET STARTED · READ-ONLY CHECK", id="welcome")
                         yield Static("Check MuMu connection and Google AI offers without opening checkout.", id="quick_hint")
-                        yield Button("Check Device & Offers", id="quickstart", variant="success")
+                        yield Button(QUICK_CHECK_LABEL, id="quickstart", variant="success")
                         yield Button("Advanced: Run by step  +", id="advanced_toggle")
                         with Vertical(id="workflow_actions"):
                             with Horizontal(id="form_row"):
@@ -398,6 +405,8 @@ class GoogleAITUI(App[None]):
             return
         elapsed = int(time.monotonic() - self._started_at)
         self.query_one("#elapsed", Static).update(f"Elapsed: {elapsed // 60:02d}:{elapsed % 60:02d}")
+        if self.current_step == 1:
+            self.query_one("#quickstart", Button).label = f"Checking offers… {elapsed}s"
         if self._last_activity_at is not None:
             idle = int(time.monotonic() - self._last_activity_at)
             if idle >= 30:
@@ -619,7 +628,11 @@ class GoogleAITUI(App[None]):
             "Connecting to Android diagnostics..." if self.macos_mode
             else "Connecting to MuMu and preparing tools..."
         )
-        self.query_one("#quickstart", Button).disabled = True
+        quick_check = self.query_one("#quickstart", Button)
+        quick_check.disabled = True
+        if step == 1:
+            quick_check.add_class("checking")
+            quick_check.label = "Checking offers… 0s"
         self.query_one("#diagnose", Button).disabled = True
         self.query_one("#run", Button).disabled = True
         self.query_one("#sequence", Button).disabled = True
@@ -777,7 +790,10 @@ class GoogleAITUI(App[None]):
         self._last_outcome = outcome
         self.query_one("#manual", Button).display = False
         self.query_one("#manual", Button).disabled = True
-        self.query_one("#quickstart", Button).disabled = False
+        quick_check = self.query_one("#quickstart", Button)
+        quick_check.remove_class("checking")
+        quick_check.label = QUICK_CHECK_LABEL
+        quick_check.disabled = False
         self.query_one("#diagnose", Button).disabled = False
         self.query_one("#run", Button).disabled = False
         self.query_one("#sequence", Button).disabled = False

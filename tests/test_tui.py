@@ -136,6 +136,30 @@ class CoreTests(unittest.TestCase):
 
 
 class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
+    async def test_quick_check_shows_elapsed_seconds_while_disabled(self):
+        from textual.widgets import Button
+        from tui import GoogleAITUI
+        from tui_core import Outcome
+
+        for size in ((90, 20), (110, 35)):
+            with self.subTest(size=size), tempfile.TemporaryDirectory() as directory:
+                app = GoogleAITUI(repo=Path(directory))
+                async with app.run_test(size=size) as pilot:
+                    button = app.query_one("#quickstart", Button)
+                    with patch.object(app, "run_stage") as run_stage:
+                        app._start(1, False)
+                        self.assertTrue(button.disabled)
+                        self.assertEqual(str(button.label), "Checking offers… 0s")
+                        with patch("tui.time.monotonic", return_value=app._started_at + 42.5):
+                            app._refresh_elapsed()
+                        self.assertEqual(str(button.label), "Checking offers… 42s")
+                        await pilot.click("#quickstart")
+                        run_stage.assert_called_once_with(1)
+                    app._finished(1, Outcome("cancelled", "Check stopped", ""), None)
+                    self.assertFalse(button.disabled)
+                    self.assertFalse(button.has_class("checking"))
+                    self.assertEqual(str(button.label), "Check Device & Offers")
+
     async def test_android_details_are_visible_and_reset_on_new_check(self):
         from textual.widgets import Static
         from tui import GoogleAITUI
