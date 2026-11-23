@@ -410,14 +410,29 @@ def ensure_vending(*, retry_startup: bool = False) -> bool:
 
 
 def ensure_module_apk():
+    """Install the billing DEX and keep it non-writable.
+
+    Android 10+ refuses to load a world-writable DEX file, and `adb push`
+    creates it with mode 0666. The loader then fails with
+    "java.lang.SecurityException: Writable dex file ... is not allowed", which
+    the offer query reports only as a generic failure. The permission is
+    applied even to an existing copy, because a device provisioned by an older
+    build still holds the writable file.
+    """
     if sh("shell", f"ls {MODULE_REMOTE} 2>/dev/null"):
         ok("Billing module is already installed")
-        return
-    note("Pushing billing module to Android (one-time setup)...")
-    tmp = Path(tempfile.gettempdir()) / "module_521.apk"
-    tmp.write_bytes(base64.b64decode(MODULE_B64))
-    sh("push", str(tmp), MODULE_REMOTE, timeout=120)
-    ok("Billing module installed")
+    else:
+        note("Pushing billing module to Android (one-time setup)...")
+        tmp = Path(tempfile.gettempdir()) / "module_521.apk"
+        tmp.write_bytes(base64.b64decode(MODULE_B64))
+        sh("push", str(tmp), MODULE_REMOTE, timeout=120)
+        ok("Billing module installed")
+    # Re-assert the mode on an existing copy: a device provisioned by an older
+    # build still holds the writable 0666 file and would fail to load it.
+    # Fail closed, otherwise every later step reports a misleading "no offers".
+    if sh("shell", f"chmod 644 {MODULE_REMOTE} && echo ok").strip() != "ok":
+        raise RuntimeError(
+            "Could not make the billing module read-only; Android rejects writable DEX files.")
 
 
 def ensure_network():
