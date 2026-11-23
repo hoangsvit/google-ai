@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Python syntax
-        run: python -m compileall -q ultra0.py device_selector.py setup_env.py query_sku.py scripts/diagnose-activity.py
+        run: python -m compileall -q ultra0.py device_selector.py setup_env.py query_sku.py telegram_bot.py scripts/diagnose-activity.py
       - name: Windows Unicode output regression tests (simulated cp1252)
         run: python -m unittest discover -s tests -p 'test_windows_encoding.py' -v
       - name: Windows runtime lookup tests (simulated cp1252)
@@ -34,6 +34,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_repository_layout.py' -v
       - name: Android connection guide (offline)
         run: python -m unittest discover -s tests -p 'test_connection_guide.py' -v
+      - name: Telegram bot authorization, privacy and command tests (offline)
+        run: python -m unittest discover -s tests -p 'test_telegram_bot.py' -v
       - name: Gitignore regression tests
         run: python -m unittest discover -s tests -p 'test_gitignore.py' -v
       - name: Reusable release workflow regression checks (offline)

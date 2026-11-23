@@ -1,0 +1,23 @@
+# Example only; replace service user and paths to match your VM.
+[Unit]
+Description=ePlus AI Toolkit Telegram diagnostics bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=eplus-ai-bot
+Group=eplus-ai-bot
+WorkingDirectory=/opt/eplus-ai-toolkit
+EnvironmentFile=/etc/eplus-ai-telegram.env
+ExecStart=/opt/eplus-ai-venv/bin/python /opt/eplus-ai-toolkit/telegram_bot.py
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+# ADB connectivity and writable report dir for optional offer checks
+# must be configured separately for the dedicated service user.
+
+[Install]
+WantedBy=multi-user.target

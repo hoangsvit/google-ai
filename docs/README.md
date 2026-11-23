@@ -27,6 +27,7 @@ Only the macOS host / mocked logic is covered by automated checks; real Mac/MuMu
 | Install Windows, MuMuPlayer, Python and ADB | [Installation & prerequisites](INSTALLATION.md) |
 | Start the dashboard and use the guided steps | [Dashboard & PowerShell CLI](USAGE.md) |
 | Install and use the macOS version (Steps 0–5) | [macOS guide](MACOS-PREVIEW.md) |
+| Run the private Telegram diagnostics bot on a local machine or VM | [Telegram bot setup](../scripts/telegram/README.md) |
 | Diagnose ADB, Frida, account or billing errors | [Troubleshooting & results](TROUBLESHOOTING.md) |
 | Deep dive into setup and compatibility | [Advanced technical guide](DETAILED-GUIDE.md) |
 | Understand charge risks and limitations | [Safety & billing](SAFETY.md) · [Security policy](../SECURITY.md) |
