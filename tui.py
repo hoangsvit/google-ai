@@ -1359,7 +1359,7 @@ class GoogleAITUI(App[None]):
             self._set_message("Complete the requested action on Android, then click Completed.")
         if self.linux_mode:
             if line == "Android device connected.":
-                self.query_one("#device", Static).update("Device  •  ADB connected")
+                self.query_one("#device", Static).update("Device  •  ADB Connected")
             elif line == "Google Play account verified.":
                 self.query_one("#account", Static).update("Account  •  Verified by offer check")
             elif line == "Google Play account could not be verified.":
