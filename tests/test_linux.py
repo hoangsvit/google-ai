@@ -287,6 +287,22 @@ class LinuxAdapterTests(unittest.TestCase):
             self.assertIn("Google Play account could not be verified.", output.getvalue())
             self.assertEqual(json.loads(result.read_text()), {"status": "listed", "offers": []})
 
+    def test_verified_checkout_projection_is_allow_listed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result_file = Path(tmp) / "result.json"
+            adapter.publish_result(result_file, {
+                "status": "checkout_requested", "email": "private@example.test",
+                "offerToken": "hidden",
+                "sheet": {
+                    "reason": "zero_today_and_duration_verified", "confirmed": True,
+                    "payment_card": "secret", "account": "private@example.test",
+                },
+            })
+            self.assertEqual(json.loads(result_file.read_text()), {
+                "status": "checkout_requested",
+                "sheet": {"reason": "zero_today_and_duration_verified", "confirmed": True},
+            })
+
     def test_engine_drops_raw_private_output(self):
         child = Mock()
         child.stdout = iter(["Connected ADB device: device-private\n",
