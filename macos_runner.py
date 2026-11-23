@@ -262,6 +262,10 @@ def run_stage(step: int, serial: str, env: dict[str, str],
         return run_engine(stage_command(0, serial), env)
     if step == 1:
         report = list_offers(serial, env)
+        if linux and expected_account:
+            listed = str(report.get("detected_play_account") or "").strip().lower()
+            if listed != expected_account.lower():
+                raise RuntimeError("Selected Google Play account does not match the listed account; no checkout started")
         if linux:
             # Offer inspection can complete when the current Play profile
             # could not be read. Checkout performs its own mandatory lookup.
