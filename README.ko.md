@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — 한국어
 
-<!-- Source README.md git-blob: 4e4e7fb0cee059f91a74b1aab5d7daa323e74968 -->
+<!-- Source README.md git-blob: 4f68b0ea54146c62a96a97b322a6c8cab816547e -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · **한국어** · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -104,6 +104,29 @@ sh run-macos.sh
 ```
 
 `sh run-macos.sh`는 **0–5단계**가 포함된 Textual 대시보드를 엽니다. `--check`는 환경을 확인하며 설정을 바꿀 수 있고, `--list`는 혜택 조회만 수행합니다. `--step 2`는 화면에서 단계를 선택할 뿐 **자동 결제하지 않습니다**. 2–5단계는 실제 요금이 발생할 수 있어 단계별 승인이 필요합니다. **실제 Mac/MuMu에서 결제는 아직 검증되지 않았습니다.** [Mac 상세 안내](docs/MACOS-PREVIEW.md)를 참고하세요.
+
+## Linux — 설치 및 실행
+
+Ubuntu x86_64에서 Git, `venv`와 `pip`를 사용할 수 있는 Python 3.10 이상, Android SDK Platform-Tools를 설치하세요. `adb`를 `PATH`에 추가하거나 `ADB_PATH`로 실행 파일을 지정합니다. Google Play 스토어와 Google One이 설치된 루팅 Android 휴대전화를 USB로 연결하세요. USB 디버깅을 켜고 휴대전화의 잠금을 해제한 후 연결을 승인합니다. ADB에 상태가 `device`인 기기가 한 대만 표시되는지 확인하세요.
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+git switch feature
+adb devices
+sh run-linux.sh
+```
+
+`run-linux.sh`가 포함된 버전을 사용하세요. 실행 스크립트는 대시보드를 열고 지정된 버전의 Textual과 Frida 16.5.9를 로컬 `.venv`에 설치합니다. Ubuntu에서 가상 환경을 만들 수 없다면 `python3-venv` 또는 사용 중인 Python 버전에 맞는 venv 패키지를 설치하세요.
+
+- `sh run-linux.sh --check`는 Step 0을 실행하며 Android, Frida 또는 네트워크 설정을 변경할 수 있습니다.
+- `sh run-linux.sh --list`는 Step 1을 실행해 결제 요청 없이 혜택을 조회합니다. 이 과정에서 Android 환경 설정이 이루어질 수 있습니다.
+- `sh run-linux.sh --step 3`은 Step 3이 선택된 고급 설정을 엽니다. `sh run-linux.sh --sequence`는 Step 2부터 시작하는 안내 설정을 엽니다. 두 명령 모두 단계를 자동으로 실행하지 않습니다.
+
+**Android 16 이상:** 고정 버전인 Frida 16.5.9는 Android 16을 지원하지 않으므로 Linux 실행 스크립트는 기기를 설정하기 전에 중단됩니다. **Diagnose Android connection**으로 USB 연결은 확인할 수 있습니다.
+
+**Steps 2–5에서는 Google Play에 실제 요금이 발생할 수 있습니다.** 각 단계마다 개별 승인, 현재 Play 계정 확인, 그리고 최신 조회 결과에서 정확히 일치하며 첫 기간 요금이 0인 혜택이 필요합니다. 다음 단계로 넘어가기 전에 Google Play에서 구독과 갱신일을 확인하세요. Linux 결제는 모의 테스트로 검증하며, 실기기 전체 검증은 아직 완료되지 않았습니다. [Linux 설치, USB 문제 해결 및 검증](docs/LINUX.md).
+
 
 ## 3. 대시보드 사용법
 
