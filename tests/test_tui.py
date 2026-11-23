@@ -328,6 +328,11 @@ class AccountCommandTests(unittest.TestCase):
 
 class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
+        # These regression tests exercise the Windows frontend even when CI
+        # itself runs on Linux. The Linux route has dedicated test_linux.py.
+        platform_patcher = patch("tui.sys.platform", "win32")
+        platform_patcher.start()
+        self.addCleanup(platform_patcher.stop)
         # Smoke tests must not depend on host ADB state or a five-second timer.
         from tui import GoogleAITUI
         patcher = patch.object(GoogleAITUI, "_poll_connection")
