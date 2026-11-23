@@ -1,4 +1,4 @@
-"""Non-purchasing connection diagnostics for Windows and macOS.
+"""Non-purchasing connection diagnostics for Windows, macOS and Linux.
 
 This module does not install tools, change emulator settings, start Frida,
 load Google One, or launch Google Play Billing. Calling 'adb devices' can
@@ -17,6 +17,7 @@ import sys
 
 
 FRIDA_REQUIRED = "16.5.9"
+ANDROID_16_SDK = 36
 GOOGLE_ONE = "com.google.android.apps.subscriptions.red"
 GOOGLE_PLAY = "com.android.vending"
 SAFE_TEXT = re.compile(r"^[a-zA-Z0-9._:/-]{1,90}$")
@@ -68,6 +69,8 @@ def locate_adb(platform_name: str | None = None) -> str | None:
     found = shutil.which("adb")
     if found:
         return found
+    if platform_name == "linux":
+        return None
     home = Path.home()
     if platform_name == "win32":
         paths = [
@@ -104,11 +107,27 @@ def _run(adb: str, args: list[str]):
         return None
 
 
+def linux_frida_compatibility_issue(adb: str, serial: str) -> str:
+    """Fail closed if the pinned Frida version cannot support Android 16."""
+    response = _run(adb, ["-s", serial, "shell", "getprop", "ro.build.version.sdk"])
+    sdk = response.stdout.strip() if response is not None and response.returncode == 0 else ""
+    if not re.fullmatch(r"[1-9][0-9]{0,2}", sdk):
+        return "Could not read the Android SDK version. Check the USB connection and retry."
+    if int(sdk) >= ANDROID_16_SDK:
+        return (
+            f"Device setup blocked on Android SDK {sdk}. "
+            f"The pinned Frida {FRIDA_REQUIRED} predates Android 16 support."
+        )
+    return ""
+
+
 def inspect_connection(platform_name: str | None = None) -> ConnectionDiagnosis:
     """Inspect host/Android prerequisites without touching billing or account data."""
     platform_name = platform_name or sys.platform
     mac = platform_name == "darwin"
-    details = [f"Host: {'macOS Terminal' if mac else 'Windows / PowerShell' if platform_name == 'win32' else 'POSIX shell'}"]
+    linux = platform_name == "linux"
+    shell = {"darwin": "macOS Terminal", "win32": "Windows / PowerShell", "linux": "Linux terminal"}
+    details = [f"Host: {shell.get(platform_name, 'POSIX shell')}"]
     try:
         frida = metadata.version("frida")
     except metadata.PackageNotFoundError:
@@ -119,13 +138,15 @@ def inspect_connection(platform_name: str | None = None) -> ConnectionDiagnosis:
     )
     install = ("Install ADB with: brew install android-platform-tools"
                if mac else "Install Android SDK Platform-Tools or enable MuMu ADB")
+    if linux:
+        install = "Install Android SDK Platform-Tools and add adb to PATH or set ADB_PATH"
     adb = locate_adb(platform_name)
     if not adb:
         return ConnectionDiagnosis(
             "missing_adb", "ADB not found", tuple(details),
             f"{install}. Then open the rooted Android emulator/device and retry.",
         )
-    details.append(f"ADB: {_clean(adb, 'installed (path hidden)')}")
+    details.append("ADB: installed" if linux else f"ADB: {_clean(adb, 'installed (path hidden)')}")
     response = _run(adb, ["devices"])
     if response is None or response.returncode != 0:
         return ConnectionDiagnosis(
@@ -145,6 +166,8 @@ def inspect_connection(platform_name: str | None = None) -> ConnectionDiagnosis:
             fix = "Unlock Android and approve its USB debugging authorization prompt."
         elif any(state == "offline" for _, state in devices):
             fix = "Restart the Android instance and verify that ADB reports 'device', not 'offline'."
+        elif linux:
+            fix = "Connect a rooted Android device by USB and check Linux USB permissions, then run adb devices."
         else:
             fix = "Start MuMu or connect a rooted Android phone, enable USB debugging, then run adb devices."
         return ConnectionDiagnosis("no_online_device", "No authorized Android device", tuple(details), fix)
@@ -152,10 +175,12 @@ def inspect_connection(platform_name: str | None = None) -> ConnectionDiagnosis:
         details.append(f"Online Android transports: {len(online)}")
         return ConnectionDiagnosis(
             "ambiguous", "Multiple Android transports", tuple(details),
-            "Choose one explicit ADB serial in the toolkit. This diagnostic never guesses which account/device to use.",
+            ("Disconnect extra devices and retry." if linux else
+             "Choose one explicit ADB serial in the toolkit. This diagnostic never guesses which account/device to use."),
         )
     serial = online[0]
-    details.append(f"Android serial: {_clean(serial)}")
+    if not linux:
+        details.append(f"Android serial: {_clean(serial)}")
     abi = _run(adb, ["-s", serial, "shell", "getprop", "ro.product.cpu.abi"])
     if abi is not None and abi.returncode == 0:
         details.append(f"Android ABI: {_clean(abi.stdout)}")
@@ -170,6 +195,10 @@ def inspect_connection(platform_name: str | None = None) -> ConnectionDiagnosis:
         details.append(
             "ADB shell: root" if "uid=0(" in root.stdout
             else "ADB shell: non-root (root may be available through su)"
+        )
+    if linux and (issue := linux_frida_compatibility_issue(adb, serial)):
+        return ConnectionDiagnosis(
+            "frida_compatibility_blocked", "Android connected; setup blocked", tuple(details), issue,
         )
     if not play_installed:
         return ConnectionDiagnosis(
