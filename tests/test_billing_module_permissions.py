@@ -34,9 +34,10 @@ class BillingModulePermissionTests(unittest.TestCase):
                 return mod.MODULE_REMOTE if existing else ""
             return ""
 
-        with patch.object(mod, "sh", side_effect=shell), \
+        with tempfile.TemporaryDirectory(prefix="billing-dex-test-") as temp_dir, \
+             patch.object(mod, "sh", side_effect=shell), \
              patch.object(mod, "MODULE_B64", base64.b64encode(b"dex").decode("ascii")), \
-             patch.object(tempfile, "gettempdir", return_value="/tmp"):
+             patch.object(tempfile, "gettempdir", return_value=temp_dir):
             mod.ensure_module_apk()
         return calls
 
