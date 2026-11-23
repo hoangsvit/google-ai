@@ -114,6 +114,29 @@ The launcher prepares Textual and Frida 16.5.9 in a local `.venv`. Optional comm
 The macOS adapter exposes **Steps 0–5**. **Steps 2–5 may initiate real Google Play charges** and require explicit confirmation. No real Mac/MuMu checkout or subscription activation has been validated. [Full macOS guide](docs/MACOS-PREVIEW.md).
 
 
+## Linux — Install and run
+
+On Ubuntu x86_64, install Git, Python 3.10+ with `venv` and `pip`, and Android SDK Platform-Tools. Put `adb` on `PATH` or set `ADB_PATH` to its executable. Connect a rooted Android phone with Google Play Store and Google One over USB. Enable USB debugging, unlock the phone, and approve the authorization prompt. Check that ADB reports one device with status `device`.
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+git switch feature
+adb devices
+sh run-linux.sh
+```
+
+Use the `feature` branch while Linux support is being validated. It contains `run-linux.sh`. The launcher opens the dashboard and installs the pinned Textual and Frida 16.5.9 dependencies into a local `.venv`. If Ubuntu cannot create that environment, install `python3-venv` or the venv package for your Python version.
+
+- `sh run-linux.sh --check` runs Step 0, which can modify Android, Frida or network settings.
+- `sh run-linux.sh --list` runs Step 1 to list offers without requesting checkout. It can also prepare the Android environment.
+- `sh run-linux.sh --step 3` opens Advanced controls with Step 3 selected. `sh run-linux.sh --sequence` opens guided controls starting at Step 2. Neither starts a stage on launch.
+
+**Android 16 and later:** The Linux launcher stops before device setup because pinned Frida 16.5.9 predates Android 16 support. **Diagnose Android connection** remains available for USB checks.
+
+**Steps 2–5 can incur real Google Play charges.** Each requires separate approval, a verified current Play account and a fresh exact-match offer with a zero-priced first phase. Guided continuation requires verifying the subscription and renewal date in Google Play. Linux checkout coverage uses mocks, and an end-to-end device check is pending. [Linux setup, USB troubleshooting and verification](docs/LINUX.md).
+
+
 ## Use the dashboard (recommended)
 
 ### Start with Check Device & Offers
