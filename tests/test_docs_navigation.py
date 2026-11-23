@@ -9,7 +9,7 @@ LOCALIZED = ("vi", "zh-CN", "ja", "ko", "es", "fr")
 TOPIC_PAGES = (
     "docs/README.md", "docs/SAFETY.md", "docs/INSTALLATION.md",
     "docs/USAGE.md", "docs/TROUBLESHOOTING.md", "docs/PROJECT.md",
-    "docs/MACOS-PREVIEW.md", "docs/DETAILED-GUIDE.md",
+    "docs/MACOS-PREVIEW.md", "docs/LINUX.md", "docs/DETAILED-GUIDE.md",
     "docs/ORIGINAL-STEPS.md", "docs/AUTHOR-NOTES.md",
     "docs/WINDOWS-SMOKE-TEST.md",
 )
@@ -67,11 +67,13 @@ class DocumentationNavigationTests(unittest.TestCase):
                 with self.subTest(source=str(source.relative_to(ROOT)), link=relative):
                     self.assertTrue((source.parent / relative).is_file())
 
-    def test_windows_and_mac_installation_both_work_from_project_root(self):
+    def test_all_platform_installations_work_from_project_root(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         self.assertIn("### Windows requirements", readme)
         self.assertIn("## macOS — Install and run", readme)
-        self.assertEqual(readme.count("git clone https://github.com/hoangsvit/google-ai.git"), 2)
+        self.assertIn("## Linux — Install and run", readme)
+        self.assertIn("sh run-linux.sh", readme)
+        self.assertEqual(readme.count("git clone https://github.com/hoangsvit/google-ai.git"), 3)
         self.assertIn(".\\run-all.ps1", readme)
         self.assertIn("sh run-macos.sh", readme)
         self.assertIn("brew install android-platform-tools", readme)
@@ -88,14 +90,14 @@ class DocumentationNavigationTests(unittest.TestCase):
                 self.assertIn("macOS", text)
                 self.assertIn("sh run-macos.sh", text)
                 self.assertIn(".\\run-all.ps1", text)
-                self.assertEqual(text.count("git clone https://github.com/hoangsvit/google-ai.git"), 2)
+                self.assertEqual(text.count("git clone https://github.com/hoangsvit/google-ai.git"), 3)
                 self.assertNotIn("git switch dev", text)
 
     def test_user_install_guides_never_require_switching_to_dev(self):
         pages = [
             ROOT / "README.md", ROOT / "README.en.md",
             DOCS / "README.md", DOCS / "INSTALLATION.md",
-            DOCS / "MACOS-PREVIEW.md", DOCS / "TROUBLESHOOTING.md",
+            DOCS / "MACOS-PREVIEW.md", DOCS / "LINUX.md", DOCS / "TROUBLESHOOTING.md",
         ]
         pages.extend(ROOT / f"README.{lang}.md" for lang in LOCALIZED)
         pages.extend(DOCS / "i18n" / f"README.{lang}.md" for lang in LOCALIZED)

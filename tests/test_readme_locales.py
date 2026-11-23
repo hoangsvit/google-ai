@@ -51,6 +51,8 @@ class ReadmeLocalesTests(unittest.TestCase):
                 self.assertIn(".\\run-all.ps1", text)
                 self.assertIn("sh run-macos.sh", text)
                 self.assertIn("(docs/MACOS-PREVIEW.md)", text)
+                self.assertIn("(docs/LINUX.md)", text)
+                self.assertIn("sh run-linux.sh", text)
                 self.assertIn("(docs/SAFETY.md)", text)
                 self.assertIn("(DISCLAIMER.md)", text)
 
