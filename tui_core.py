@@ -339,7 +339,7 @@ def command_for_step(step: int, repo: Path, shell: str | None = None,
             command.append("--confirmed")
         if step >= 3:
             command.append("--active-confirmed")
-        if step >= 2 and account:
+        if account and (step >= 2 or (sys.platform == "linux" and step == 1)):
             command.extend(["--expected-account", account])
         if step >= 2 and device:
             command.extend(["--expected-device", device])
