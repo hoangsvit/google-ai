@@ -204,7 +204,11 @@ def run_check(adb, serial):
     env["PYTHONIOENCODING"] = "utf-8"
     r = subprocess.run([sys.executable, "ultra0.py", "--check", "--serial", serial], cwd=str(BASE),
                        env=env, capture_output=True, encoding="utf-8", errors="ignore")
-    print(r.stdout.strip() or r.stderr.strip())
+    # A failing check may print progress on stdout and the actual error on stderr.
+    if r.stdout.strip():
+        print(r.stdout.strip())
+    if r.stderr.strip():
+        print(r.stderr.strip(), file=sys.stderr, flush=True)
     return r.returncode == 0
 
 
@@ -224,11 +228,13 @@ def main():
         if good:
             print("  Environment ready. Next, run: .\\run-all.ps1 -ListOnly")
         else:
-            print("  Environment check incomplete. Inspect warnings above; Play Store may not be running.")
+            print("  Environment check failed. Inspect the errors above, including billing-module permissions.")
         print("=" * 60)
-    else:
-        print("\nStart MuMu, enable ADB debugging, and rerun this setup script.")
+        return 0 if good else 1
+
+    print("\nStart MuMu, enable ADB debugging, and rerun this setup script.")
+    return 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
