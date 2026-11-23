@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — 日本語
 
-<!-- Source README.md git-blob: 4e4e7fb0cee059f91a74b1aab5d7daa323e74968 -->
+<!-- Source README.md git-blob: 4f68b0ea54146c62a96a97b322a6c8cab816547e -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · **日本語** · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -104,6 +104,29 @@ sh run-macos.sh
 ```
 
 `sh run-macos.sh` は **ステップ 0–5** を含む Textual 画面を開きます。`--check` は環境を確認し設定を変更する場合があり、`--list` はオファー照会のみです。`--step 2` は画面の初期選択だけで、**自動決済しません**。ステップ 2–5 は実際に請求される可能性があり、毎回確認が必要です。**Mac/MuMu 実機での決済は未検証です。** [Mac 詳細ガイド](docs/MACOS-PREVIEW.md) を参照。
+
+## Linux — インストールと起動
+
+Ubuntu x86_64 では Git、`venv` と `pip` が使える Python 3.10 以降、Android SDK Platform-Tools を用意します。`adb` を `PATH` に追加するか、実行ファイルを `ADB_PATH` で指定してください。Google Play ストアと Google One が入った root 化済みの Android 端末を USB で接続します。USB デバッグを有効にし、端末のロックを解除して接続を許可します。ADB に `device` と表示される端末が 1 台であることを確認してください。
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+git switch feature
+adb devices
+sh run-linux.sh
+```
+
+`run-linux.sh` を含むバージョンを使用してください。起動スクリプトはダッシュボードを開き、指定バージョンの Textual と Frida 16.5.9 をローカルの `.venv` にインストールします。Ubuntu で仮想環境を作成できない場合は、`python3-venv` または使用中の Python に対応する venv パッケージをインストールしてください。
+
+- `sh run-linux.sh --check` は Step 0 を実行します。Android、Frida、ネットワークの設定が変わる場合があります。
+- `sh run-linux.sh --list` は Step 1 を実行して特典を一覧表示します。決済は開始しませんが、Android 環境の準備が行われる場合があります。
+- `sh run-linux.sh --step 3` は Step 3 を選択した状態で詳細設定を開きます。`sh run-linux.sh --sequence` は Step 2 からのガイド付き設定を開きます。どちらもステップを自動実行しません。
+
+**Android 16 以降:** 指定バージョンの Frida 16.5.9 は Android 16 に対応していないため、Linux の起動スクリプトは端末のセットアップを開始せずに停止します。USB 接続は **Diagnose Android connection** で確認できます。
+
+**Steps 2–5 では、Google Play で実際に請求が発生することがあります。** 各ステップで個別に承認し、現在の Play アカウントと、直前の照会で対象と完全に一致する特典の初回期間の価格が 0 であることを確認する必要があります。次のステップに進む前に、Google Play で登録状況と更新日を確認してください。Linux の決済は模擬テストで検証しており、実機での一連の動作確認は未完了です。 [Linux の設定、USB のトラブル対処と検証](docs/LINUX.md).
+
 
 ## 3. ダッシュボードの使い方
 
