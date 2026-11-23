@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Español
 
-<!-- Source README.md git-blob: 4e4e7fb0cee059f91a74b1aab5d7daa323e74968 -->
+<!-- Source README.md git-blob: 4f68b0ea54146c62a96a97b322a6c8cab816547e -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · **Español** · [Français](README.fr.md)
 
@@ -105,6 +105,29 @@ sh run-macos.sh
 ```
 
 `sh run-macos.sh` abre el panel Textual con **pasos 0–5**. `--check` revisa el entorno (puede modificar ajustes), `--list` solo consulta ofertas y `--step 2` solo selecciona el paso, **sin pagar automáticamente**. Los pasos 2–5 pueden generar cargos reales y requieren aprobación individual. **Los pagos en un Mac/MuMu real aún no se han verificado.** Consulta la [guía Mac completa](docs/MACOS-PREVIEW.md).
+
+## Linux — Instalación y ejecución
+
+En Ubuntu x86_64, instala Git, Python 3.10 o posterior con `venv` y `pip`, y Android SDK Platform-Tools. Agrega `adb` a `PATH` o indica la ruta del ejecutable en `ADB_PATH`. Conecta por USB un teléfono Android con acceso root, Google Play Store y Google One. Activa la depuración USB, desbloquea el teléfono y autoriza la conexión. Comprueba que ADB muestre un solo dispositivo con estado `device`.
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+git switch feature
+adb devices
+sh run-linux.sh
+```
+
+Usa una versión que incluya `run-linux.sh`. El script abre el panel e instala las versiones fijadas de Textual y Frida 16.5.9 en un entorno local `.venv`. Si Ubuntu no puede crearlo, instala `python3-venv` o el paquete venv de tu versión de Python.
+
+- `sh run-linux.sh --check` ejecuta el paso 0 y puede modificar ajustes de Android, Frida o la red.
+- `sh run-linux.sh --list` ejecuta el paso 1 y lista las ofertas sin iniciar el pago, aunque puede preparar el entorno de Android.
+- `sh run-linux.sh --step 3` abre los controles avanzados con el paso 3 seleccionado. `sh run-linux.sh --sequence` abre los controles guiados desde el paso 2. Ninguno inicia un paso automáticamente.
+
+**Android 16 y versiones posteriores.** El script de Linux se detiene antes de configurar el dispositivo porque Frida 16.5.9 es anterior a la compatibilidad con Android 16. Puedes comprobar la conexión USB con **Diagnose Android connection**.
+
+**Los pasos 2–5 pueden generar cargos reales en Google Play.** Cada uno requiere su propia aprobación, la verificación de la cuenta de Play activa y una consulta reciente que identifique exactamente la oferta con un primer período de precio cero. Antes de avanzar, verifica la suscripción y la fecha de renovación en Google Play. Los pagos en Linux se comprueban con simulaciones. Sigue pendiente la validación completa en un dispositivo real. [Instalación en Linux, solución de problemas de USB y verificación](docs/LINUX.md).
+
 
 ## 3. Usar el panel Textual
 
