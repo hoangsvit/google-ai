@@ -64,6 +64,11 @@ def locate_adb(platform_name: str | None = None) -> str | None:
     """Find an already-installed ADB binary; never download anything."""
     platform_name = platform_name or sys.platform
     configured = os.environ.get("ADB_PATH")
+    if platform_name == "linux":
+        binary = shutil.which(configured or "adb")
+        if binary:
+            return binary
+        return str(Path(configured).resolve()) if configured and Path(configured).is_file() else None
     if configured and Path(configured).is_file():
         return configured
     found = shutil.which("adb")
@@ -166,8 +171,10 @@ def inspect_connection(platform_name: str | None = None) -> ConnectionDiagnosis:
             fix = "Unlock Android and approve its USB debugging authorization prompt."
         elif any(state == "offline" for _, state in devices):
             fix = "Restart the Android instance and verify that ADB reports 'device', not 'offline'."
+        elif linux and any(state == "no" for _, state in devices):
+            fix = "Check Ubuntu's Android USB device rules and your user permissions, then reconnect."
         elif linux:
-            fix = "Connect a rooted Android device by USB and check Linux USB permissions, then run adb devices."
+            fix = "Connect the rooted phone by USB, enable USB debugging, then run adb devices."
         else:
             fix = "Start MuMu or connect a rooted Android phone, enable USB debugging, then run adb devices."
         return ConnectionDiagnosis("no_online_device", "No authorized Android device", tuple(details), fix)
