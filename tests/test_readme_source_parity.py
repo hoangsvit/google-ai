@@ -22,6 +22,10 @@ TECHNICAL = (
 class ReadmeSourceParityTests(unittest.TestCase):
     def test_all_locales_track_exact_source_blob(self):
         source = (ROOT / "README.md").read_bytes()
+        # Windows checkouts with core.autocrlf=true convert LF to CRLF, which
+        # changes the byte length and hash. Git stores blobs with LF, so
+        # normalize before hashing or this gate fails only on Windows.
+        source = source.replace(b"\r\n", b"\n")
         payload = ("blob " + str(len(source)) + "\0").encode("ascii") + source
         sha = hashlib.sha1(payload).hexdigest()
         for locale in LOCALES:

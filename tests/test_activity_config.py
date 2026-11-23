@@ -22,7 +22,10 @@ class DeviceSelectionTests(unittest.TestCase):
 
     def test_multiple_devices_require_serial(self):
         devices = "List of devices attached\nemulator-5554\tdevice\nemulator-5556\tdevice\n"
-        with patch.object(app, "sh", return_value=devices):
+        # auto_select_device shells out to the real ADB binary; on a host with a
+        # live Google One emulator it would auto-select and hide the ambiguity.
+        with patch.object(app, "sh", return_value=devices), \
+             patch("device_selector.adb_command", return_value=None):
             with self.assertRaises(SystemExit):
                 app.pick_device()
 

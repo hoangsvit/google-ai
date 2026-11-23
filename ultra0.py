@@ -333,12 +333,19 @@ def read_purchase_token(sku_short: str, expected_account: str = "") -> str:
             now_ms = int(time.time() * 1000)
             picked = None
             try:
-                with sqlite3.connect(str(local)) as con:
+                # `with sqlite3.connect(...)` only commits the transaction; it does
+                # NOT close the connection. On Windows the open handle blocks
+                # TemporaryDirectory cleanup, leaving a readable Play DB copy
+                # (with purchase tokens) behind in %TEMP%. Close explicitly.
+                con = sqlite3.connect(str(local))
+                try:
                     rows = con.execute(
                         "select account, subs_valid_until_time, inapp_purchase_data "
                         "from ownership where doc_id like ?",
                         (f"%{sku_short}%",),
                     ).fetchall()
+                finally:
+                    con.close()
                 for account, valid, data in rows:
                     if not data:
                         continue
