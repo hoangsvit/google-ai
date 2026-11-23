@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Français
 
-<!-- Source README.md git-blob: 4e4e7fb0cee059f91a74b1aab5d7daa323e74968 -->
+<!-- Source README.md git-blob: 4f68b0ea54146c62a96a97b322a6c8cab816547e -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · **Français**
 
@@ -105,6 +105,29 @@ sh run-macos.sh
 ```
 
 `sh run-macos.sh` ouvre l'interface Textual avec les **étapes 0–5**. `--check` contrôle l'environnement (et peut modifier les réglages), `--list` consulte seulement les offres, et `--step 2` présélectionne l'étape **sans payer automatiquement**. Les étapes 2–5 peuvent entraîner de vrais frais et nécessitent une confirmation individuelle. **Les paiements sur un vrai Mac/MuMu restent non vérifiés.** Consultez le [guide Mac détaillé](docs/MACOS-PREVIEW.md).
+
+## Linux — Installation et démarrage
+
+Sous Ubuntu x86_64, installez Git, Python 3.10 ou une version ultérieure avec `venv` et `pip`, ainsi qu’Android SDK Platform-Tools. Ajoutez `adb` au `PATH` ou indiquez le chemin de l’exécutable dans `ADB_PATH`. Branchez en USB un téléphone Android rooté équipé du Google Play Store et de Google One. Activez le débogage USB, déverrouillez le téléphone et autorisez la connexion. ADB doit afficher un seul appareil à l’état `device`.
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+git switch feature
+adb devices
+sh run-linux.sh
+```
+
+Utilisez une version qui contient `run-linux.sh`. Le script ouvre l’interface et installe les versions fixées de Textual et de Frida 16.5.9 dans un environnement local `.venv`. Si Ubuntu ne parvient pas à créer cet environnement, installez `python3-venv` ou le paquet venv correspondant à votre version de Python.
+
+- `sh run-linux.sh --check` exécute l’étape 0 et peut modifier les réglages d’Android, de Frida ou du réseau.
+- `sh run-linux.sh --list` exécute l’étape 1 pour afficher les offres sans lancer de paiement. Cette commande peut aussi préparer l’environnement Android.
+- `sh run-linux.sh --step 3` ouvre les commandes avancées avec l’étape 3 sélectionnée. `sh run-linux.sh --sequence` ouvre le mode guidé à partir de l’étape 2. Aucune des deux commandes ne lance d’étape automatiquement.
+
+**Android 16 et versions ultérieures.** Le script Linux s’arrête avant de configurer l’appareil, car Frida 16.5.9 est antérieur à la prise en charge d’Android 16. **Diagnose Android connection** permet toujours de vérifier la connexion USB.
+
+**Les étapes 2–5 peuvent entraîner de vrais prélèvements sur Google Play.** Pour chacune, il faut une confirmation distincte, vérifier le compte Play actif et obtenir un résultat récent qui correspond exactement à l’offre dont la première période coûte zéro. Avant de poursuivre, vérifiez l’abonnement et la date de renouvellement dans Google Play. Les paiements sous Linux sont testés par simulation. La validation complète sur un appareil réel reste à faire. [Installation sous Linux, dépannage USB et vérification](docs/LINUX.md).
+
 
 ## 3. Interface Textual
 
