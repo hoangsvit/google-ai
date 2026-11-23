@@ -830,6 +830,10 @@ class GoogleAITUI(App[None]):
         self.advanced_pressed()
 
     def _refresh_elapsed(self) -> None:
+        # Textual may fire a queued interval while the screen is unmounting.
+        # Avoid selecting widgets after shutdown (especially on Windows).
+        if not self.is_mounted or not len(self.query("#elapsed")):
+            return
         if not self.busy or self._started_at is None:
             return
         elapsed = int(time.monotonic() - self._started_at)
