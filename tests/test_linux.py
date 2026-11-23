@@ -13,7 +13,7 @@ from unittest.mock import Mock, patch
 
 import device_diagnostics as diagnostics
 import macos_runner as adapter
-from tui import Approval, GoogleAITUI, main
+from tui import Approval, SetupNotice, GoogleAITUI, main
 from tui_core import command_for_step
 from textual.widgets import Button, Select, Static
 
@@ -331,6 +331,18 @@ class LinuxDashboardTests(unittest.IsolatedAsyncioTestCase):
             app = GoogleAITUI(repo=ROOT)
             with patch.object(app, "run_stage") as run:
                 async with app.run_test(size=(90, 20)) as pilot:
+                    # Current TUI refuses to offer checkout before an
+                    # account-bound Step 1 has verified a unique device.
+                    app._confirm_stage(2, True)
+                    await pilot.pause()
+                    self.assertNotIsInstance(app.screen, Approval)
+                    run.assert_not_called()
+                    app._selected_account = "verified@example.test"
+                    app._offer_ready_account = "verified@example.test"
+                    app._offer_ready_device = "mock-device"
+                    app._connection_state = diagnostics.ConnectionStatus(
+                        "connected", ("mock-device",))
+                    app._offer_check_ready = True
                     app._confirm_stage(2, True)
                     await pilot.pause()
                     self.assertIsInstance(app.screen, Approval)
@@ -351,6 +363,10 @@ class LinuxDashboardTests(unittest.IsolatedAsyncioTestCase):
                         kill.assert_called_once_with(9876, signal.SIGTERM)
                     self.assertTrue(app._cancel_requested)
                     app.busy = False
+                    app._offer_check_ready = True
+                    app._offer_ready_device = "mock-device"
+                    app._connection_state = diagnostics.ConnectionStatus(
+                        "connected", ("mock-device",))
                     app._confirm_stage(3, True)
                     await pilot.pause()
                     app.screen.dismiss(True)
@@ -394,6 +410,11 @@ class LinuxDashboardTests(unittest.IsolatedAsyncioTestCase):
                     await pilot.click("#quickstart")
                     await app.workers.wait_for_complete()
                     self.assertIn("1 offers returned", str(app.query_one("#step_result", Static).content))
+                    # Without a selected account, the current TUI shows a
+                    # safety notice rather than unlocking paid stages.
+                    if isinstance(app.screen, SetupNotice):
+                        app.screen.dismiss(None)
+                        await pilot.pause()
                     await pilot.click("#quickstart")
                     await app.workers.wait_for_complete()
                     self.assertEqual(app._last_outcome.code, "missing_report")
