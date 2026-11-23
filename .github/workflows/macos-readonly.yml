@@ -2,7 +2,7 @@ name: macOS full-stage build and offline validation
 
 on:
   pull_request:
-    branches: [dev, main]
+    branches: [dev, main, feature]
     paths:
       - "run-macos.sh"
       - "ePlus-AI-Toolkit.command"
