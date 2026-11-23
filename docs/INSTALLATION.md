@@ -4,7 +4,7 @@
 
 ## Install and prepare
 
-**This guide is for Windows only.** Use **PowerShell**, not the macOS Terminal launcher. macOS users should follow the [separate Mac prerequisites and setup guide](MACOS-PREVIEW.md) instead; macOS does **not** need PowerShell.
+**This guide is for Windows only.** Use **PowerShell**, not the macOS Terminal launcher. macOS users should follow the [separate Mac prerequisites and setup guide](MACOS-PREVIEW.md) instead; macOS does **not** need PowerShell. For Ubuntu and a rooted USB phone, use the [Linux setup guide](LINUX.md).
 
 ### Requirements
 

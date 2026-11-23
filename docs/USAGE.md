@@ -74,6 +74,8 @@ The action panel fits its controls, and **Live Status** fills the remaining heig
 
 Neither Stop nor closing the terminal reverses an existing Google Play transaction. Always verify the real transaction and subscription status directly.
 
+Linux users can open the advanced controls with `sh run-linux.sh --step N` for Steps 0–5 or `sh run-linux.sh --sequence` to start with Step 2 selected in guided mode. These commands open the dashboard without running a stage. [Linux setup and command reference](LINUX.md).
+
 ## PowerShell CLI (advanced)
 
 The dashboard and the CLI reuse the same PowerShell/Python engine. Explicit command arguments bypass the TUI.

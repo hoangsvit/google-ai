@@ -9,6 +9,7 @@ on:
       - "macos_runner.py"
       - "tui.py"
       - "tui_core.py"
+      - "device_diagnostics.py"
       - "tests/test_macos.py"
       - "docs/MACOS-PREVIEW.md"
       - ".github/workflows/macos-readonly.yml"
@@ -50,7 +51,7 @@ jobs:
           zip="$RUNNER_TEMP/$name.zip"
           git archive --format=zip --output="$zip" HEAD \
             run-macos.sh ePlus-AI-Toolkit.command macos_runner.py \
-            tui.py tui_core.py ultra0.py device_selector.py \
+            tui.py tui_core.py ultra0.py device_selector.py device_diagnostics.py \
             requirements.txt requirements-tui.txt \
             scripts/runtime-lookup.py \
             assets/frida/billing.js assets/modules/module_521.b64 \
