@@ -42,6 +42,8 @@ jobs:
             "test_tui.py",
             "test_repository_layout.py",
             "test_report_identity.py",
+            "test_adb_setup.py",
+            "test_billing_module_permissions.py",
             "test_manual_verification.py",
             "test_adb_text_input.py"
           )
