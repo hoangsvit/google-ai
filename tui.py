@@ -456,6 +456,7 @@ class GoogleAITUI(App[None]):
                             else "Check MuMu connection and Google AI offers without opening checkout.",
                             id="quick_hint")
                         yield Button("Check Device & Offers", id="quickstart", variant="success")
+                        yield Button("Stop after current step", id="stop", disabled=True)
                         yield Button("Verified in Google Play → Next", id="next", disabled=True)
                         yield Button("Choose another step  +", id="advanced_toggle")
                         with Vertical(id="workflow_actions"):
@@ -479,7 +480,6 @@ class GoogleAITUI(App[None]):
                                 yield Static("Runs one step; no next step is automatic.", id="mode_hint")
                             yield Button("Run sequence from step", id="sequence")
                             yield Button("Run all", id="run_all")
-                            yield Button("Stop after current step", id="stop", disabled=True)
                             yield Static("Steps 2–5 can open checkout and require confirmation.", id="read_only")
                     with Vertical(id="status_panel"):
                         yield Static("LIVE STATUS", classes="section")
