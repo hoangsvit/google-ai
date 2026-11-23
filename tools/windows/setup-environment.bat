@@ -15,6 +15,14 @@ echo.
 pause
 
 python setup_env.py
+if errorlevel 1 (
+    echo.
+    echo ------------------------------------------------------------
+    echo   Setup failed. Review the errors above and retry.
+    echo ------------------------------------------------------------
+    pause
+    exit /b 1
+)
 
 echo.
 echo ------------------------------------------------------------
