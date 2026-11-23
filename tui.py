@@ -1414,21 +1414,38 @@ class GoogleAITUI(App[None]):
             detected = str((report or {}).get("detected_play_account") or "").strip().lower()
             verified = (self._verified_account or "").strip().lower()
             offers = (report or {}).get("offers")
-            self._offer_check_ready = bool(
-                outcome.code == "listed" and isinstance(offers, list) and offers
-                and verified and (not detected or detected == verified)
-                and (not self._selected_account or self._selected_account == verified)
-                and self._checked_device
-            )
+            if self.linux_mode:
+                # Linux publishes no email or device serial in its result.
+                # The bridge validates an explicitly selected account against
+                # the Step 1 Play listing; it repeats live lookup before billing.
+                selected = (self._selected_account or "").strip().lower()
+                self._offer_check_ready = bool(
+                    outcome.code == "listed" and isinstance(offers, list) and offers
+                    and selected and self._checked_device and self._connection_state
+                    and self._connection_state.state == "connected"
+                    and len(self._connection_state.devices) == 1
+                )
+                self._verified_account = selected if self._offer_check_ready else None
+            else:
+                self._offer_check_ready = bool(
+                    outcome.code == "listed" and isinstance(offers, list) and offers
+                    and verified and (not detected or detected == verified)
+                    and (not self._selected_account or self._selected_account == verified)
+                    and self._checked_device
+                )
             self._offer_ready_device = self._checked_device if self._offer_check_ready else None
-            self._offer_ready_account = verified if self._offer_check_ready else None
+            self._offer_ready_account = (
+                (self._selected_account or "").strip().lower() if self.linux_mode else verified
+            ) if self._offer_check_ready else None
             if self._offer_ready_device:
                 # The Stage 1 transport is authoritative; the previous idle
                 # poll may describe a different device from before the check.
                 self._connection_state = ConnectionStatus("connected", (self._offer_ready_device,))
             self._initial_offer_ready = bool(self._offer_check_ready and any(
                 isinstance(offer, dict) and offer.get("id") == "12months-eft"
-                and str(offer.get("micros")) == "0" for offer in offers
+                and str(offer.get("micros")) == "0"
+                and (not self.linux_mode or offer.get("product") == "g1.2tb.ai.subs_variant")
+                for offer in offers
             ))
         elif step == 0:
             self._offer_check_ready = False
