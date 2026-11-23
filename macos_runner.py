@@ -245,8 +245,13 @@ def publish_result(path: Path, report: dict) -> None:
             for offer in report["offers"] if isinstance(offer, dict)
         ]
     sheet = report.get("sheet")
-    if isinstance(sheet, dict) and isinstance(reason := sheet.get("reason"), str) and reason in MESSAGES:
-        result["sheet"] = {"reason": reason}
+    if isinstance(sheet, dict) and isinstance(reason := sheet.get("reason"), str):
+        if reason == "zero_today_and_duration_verified" and sheet.get("confirmed") is True:
+            # The current TUI requires both fields before offering the next
+            # separately approved stage. Never publish tokens, emails or prices.
+            result["sheet"] = {"reason": reason, "confirmed": True}
+        elif reason in MESSAGES:
+            result["sheet"] = {"reason": reason}
     with path.open("x", encoding="utf-8") as output:
         json.dump(result, output)
 
