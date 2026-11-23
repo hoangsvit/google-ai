@@ -1,6 +1,7 @@
 """ADB installer checks: no network access, Android device, or real ADB."""
 import importlib.util
 import io
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 import tempfile
 import unittest
@@ -73,6 +74,50 @@ class AdbSetupTests(unittest.TestCase):
         self.assertIn("--serial", called.call_args.args[0])
         self.assertIn("emulator-5554", called.call_args.args[0])
 
+
+    def test_preflight_failure_displays_stderr_even_with_stdout(self):
+        class MockResult:
+            returncode = 1
+            stdout = "Starting Android preflight\n"
+            stderr = "RuntimeError: Could not make the billing module read-only\n"
+
+        output = io.StringIO()
+        errors = io.StringIO()
+        with patch.object(installer.subprocess, "run", return_value=MockResult()), \
+             redirect_stdout(output), redirect_stderr(errors):
+            self.assertFalse(installer.run_check("adb", "emulator-5554"))
+        self.assertIn("Starting Android preflight", output.getvalue())
+        self.assertIn("billing module read-only", errors.getvalue())
+
+    def test_failed_preflight_returns_nonzero_exit_code(self):
+        output = io.StringIO()
+        with patch.object(installer, "check_python"), \
+             patch.object(installer, "install_frida"), \
+             patch.object(installer, "find_adb", return_value="adb"), \
+             patch.object(installer, "connect_emulator", return_value="emulator-5554"), \
+             patch.object(installer, "run_check", return_value=False), \
+             redirect_stdout(output):
+            self.assertEqual(installer.main(), 1)
+        self.assertIn("Environment check failed", output.getvalue())
+
+    def test_missing_emulator_returns_nonzero_exit_code(self):
+        with patch.object(installer, "check_python"), \
+             patch.object(installer, "install_frida"), \
+             patch.object(installer, "find_adb", return_value="adb"), \
+             patch.object(installer, "connect_emulator", return_value=None), \
+             patch.object(installer, "run_check") as check, \
+             redirect_stdout(io.StringIO()):
+            self.assertEqual(installer.main(), 1)
+        check.assert_not_called()
+
+    def test_successful_preflight_returns_zero_exit_code(self):
+        with patch.object(installer, "check_python"), \
+             patch.object(installer, "install_frida"), \
+             patch.object(installer, "find_adb", return_value="adb"), \
+             patch.object(installer, "connect_emulator", return_value="emulator-5554"), \
+             patch.object(installer, "run_check", return_value=True), \
+             redirect_stdout(io.StringIO()):
+            self.assertEqual(installer.main(), 0)
 
 if __name__ == "__main__":
     unittest.main()
