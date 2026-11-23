@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — 简体中文
 
-<!-- Source README.md git-blob: 4e4e7fb0cee059f91a74b1aab5d7daa323e74968 -->
+<!-- Source README.md git-blob: 4f68b0ea54146c62a96a97b322a6c8cab816547e -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · **简体中文** · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -104,6 +104,29 @@ sh run-macos.sh
 ```
 
 `sh run-macos.sh` 打开包含 **步骤 0–5** 的 Textual 界面。`--check` 检查环境（可能改变配置）；`--list` 仅查询优惠；`--step 2` 只预选该步骤，**不会自动付款**。步骤 2–5 可能产生真实费用，必须逐步确认。**真实 Mac/MuMu 上的支付尚未验证。** 参阅 [Mac 详细指南](docs/MACOS-PREVIEW.md)。
+
+## Linux — 安装和启动
+
+在 Ubuntu x86_64 上安装 Git、带有 `venv` 和 `pip` 的 Python 3.10 或更高版本，以及 Android SDK Platform-Tools。将 `adb` 加入 `PATH`，或用 `ADB_PATH` 指定可执行文件。用 USB 连接已取得 root 权限且装有 Google Play 商店和 Google One 的 Android 手机。打开 USB 调试，解锁手机并确认授权。ADB 应只显示一台状态为 `device` 的设备。
+
+```sh
+git clone https://github.com/hoangsvit/google-ai.git
+cd google-ai
+git switch feature
+adb devices
+sh run-linux.sh
+```
+
+请选择包含 `run-linux.sh` 的版本。启动脚本会打开界面，并在本地 `.venv` 中安装固定版本的 Textual 和 Frida 16.5.9。如果 Ubuntu 无法创建虚拟环境，请安装 `python3-venv` 或与当前 Python 版本对应的 venv 软件包。
+
+- `sh run-linux.sh --check` 运行第 0 步，可能更改 Android、Frida 或网络设置。
+- `sh run-linux.sh --list` 运行第 1 步以查看优惠，不会发起结账，但仍可能配置 Android 环境。
+- `sh run-linux.sh --step 3` 打开高级设置并预选第 3 步。 `sh run-linux.sh --sequence` 打开从第 2 步开始的引导设置。两个命令都只打开界面，不会执行步骤。
+
+**Android 16 及更高版本：** 固定使用的 Frida 16.5.9 尚不支持 Android 16，因此 Linux 启动脚本会在配置设备前停止。仍可通过 **Diagnose Android connection** 检查 USB 连接。
+
+**第 2–5 步可能产生真实的 Google Play 费用。** 每一步都须单独确认、核实当前 Play 账号，并通过本次查询确认优惠完全匹配且首期价格为零。继续引导流程前，请在 Google Play 中核实订阅和续订日期。Linux 结账仅通过模拟测试，真机端到端验证尚未完成。 [Linux 安装、USB 故障排查和验证](docs/LINUX.md).
+
 
 ## 3. Textual 界面
 
