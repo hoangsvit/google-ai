@@ -33,6 +33,8 @@ jobs:
 
       - name: Windows Python syntax and critical offline regressions
         shell: pwsh
+        env:
+          PYTHONIOENCODING: utf-8
         run: |
           python -m py_compile ultra0.py tui.py tui_core.py setup_env.py device_selector.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
