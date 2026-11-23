@@ -17,6 +17,12 @@ from tui_core import command_for_step
 
 
 class MacStageAdapterTests(unittest.TestCase):
+    def setUp(self):
+        # Exercise macOS compatibility independently of the CI host OS.
+        platform_patcher = patch("macos_runner.sys.platform", "darwin")
+        platform_patcher.start()
+        self.addCleanup(platform_patcher.stop)
+
     def test_android_details_query_uses_selected_device(self):
         result = subprocess.CompletedProcess([], 0, "14\n34\narm64-v8a\n", "")
         with patch("macos_runner.subprocess.run", return_value=result) as run:
