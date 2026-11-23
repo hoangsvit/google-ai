@@ -16,6 +16,14 @@ if scenario not in SCENARIOS:
 
 
 class PreviewApp(GoogleAITUI):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # These existing synthetic screenshots document the Windows-style
+        # status protocol. Linux integration has its own offline UI tests.
+        # Never enable real platform runners in a fixture.
+        self.linux_mode = False
+        self.native_mode = False
+
     def _poll_connection(self):
         pass  # Never probe host devices from a screenshot run.
 
