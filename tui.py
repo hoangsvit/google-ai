@@ -1222,6 +1222,14 @@ class GoogleAITUI(App[None]):
             text=True, encoding="utf-8", errors="replace", bufsize=1, **options
         ) as child:
             self._child = child
+            if self._cancel_requested and child.poll() is None:
+                try:
+                    if os.name == "nt":
+                        child.terminate()
+                    else:
+                        os.killpg(child.pid, signal.SIGTERM)
+                except ProcessLookupError:
+                    pass
             if child.stdout:
                 for line in child.stdout:
                     try:
@@ -1261,12 +1269,29 @@ class GoogleAITUI(App[None]):
             command = command_for_step(
                 step, self.repo, account=self._selected_account or self._offer_ready_account,
                 device=self._offer_ready_device if step >= 2 else None)
-            return_code = self._execute(command)
+            if self.linux_mode:
+                # The Linux bridge publishes a minimal allow-listed report for
+                # this invocation. Never consume an older shared report.
+                with TemporaryDirectory(prefix="eplus-dashboard-") as directory:
+                    result_file = Path(directory) / "result.json"
+                    return_code = self._execute([*command, "--result-file", str(result_file)])
+                    report = None
+                    if return_code == 0 and step > 0 and not self._cancel_requested:
+                        try:
+                            data = json.loads(result_file.read_text(encoding="utf-8"))
+                            if isinstance(data, dict) and isinstance(data.get("status"), str):
+                                report = data
+                        except (OSError, ValueError):
+                            pass
+                connection = poll_connection()
+                self.call_from_thread(self._remember_linux_transport, connection)
+            else:
+                return_code = self._execute(command)
+                report = read_fresh_report(self.repo / "ultra0-report", step, started,
+                                           expected_account=self._verified_account)
             if self._cancel_requested:
                 self.call_from_thread(self._finished, step, Outcome("cancelled", "Check stopped", "Cancelled read-only check."), None)
                 return
-            report = read_fresh_report(self.repo / "ultra0-report", step, started,
-                                       expected_account=self._verified_account)
             result = outcome_for_stage(step, return_code, report)
             if return_code != 0 or result.code in ("missing_report", "tool_error"):
                 result = cli_issue_outcome(list(self._run_output), step) or result
@@ -1282,6 +1307,14 @@ class GoogleAITUI(App[None]):
             self.call_from_thread(self._finished, step, result, None)
         finally:
             self._child = None
+
+    def _remember_linux_transport(self, result: ConnectionStatus) -> None:
+        # Do not display serials. The selected transport must be unique.
+        self._connection_state = result
+        self._checked_device = (
+            result.devices[0] if result.state == "connected" and len(result.devices) == 1
+            else None
+        )
 
     def _record_internal_diagnostic(self, diagnostic: str) -> None:
         # Do not add to _run_output: protocol parsing only accepts child output.
@@ -1324,6 +1357,16 @@ class GoogleAITUI(App[None]):
             btn.display = True
             btn.disabled = False
             self._set_message("Complete the requested action on Android, then click Completed.")
+        if self.linux_mode:
+            if line == "Android device connected.":
+                self.query_one("#device", Static).update("Device  •  ADB connected")
+            elif line == "Google Play account verified.":
+                self.query_one("#account", Static).update("Account  •  Verified by offer check")
+            elif line == "Google Play account could not be verified.":
+                self.query_one("#account", Static).update("Account  •  Unverified")
+            # The Linux stage adapter emits only categorized progress, not
+            # raw device/account identities or untrusted Android output.
+            return
         selected_device = re.search(
             r"\b(?:Connected ADB device:|Device)\s+([A-Za-z0-9._:/-]{1,90})\s*$", line
         )
