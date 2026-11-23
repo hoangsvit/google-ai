@@ -110,6 +110,13 @@ class AdbSetupTests(unittest.TestCase):
             self.assertEqual(installer.main(), 1)
         check.assert_not_called()
 
+    def test_one_click_batch_reports_setup_failures(self):
+        launcher = (ROOT / "tools" / "windows" / "setup-environment.bat").read_text(encoding="utf-8")
+        self.assertIn("python setup_env.py", launcher)
+        self.assertIn("if errorlevel 1 (", launcher)
+        self.assertIn("exit /b 1", launcher)
+        self.assertIn("Setup failed", launcher)
+
     def test_successful_preflight_returns_zero_exit_code(self):
         with patch.object(installer, "check_python"), \
              patch.object(installer, "install_frida"), \
