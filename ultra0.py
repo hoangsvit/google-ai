@@ -447,10 +447,12 @@ def nodes(xml: str):
         c = re.search(r'class="([^"]*)"', s)
         if not b:
             continue
+        rid = re.search(r'resource-id="([^"]*)"', s)
         yield {
             "text": (t.group(1) if t else "") or "",
             "desc": (d.group(1) if d else "") or "",
             "cls": (c.group(1) if c else "") or "",
+            "id": (rid.group(1) if rid else "") or "",
             "x": (int(b.group(1)) + int(b.group(3))) // 2,
             "y": (int(b.group(2)) + int(b.group(4))) // 2,
         }
@@ -653,29 +655,49 @@ def current_play_account() -> str:
         warn("Cannot inspect Play Store UI. Open Play Store, tap the profile icon, and retry.")
         return ""
 
+    # Explicit active-account indicators (EN/VI/ZH). Must contain exactly one email.
+    active_re = re.compile(
+        r"^(?:Google Account|Tài khoản Google|Google 账号|Google 账户|"
+        r"Account|Tài khoản|Hồ sơ)\s*[:：]",
+        re.I,
+    )
+    # Labels that open the profile menu. Checked on both content-desc and text
+    # so Android 15 / MuMu layouts that put the string in text are covered.
+    profile_labels = (
+        "Account and settings", "Accounts and settings",
+        "Account", "Accounts", "Profile", "Your account",
+        "Tài khoản và chế độ cài đặt", "Tài khoản", "Hồ sơ",
+        "账号和设置", "账户和设置",
+    )
+    email_re = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+
+    def _one_email(blob: str) -> str | None:
+        found = {v.lower() for v in email_re.findall(blob or "")}
+        return next(iter(found)) if len(found) == 1 else None
+
     opened_profile = False
     for n in nodes(xml):
-        # Play Store exposes the active profile on its account button in
-        # some versions. Other signed-in accounts in the expanded menu
-        # must not override that explicit identity.
-        if re.match(r"^(?:Google Account|T\u00e0i kho\u1ea3n Google|Google \u5e10\u53f7|Google \u8d26\u53f7)\s*[:\uff1a]", n["desc"], re.I):
-            active = {value.lower() for value in re.findall(
-                r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", n["desc"])}
-            if len(active) == 1:
-                return next(iter(active))
-        if ("\u8d26\u53f7\u548c\u8bbe\u7f6e" in n["desc"] or "Account and settings" in n["desc"]
-                or "T\u00e0i kho\u1ea3n v\u00e0 ch\u1ebf \u0111\u1ed9 c\u00e0i \u0111\u1eb7t" in n["desc"]):
+        desc = (n.get("desc") or "").strip()
+        txt = (n.get("text") or "").strip()
+        blob = desc + " " + txt
+        # Prefer an explicit "Account: email" indicator on the main screen.
+        if active_re.match(desc) or active_re.match(txt):
+            active = _one_email(blob)
+            if active:
+                return active
+        # Open the profile menu on a known label (desc or text).
+        if any(label in blob for label in profile_labels):
             tap(n["x"], n["y"])
             time.sleep(3)
             opened_profile = True
             break
+
     # The profile popup may show multiple signed-in Google accounts. Its
     # first email is NOT necessarily the account currently selected for
     # billing. Never infer identity from the first arbitrary UI node.
     emails = set()
     for n in nodes(ui_xml()):
-        for email in re.findall(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",
-                                n["desc"] + " " + n["text"]):
+        for email in email_re.findall((n.get("desc") or "") + " " + (n.get("text") or "")):
             emails.add(email.lower())
     if opened_profile:
         sh("shell", "input keyevent 4")

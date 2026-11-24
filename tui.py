@@ -1813,6 +1813,19 @@ class GoogleAITUI(App[None]):
                 )
                 self._verified_account = selected if self._offer_check_ready else None
             else:
+                # Prefer the structured "Account <email>" status line.
+                # If that line was lost but the Step 1 report recorded a single
+                # detected_play_account that matches the selected account (or
+                # nothing was selected), accept the report value. Still fail
+                # closed on mismatch or empty detection.
+                if not verified and detected and re.fullmatch(
+                        r"[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}", detected):
+                    if not self._selected_account or self._selected_account == detected:
+                        verified = detected
+                        self._verified_account = detected
+                        self.query_one("#account", Static).update(
+                            "Account  •  " + escape(mask_email(detected))
+                        )
                 self._offer_check_ready = bool(
                     outcome.code == "listed" and isinstance(offers, list) and offers
                     and verified and (not detected or detected == verified)

@@ -134,5 +134,25 @@ class DeviceDiagnosticsTests(unittest.TestCase):
         tap.assert_not_called()
 
 
+
+    def test_android15_style_account_label_in_text_opens_profile(self):
+        """Regression: Android 15 / MuMu may put the profile label in text, not content-desc."""
+        profile = [{"desc": "", "text": "Accounts and settings", "x": 10, "y": 20}]
+        email = [{"desc": "user@gmail.com", "text": "", "x": 10, "y": 20}]
+        with patch.object(mod, "ui_xml", return_value='<node package="com.android.vending"/>'), \
+             patch.object(mod, "nodes", side_effect=[profile, email]), \
+             patch.object(mod, "tap"), patch.object(mod.time, "sleep"), \
+             patch.object(mod, "sh", return_value=""):
+            self.assertEqual(mod.current_play_account(), "user@gmail.com")
+
+    def test_explicit_account_indicator_in_text_is_accepted(self):
+        with patch.object(mod, "ui_xml", return_value='<node package="com.android.vending"/>'), \
+             patch.object(mod, "nodes", return_value=[
+                 {"desc": "", "text": "Tài khoản Google: selected@example.com"},
+                 {"desc": "", "text": "other@example.com"}]), \
+             patch.object(mod, "tap") as tap:
+            self.assertEqual(mod.current_play_account(), "selected@example.com")
+        tap.assert_not_called()
+
 if __name__ == "__main__":
     unittest.main()
