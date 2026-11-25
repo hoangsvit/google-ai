@@ -1,0 +1,55 @@
+name: Windows portable diagnostics prototype
+on:
+  pull_request:
+    paths:
+      - "tools/windows/portable/**"
+      - "tests/test_portable_diagnostics.ps1"
+      - ".github/workflows/windows-portable-diagnostics.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test using Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          & ./tests/test_portable_diagnostics.ps1
+      - name: Test using PowerShell 7
+        shell: pwsh
+        run: |
+          & ./tests/test_portable_diagnostics.ps1
+      - name: Package and smoke-check extracted prototype
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dir = Join-Path $env:RUNNER_TEMP 'portable-diagnostics'
+          New-Item -ItemType Directory -Path $dir | Out-Null
+          $zip = Join-Path $dir 'eplus-windows-portable-diagnostics.zip'
+          $files = @('Diagnose.bat','diagnose.ps1','README.md') | ForEach-Object {
+            Join-Path 'tools/windows/portable' $_
+          }
+          Compress-Archive -LiteralPath $files -DestinationPath $zip
+          $extract = Join-Path $env:RUNNER_TEMP 'portable diagnostics extracted'
+          Expand-Archive -LiteralPath $zip -DestinationPath $extract
+          if (@(Get-ChildItem -LiteralPath $extract -File).Count -ne 3) {
+            throw 'Unexpected package contents'
+          }
+          foreach ($file in @('Diagnose.bat','diagnose.ps1','README.md')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $extract $file) -PathType Leaf)) {
+              throw "Missing $file"
+            }
+          }
+          & powershell.exe -NoProfile -File (Join-Path $extract 'diagnose.ps1')
+          if ($LASTEXITCODE -ne 0) { throw 'Extracted host-only inspection failed' }
+          $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          Set-Content -LiteralPath "$zip.sha256" -Value "$hash  eplus-windows-portable-diagnostics.zip" -Encoding ascii
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eplus-windows-portable-diagnostics
+          path: ${{ runner.temp }}/portable-diagnostics/
+          if-no-files-found: error
+          retention-days: 14
