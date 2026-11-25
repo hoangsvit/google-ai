@@ -164,6 +164,22 @@ def warn(msg):
     print(f"   ⚠️  {msg}", flush=True)
 
 
+def redact_emails(text):
+    """Mask account emails before they reach stdout.
+
+    The TUI masks its own status card, but child output is rendered almost
+    verbatim in the technical log, so a raw address printed here ends up on
+    screen. Apply this to human-readable lines only: the structured
+    ``Account <email>`` protocol line and the ``--es authAccount`` argument
+    must stay raw because they carry identity, not narration.
+
+    Masking is idempotent (``al***@gmail.com`` masks to itself), so a line
+    that passes through twice is unchanged.
+    """
+    return re.sub(r"([^@\s]{1,2})[^@\s]*@([A-Za-z0-9.-]+\.[A-Za-z]{2,})",
+                  r"\1***@\2", text)
+
+
 # ---------- Device selection ----------
 def pick_device(preferred=None):
     """Select exactly one online Android device; respect an explicit --serial."""
@@ -612,7 +628,7 @@ def available_google_accounts() -> list[str]:
 
 def add_account(email, password, totp_secret="") -> bool:
     """Add a Google account on Android, pausing for manual verification when needed."""
-    step(f"Adding account to Android: {email}")
+    step(redact_emails(f"Adding account to Android: {email}"))
     before = len(accounts_on_device())
     sh("shell", "am start -a android.settings.ADD_ACCOUNT_SETTINGS")
     time.sleep(3)
@@ -630,7 +646,7 @@ def add_account(email, password, totp_secret="") -> bool:
             cur = " ".join(n["text"] for n in nodes(ui_xml()) if "@" in n["text"])
             if email.lower() in cur.lower():
                 break
-            warn(f"Email input was incomplete; retrying (current: {cur[:40]})")
+            warn(redact_emails(f"Email input was incomplete; retrying (current: {cur[:40]})"))
         else:
             warn("Could not enter the complete email after several attempts")
         tap_text("\u4e0b\u4e00\u6b65", "Next"); time.sleep(6)
@@ -800,7 +816,7 @@ def current_play_account() -> str:
 
 def switch_play(email) -> bool:
     """Switch Play Store account, but fail closed when the active account cannot be verified."""
-    step(f"Switching to Play Store account: {email}")
+    step(redact_emails(f"Switching to Play Store account: {email}"))
     want = email.lower()
     sh("shell", f"am force-stop {VENDING}")
     sh("shell", f"am force-stop {PKG}")
@@ -822,7 +838,8 @@ def switch_play(email) -> bool:
     got = current_play_account()
     if got == want:
         ok("Google Play account verified"); return True
-    warn(f"Google Play account did not switch (current: {got or 'unknown'}). Aborting to avoid the wrong account.")
+    warn(redact_emails(f"Google Play account did not switch (current: {got or 'unknown'}). "
+                       "Aborting to avoid the wrong account."))
     return False
 
 
@@ -1247,7 +1264,7 @@ def verify() -> str:
 # ---------- Per-account workflow ----------
 def process(email, password="", totp_secret="", add=True, card=None, plan="auto", no_switch=False, list_only=False, stack=False, old_token="", stack_mode=None, activity_method="auto") -> dict:
     print("\n" + "=" * 56)
-    print(f"  Processing account: {email}")
+    print(redact_emails(f"  Processing account: {email}"))
     print("=" * 56)
     rec = {"email": email, "at": time.strftime("%Y-%m-%dT%H:%M:%S"), "status": "unknown"}
     if add:
@@ -1280,7 +1297,7 @@ def process(email, password="", totp_secret="", add=True, card=None, plan="auto"
         # might have tried account discovery before Play Store finished loading.
         # This value is rechecked before any purchase in the live stage.
         rec["detected_play_account"] = cur or ""
-        ok(f"List-only: current Play Store account is {cur or 'unknown'} (no checkout)")
+        ok(redact_emails(f"List-only: current Play Store account is {cur or 'unknown'} (no checkout)"))
     elif no_switch:
         cur = current_play_account()
         if not cur:
@@ -1289,7 +1306,7 @@ def process(email, password="", totp_secret="", add=True, card=None, plan="auto"
             rec["error"] = "Play Store profile email was not readable; check the foreground Play Store UI"
             return rec
         if cur != email.lower():
-            warn(f"Current Play Store account is {cur}, not {email}; aborting")
+            warn(redact_emails(f"Current Play Store account is {cur}, not {email}; aborting"))
             rec["status"] = "wrong_account"
             return rec
         ok("Google Play account verified (manual selection)")
@@ -1512,7 +1529,7 @@ def main():
     print("  Summary")
     print("=" * 56)
     for r in results:
-        print(f"  {r['email']:<42} {r.get('status')}")
+        print(f"  {redact_emails(r['email']):<42} {r.get('status')}")
     print(f"\nDetails saved to {REPORT_DIR.resolve()}")
     return 0
 
