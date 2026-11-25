@@ -49,6 +49,7 @@ $errors = @(
     @{ Message = "Offer query did not complete: play_store_not_started"; Expected = "play_store_not_started" },
     @{ Message = "No report produced at ..." ; Expected = "report_missing" },
     @{ Message = "Billing module setup failed"; Expected = "billing_module_setup_failed" },
+    @{ Message = "Android environment checks failed (tool exit 1)."; Expected = "environment_failed" },
     @{ Message = "Python not found"; Expected = "python_missing" },
     @{ Message = "Invalid Play Store account returned by Step 1"; Expected = "account_unavailable" }
 )
@@ -62,6 +63,48 @@ foreach ($code in @("app_not_started", "play_store_not_started")) {
     $action = (Get-UserIssue -Code $code).Action
     if ($action -notlike "*Close MuMu and reopen it*Check Device & Offers again from Step 1*") {
         throw "Missing MuMu restart guidance for $code"
+    }
+}
+# Exercise the read-only preflight failure path without starting Python, ADB
+# or any Android operation. A fake command sets the same exit code as the
+# reported Frida failure; the wrapper must classify it as an environment error.
+$runnerPath = Join-Path $PSScriptRoot "../run-all.ps1"
+$tokens = $null
+$parseErrors = $null
+$runnerAst = [System.Management.Automation.Language.Parser]::ParseFile($runnerPath, [ref]$tokens, [ref]$parseErrors)
+if ($parseErrors.Count) { throw "Could not parse run-all.ps1 for preflight test" }
+$runnerFunction = $runnerAst.Find({
+    param($node)
+    $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq "Run-Command"
+}, $true)
+if (-not $runnerFunction) { throw "Run-Command was not found" }
+. ([scriptblock]::Create($runnerFunction.Extent.Text))
+function Stop-Workflow([string]$Reason) { throw $Reason }
+function Fake-FailingTool { $global:LASTEXITCODE = 1 }
+$ShowDebug = $false
+$script:RunLog = $null
+$previousTuiForPreflight = $env:EPLUS_TUI
+try {
+    Remove-Item Env:EPLUS_TUI -ErrorAction SilentlyContinue
+    $failure = ""
+    try {
+        Run-Command "Fake-FailingTool" @("ultra0.py", "--check")
+    } catch {
+        $failure = [string]$_.Exception.Message
+    }
+    if ((Get-FailureCode -ErrorMessage $failure) -cne "environment_failed") {
+        throw "Step 0 preflight failure was not classified as environment_failed: $failure"
+    }
+    $result = (Show-UserIssue -Code "environment_failed" 6>&1 | Out-String)
+    if ($result -notlike "*Android environment check did not finish*" -or
+        $result -like "*Could not confirm the checkout*") {
+        throw "Step 0 preflight failure used checkout wording"
+    }
+} finally {
+    if ($null -eq $previousTuiForPreflight) {
+        Remove-Item Env:EPLUS_TUI -ErrorAction SilentlyContinue
+    } else {
+        $env:EPLUS_TUI = $previousTuiForPreflight
     }
 }
 # User-facing mode must not reveal internal status codes in its output.

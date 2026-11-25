@@ -139,6 +139,9 @@ function Run-Command([string]$Program, [string[]]$Arguments) {
     if ($LASTEXITCODE -ne 0) {
         if ($billingSetupFailed) { Stop-Workflow "Billing module setup failed" }
         if ($LASTEXITCODE -eq 23) { Stop-Workflow "Android UI capture failed" }
+        if ($Arguments.Count -ge 2 -and $Arguments[0] -eq "ultra0.py" -and $Arguments[1] -eq "--check") {
+            Stop-Workflow ("Android environment checks failed (tool exit {0})." -f $LASTEXITCODE)
+        }
         Stop-Workflow ("A tool failed (exit {0}). See local run log; do not retry checkout blindly." -f $LASTEXITCODE)
     }
 }

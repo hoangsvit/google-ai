@@ -299,10 +299,33 @@ def ensure_frida_server():
             output.write(source.read())
         sh("push", str(extracted), FRIDA_REMOTE, timeout=180, check=True)
         sh("shell", f"chmod 755 {FRIDA_REMOTE}", check=True)
-    if "uid=0" in sh("shell", "id"):
-        sh("shell", f"nohup {FRIDA_REMOTE} -D >/dev/null 2>&1 &", timeout=15)
-    else:
-        sh("shell", f"su -c 'nohup {FRIDA_REMOTE} -D >/dev/null 2>&1 &'", timeout=15)
+    # -D waits for the server to report readiness before daemonizing. Do not
+    # background it in the shell: that discards the startup failure. Older ADB
+    # versions may also return success for a failed remote command, so read a
+    # device-side exit marker instead of relying on the ADB process exit code.
+    launch = f"{FRIDA_REMOTE} -D"
+    if "uid=0" not in sh("shell", "id"):
+        launch = f"su -c '{launch}'"
+    try:
+        output = sh("shell", f'{launch} 2>&1; printf "\\nEPLUS_FRIDA_EXIT:%s\\n" "$?"', timeout=15)
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"frida-server {FRIDA_REQUIRED} startup timed out") from exc
+    last_line = output.splitlines()[-1].strip() if output else ""
+    status = re.fullmatch(r"EPLUS_FRIDA_EXIT:(\d+)", last_line)
+    if not status:
+        raise RuntimeError(f"frida-server {FRIDA_REQUIRED} startup status was not returned by ADB")
+    if status.group(1) != "0":
+        # Keep device output private; only expose a small set of known causes.
+        diagnostic = output.lower()
+        hint = next((label for fragment, label in (
+            ("address already in use", "a required port is already in use"),
+            ("permission denied", "device permission denied"),
+            ("exec format error", "Frida binary could not execute on this device"),
+            ("not found", "a device command or Frida binary was not found"),
+            ("segmentation fault", "Frida process crashed"),
+        ) if fragment in diagnostic), "")
+        reason = f"; {hint}" if hint else ""
+        raise RuntimeError(f"frida-server {FRIDA_REQUIRED} could not start (device exit {status.group(1)}{reason})")
     for _ in range(20):
         time.sleep(0.5)
         if sh("shell", "pidof frida-server || true").strip():

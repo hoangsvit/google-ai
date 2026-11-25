@@ -7,7 +7,7 @@
 | Problem or result | What to check |
 | --- | --- |
 | **MuMu / ADB not detected** | Install/start MuMu separately, enable root/ADB, verify the correct connected Android instance and authorization. |
-| **Frida setup failure** | Review technical details; Frida **16.5.9** must be compatible with the host and device. |
+| **Frida server could not start during Step 1** | The environment check stopped before offers were queried; this run did not request checkout. Check root access and Frida **16.5.9** on the selected Android device, restart Android if needed, then rerun `.\run-all.ps1 -Step 1 -Debug` on Windows. A failed startup alone does not identify whether permissions, a port conflict or device compatibility caused it. Share only redacted diagnostics. |
 | **Billing module setup failed** | Check that the selected Android device is authorized and that its root access and module file permissions are valid. Setup restricts the module's write permissions and may request root authorization on Android. A symbolic link or other non-regular module path is rejected; do not change permissions of unrelated files. Rerun the environment check. Before retrying a paid step, review Google Play subscriptions and payments. |
 | **Linux: ADB missing** | Install Platform-Tools; use `PATH` or `ADB_PATH`, then run `"${ADB_PATH:-adb}" devices`. |
 | **Linux: USB unauthorized / permission denied** | Check the USB cable, unlock the phone, approve debugging and inspect Linux USB/udev rules rather than Windows MuMu settings. |
