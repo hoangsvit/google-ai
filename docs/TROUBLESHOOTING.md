@@ -7,6 +7,7 @@
 | Problem or result | What to check |
 | --- | --- |
 | **MuMu / ADB not detected** | Install/start MuMu separately, enable root/ADB, verify the correct connected Android instance and authorization. |
+| **Androidzy connected; offer check unavailable** | On Windows, launch Androidzy and choose **Diagnose Android connection** in the toolkit. It can use Androidzy's bundled ADB or an existing Android SDK. For a portable install outside the usual SDK folders, set `ADB_PATH` to the full path of `sdk\platform-tools\adb.exe` next to Androidzy. Androidzy's [standard Google Play image](https://github.com/dznye/Androidzy/blob/main/src/Paths.cs) lacks the [root access](https://developer.android.com/studio/run/managing-avds) required by Frida for toolkit stages. Open Google One directly to see the offers available to your account. |
 | **Frida setup failure** | Review technical details; Frida **16.5.9** must be compatible with the host and device. |
 | **Billing module setup failed** | Check that the selected Android device is authorized and that its root access and module file permissions are valid. Setup restricts the module's write permissions and may request root authorization on Android. A symbolic link or other non-regular module path is rejected; do not change permissions of unrelated files. Rerun the environment check. Before retrying a paid step, review Google Play subscriptions and payments. |
 | **Linux: ADB missing** | Install Platform-Tools; use `PATH` or `ADB_PATH`, then run `"${ADB_PATH:-adb}" devices`. |

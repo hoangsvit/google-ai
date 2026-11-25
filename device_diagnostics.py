@@ -60,6 +60,19 @@ def _clean(value: str, fallback: str = "unknown") -> str:
     return text if SAFE_TEXT.fullmatch(text) else fallback
 
 
+def windows_sdk_adb_candidates() -> tuple[Path, ...]:
+    """Find SDK locations used by Android Studio and Androidzy."""
+    local = Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData/Local")
+    androidzy_home = Path(os.environ.get("ANDROIDZY_HOME") or local / "Androidzy")
+    roots = (
+        os.environ.get("ANDROID_HOME"),
+        os.environ.get("ANDROID_SDK_ROOT"),
+        androidzy_home / "sdk",
+        local / "Android/Sdk",
+    )
+    return tuple(Path(root) / "platform-tools/adb.exe" for root in roots if root)
+
+
 def locate_adb(platform_name: str | None = None) -> str | None:
     """Find an already-installed ADB binary; never download anything."""
     platform_name = platform_name or sys.platform
@@ -81,8 +94,8 @@ def locate_adb(platform_name: str | None = None) -> str | None:
         paths = [
             Path(__file__).resolve().parent / "platform-tools/adb.exe",
             Path(os.environ.get("LOCALAPPDATA") or home / ".cache") / "google-ai/platform-tools/adb.exe",
+            *windows_sdk_adb_candidates(),
             home / "AppData/Local/Android/Sdk/platform-tools/adb.exe",
-            Path(os.environ.get("LOCALAPPDATA") or home) / "Android/Sdk/platform-tools/adb.exe",
             Path("C:/Program Files/Netease/MuMuPlayer-12.0/shell/adb.exe"),
             Path("C:/Program Files/Netease/MuMuPlayerGlobal-12.0/shell/adb.exe"),
             Path("C:/Program Files (x86)/Netease/MuMuPlayer-12.0/shell/adb.exe"),
@@ -203,6 +216,19 @@ def inspect_connection(platform_name: str | None = None) -> ConnectionDiagnosis:
             "ADB shell: root" if "uid=0(" in root.stdout
             else "ADB shell: non-root (root may be available through su)"
         )
+        if (platform_name == "win32" and play_installed
+                and re.fullmatch(r"emulator-[0-9]+", serial)
+                and root.stdout.startswith("uid=2000(")):
+            avd = _run(adb, ["-s", serial, "emu", "avd", "name"])
+            if avd is not None and avd.returncode == 0 and avd.stdout.splitlines()[:1] == ["Androidzy"]:
+                debug = _run(adb, ["-s", serial, "shell", "getprop", "ro.debuggable"])
+                if debug is not None and debug.returncode == 0 and debug.stdout.strip() == "0":
+                    return ConnectionDiagnosis(
+                        "androidzy_root_unavailable", "Androidzy connected; offer check unavailable",
+                        tuple(details),
+                        "Androidzy's standard Google Play image does not provide the root access "
+                        "required by Frida. To see offers on Androidzy, open Google One directly.",
+                    )
     if linux and (issue := linux_frida_compatibility_issue(adb, serial)):
         return ConnectionDiagnosis(
             "frida_compatibility_blocked", "Android connected; setup blocked", tuple(details), issue,
