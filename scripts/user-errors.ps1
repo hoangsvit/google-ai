@@ -187,7 +187,7 @@ function Get-UserIssue {
         "environment_failed" {
             return [pscustomobject]@{
                 Title = "Android environment check did not finish"
-                Action = "Check ADB, Google One and Frida. Verify Google Play payments before retrying a paid step."
+                Action = "Check ADB, root access and Frida on the selected Android device. Restart Android if needed, then rerun -Step 1. This check did not request checkout."
             }
         }
         "confirmation_required" {
@@ -305,6 +305,7 @@ function Get-FailureCode {
     if ($ErrorMessage -match '(?i)Offer query did not complete|Could not refresh the offer list') { return "offer_query_failed" }
     if ($ErrorMessage -match '(?i)No report produced') { return "report_missing" }
     if ($ErrorMessage -match '(?i)Runtime lookup failed|No machine-readable runtime result') { return "runtime_lookup_failed" }
+    if ($ErrorMessage -match '(?i)Android environment checks failed') { return "environment_failed" }
     return "unknown"
 }
 

@@ -61,7 +61,9 @@ class FridaCompatibilityTests(unittest.TestCase):
                 state["version"] = "16.5.9"
                 return ""
             if "shell id" in command: return "uid=0(root)"
-            if "nohup " in command: state["pid"] = "8200"; return ""
+            if "EPLUS_FRIDA_EXIT:" in command:
+                state["pid"] = "8200"
+                return "EPLUS_FRIDA_EXIT:0"
             if "chmod 755" in command: return ""
             raise AssertionError(args)
         compressed = lzma.compress(b"test binary; do not execute")
@@ -71,6 +73,40 @@ class FridaCompatibilityTests(unittest.TestCase):
         self.assertTrue(state["pushed"])
         self.assertEqual(state["pid"], "8200")
         self.assertTrue(any("kill 4123" in c for c in calls))
+        self.assertTrue(any("frida-server -D" in c and "nohup" not in c for c in calls))
+
+    def test_remote_start_failure_is_detected_even_if_adb_succeeds(self):
+        calls = []
+
+        def shell(*args, **kwargs):
+            command = " ".join(args)
+            calls.append(command)
+            if "pidof frida-server" in command: return ""
+            if "--version" in command: return "16.5.9"
+            if "shell id" in command: return "uid=2000(shell)"
+            if "EPLUS_FRIDA_EXIT:" in command:
+                return "Unable to start: address already in use for private@example.com\nEPLUS_FRIDA_EXIT:1"
+            raise AssertionError(args)
+
+        with patch.object(mod, "ensure_frida_client"), patch.object(mod, "sh", side_effect=shell):
+            with self.assertRaisesRegex(RuntimeError, "could not start \\(device exit 1; a required port is already in use\\)") as failure:
+                mod.ensure_frida_server()
+        self.assertNotIn("private@example.com", str(failure.exception))
+        self.assertTrue(any("su -c '/data/local/tmp/frida-server -D'" in c for c in calls))
+        self.assertFalse(any("nohup" in c for c in calls))
+
+    def test_missing_remote_start_status_fails_closed(self):
+        def shell(*args, **kwargs):
+            command = " ".join(args)
+            if "pidof frida-server" in command: return ""
+            if "--version" in command: return "16.5.9"
+            if "shell id" in command: return "uid=0(root)"
+            if "EPLUS_FRIDA_EXIT:" in command: return ""
+            raise AssertionError(args)
+
+        with patch.object(mod, "ensure_frida_client"), patch.object(mod, "sh", side_effect=shell):
+            with self.assertRaisesRegex(RuntimeError, "startup status was not returned"):
+                mod.ensure_frida_server()
 
 
 if __name__ == "__main__":
