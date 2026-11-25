@@ -1682,6 +1682,33 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                 self.assertIn("ADB", app.screen.instruction)
                 await pilot.click("#notice_close")
 
+    async def test_missing_app_notice_opens_play_only_after_button_press(self):
+        from textual.widgets import Button, Static
+        from tui import GoogleAITUI, MissingAppNotice
+        from tui_core import cli_issue_outcome
+
+        for size, launch_result, expected in (
+            ((90, 20), "opened", "install or enable Google One"),
+            ((110, 35), "store_unavailable", "Google Play is missing or disabled"),
+        ):
+            with self.subTest(size=size), tempfile.TemporaryDirectory() as directory:
+                app = GoogleAITUI(repo=Path(directory))
+                async with app.run_test(size=size) as pilot:
+                    app._checked_device = "emulator-5554"
+                    with patch("tui.open_google_one_listing", return_value=launch_result) as open_listing:
+                        app._finished(1, cli_issue_outcome(["EPLUS_ISSUE:app_missing"], 1), None)
+                        await pilot.pause()
+                        self.assertIsInstance(app.screen, MissingAppNotice)
+                        open_listing.assert_not_called()
+                        self.assertTrue(await pilot.click("#open_google_play"))
+                        await app.workers.wait_for_complete()
+                    await pilot.pause()
+                    open_listing.assert_called_once_with("emulator-5554")
+                    self.assertIn(expected, str(app.screen.query_one("#app_notice_instruction", Static).render()))
+                    self.assertEqual(app.screen.query_one("#open_google_play", Button).disabled,
+                                     launch_result == "opened")
+                    self.assertTrue(await pilot.click("#notice_close"))
+
     async def test_next_checkout_action_is_visible_outside_advanced(self):
         from textual.widgets import Button
         from tui import GoogleAITUI, Approval

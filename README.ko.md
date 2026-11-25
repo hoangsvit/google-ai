@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — 한국어
 
-<!-- Source README.md git-blob: 7954de699c157a7f0ebbbe70f3c0df2a09e3c7f3 -->
+<!-- Source README.md git-blob: e36df89bfd4ccaa7588b264a6c8986345696a84f -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · **한국어** · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -244,6 +244,8 @@ ADB에서 실제로 표시되는 시리얼만 사용하세요. `-Force`는 계�
 - **결제 보안 오류(예: OR-REH-04):** 결제 단계를 중단하고 공식 보안 절차를 확인하세요.
 
 로그는 `logs/`, 보고서는 `ultra0-report/`에 저장됩니다. **계정 정보, 토큰, 결제 정보를 포함한 원본 파일을 공유하지 마세요.** CI는 정적/모의 테스트만 수행하며 실제 결제 성공을 검증하지 않습니다. 
+
+Android 앱을 찾을 수 없다는 메시지가 나오면 **Open Google Play**를 눌러 기기에서 Google One 페이지를 여세요. Google Play에서 앱을 설치하거나 활성화한 뒤 Google One을 한 번 열고 Step 1을 다시 실행하세요. Google Play 스토어가 꺼져 있으면 Android 설정에서 활성화하세요. 스토어가 없는 에뮬레이터는 Google Play가 포함된 이미지를 사용하세요.
 
 ## 커뮤니티 지원 및 관련 프로젝트
 

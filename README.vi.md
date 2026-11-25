@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Tiếng Việt
 
-<!-- Source README.md git-blob: 7954de699c157a7f0ebbbe70f3c0df2a09e3c7f3 -->
+<!-- Source README.md git-blob: e36df89bfd4ccaa7588b264a6c8986345696a84f -->
 
 [English](README.md) · **Tiếng Việt** · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -252,6 +252,8 @@ Chỉ nhập mã thiết bị (serial) thực sự xuất hiện trong danh sác
 - **Lỗi bảo mật thanh toán (ví dụ OR-REH-04):** dừng các bước thanh toán, kiểm tra thông báo bảo mật chính thức.
 
 Nhật ký chạy được lưu trong `logs/`, còn báo cáo nằm trong `ultra0-report/`. **Không chia sẻ nhật ký hoặc báo cáo khi chưa che email, token và thông tin thanh toán**. CI chỉ thực hiện kiểm thử tĩnh và mô phỏng; không xác minh giao dịch mua hàng thật. **Quy trình thanh toán trên Mac/MuMu thực tế vẫn chưa được kiểm chứng**.
+
+Nếu toolkit báo thiếu ứng dụng Android, bấm **Open Google Play** để mở trang Google One trên thiết bị. Trong CH Play, chọn **Cài đặt** hoặc **Bật**, rồi mở Google One một lần và chạy lại Step 1. Nếu CH Play đang tắt, hãy bật trong Cài đặt Android. Nếu phiên giả lập thiếu CH Play, hãy dùng ảnh Android có sẵn Google Play.
 
 ## Hỗ trợ cộng đồng và dự án liên quan
 

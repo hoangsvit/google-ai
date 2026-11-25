@@ -15,11 +15,14 @@ import shutil
 import subprocess
 import sys
 
+from device_selector import online_serials, prefer_alias, same_boot_transports
+
 
 FRIDA_REQUIRED = "16.5.9"
 ANDROID_16_SDK = 36
 GOOGLE_ONE = "com.google.android.apps.subscriptions.red"
 GOOGLE_PLAY = "com.android.vending"
+GOOGLE_ONE_PLAY_URL = f"https://play.google.com/store/apps/details?id={GOOGLE_ONE}"
 SAFE_TEXT = re.compile(r"^[a-zA-Z0-9._:/-]{1,90}$")
 
 
@@ -110,6 +113,30 @@ def _run(adb: str, args: list[str]):
         )
     except (OSError, subprocess.TimeoutExpired):
         return None
+
+
+def open_google_one_listing(expected_serial: str = "") -> str:
+    """Open the official app listing on the checked device after a user click."""
+    adb = locate_adb()
+    if not adb:
+        return "missing_adb"
+    online = online_serials(adb)
+    if not online or (expected_serial and expected_serial not in online):
+        return "device_offline"
+    serial = expected_serial or prefer_alias(online)
+    if not expected_serial and not same_boot_transports(adb, serial, online):
+        return "multiple_devices"
+    target = ["-s", serial, "shell"]
+    play = _run(adb, [*target, "pm", "list", "packages", "-e", GOOGLE_PLAY])
+    if play is None or play.returncode:
+        return "launch_failed"
+    if f"package:{GOOGLE_PLAY}" not in play.stdout.splitlines():
+        return "store_unavailable"
+    listing = _run(adb, [*target, "am", "start", "-W", "-a", "android.intent.action.VIEW",
+                         "-d", GOOGLE_ONE_PLAY_URL, "-p", GOOGLE_PLAY])
+    if listing is None or listing.returncode or "Status: ok" not in listing.stdout.splitlines():
+        return "launch_failed"
+    return "opened"
 
 
 def linux_frida_compatibility_issue(adb: str, serial: str) -> str:

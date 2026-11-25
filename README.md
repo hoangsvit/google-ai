@@ -275,6 +275,8 @@ Verify subscription, payment amount, currency and renewal terms under **[Google 
 
 **Platform support:** Windows, macOS and Linux have separate launchers. Real macOS/MuMu checkout and Linux rooted-device end-to-end validation remain pending; see the [macOS guide](docs/MACOS-PREVIEW.md) and [Linux guide](docs/LINUX.md).
 
+If the toolkit reports a missing Android app, select **Open Google Play** to open the Google One listing on the device. Install or enable the app in Google Play, open it once, and rerun Step 1. If Play Store is disabled, enable it in Android Settings. If the emulator has no Play Store, use an image with Google Play included.
+
 ## Community support and related projects
 
 If you need help installing or using ePlus AI Toolkit, see the [ePlus Telegram support/discussion post](https://t.me/eplus_news/29) to get in touch and exchange troubleshooting tips with the community. You can also [open a GitHub Issue](https://github.com/hoangsvit/google-ai/issues) for reproducible bugs. **Never post passwords, 2FA codes, purchase/offer tokens, full unredacted logs, or payment-card details.** Community support is not an official Google support channel.

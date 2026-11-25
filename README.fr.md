@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Français
 
-<!-- Source README.md git-blob: 7954de699c157a7f0ebbbe70f3c0df2a09e3c7f3 -->
+<!-- Source README.md git-blob: e36df89bfd4ccaa7588b264a6c8986345696a84f -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · **Français**
 
@@ -245,6 +245,8 @@ Utilisez uniquement un identifiant de périphérique réellement affiché par AD
 - **Erreur de sécurité du paiement (ex. OR-REH-04) :** arrêtez les étapes de paiement et suivez les procédures officielles.
 
 Les journaux se trouvent dans `logs/` et les rapports dans `ultra0-report/`. **Ne partagez pas de données non masquées contenant comptes, jetons ou informations de paiement.** Les tests automatisés de la CI utilisent des simulations et **ne vérifient aucun achat réel**. La compatibilité de paiement sur Mac/MuMu réel n'a pas été vérifiée.
+
+Si l’outil signale qu’une application Android manque, sélectionnez **Open Google Play** pour ouvrir la fiche de Google One sur l’appareil. Installez ou activez l’application dans Google Play, ouvrez-la une fois, puis relancez Step 1. Si le Play Store est désactivé, réactivez-le dans les paramètres Android. Si l’émulateur ne dispose pas du Play Store, utilisez une image qui inclut Google Play.
 
 ## Assistance communautaire et projets associés
 

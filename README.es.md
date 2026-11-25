@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — Español
 
-<!-- Source README.md git-blob: 7954de699c157a7f0ebbbe70f3c0df2a09e3c7f3 -->
+<!-- Source README.md git-blob: e36df89bfd4ccaa7588b264a6c8986345696a84f -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · **Español** · [Français](README.fr.md)
 
@@ -245,6 +245,8 @@ Usa solo un número de serie mostrado por ADB. Evita `-Force`: omite la comproba
 - **Error de seguridad de pagos (por ejemplo OR-REH-04):** detén los pasos de pago y sigue el procedimiento oficial.
 
 Los registros están en `logs/` y los informes en `ultra0-report/`. **No compartas archivos sin ocultar correos, tokens y datos de pago.** Las pruebas automáticas de CI se ejecutan con datos simulados y **no verifican compras reales**. 
+Si la herramienta indica que falta una aplicación de Android, pulsa **Open Google Play** para abrir la ficha de Google One en el dispositivo. Instala o habilita la aplicación en Google Play, ábrela una vez y vuelve a ejecutar Step 1. Si Play Store está deshabilitada, actívala en los ajustes de Android. Si el emulador carece de Play Store, usa una imagen que incluya Google Play.
+
 ## Soporte comunitario y proyectos relacionados
 
 Si tienes problemas para instalar o utilizar ePlus AI Toolkit, puedes contactar e intercambiar consejos con la comunidad en la [publicación de soporte y debate de ePlus en Telegram](https://t.me/eplus_news/29). Para errores reproducibles, también puedes [abrir un Issue en GitHub](https://github.com/hoangsvit/google-ai/issues). **No compartas contraseñas, códigos OTP/2FA, tokens de ofertas o compras, registros sin anonimizar ni datos de tarjetas.** No es un canal de soporte oficial de Google.

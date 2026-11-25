@@ -34,7 +34,9 @@ from offer_discovery import (ExtraOffer, parse_step1,
 from tui_core import STAGES, Outcome, command_for_step, mask_email, account_picker_options, redact_diagnostic, \
     needs_setup, offer_explorer_lines, outcome_for_stage, read_fresh_report, cli_issue_outcome, \
     readable_issue_line, report_summary, safe_launch_diagnostic, validate_step
-from device_diagnostics import ConnectionDiagnosis, ConnectionStatus, inspect_connection, poll_connection
+from device_diagnostics import (
+    ConnectionDiagnosis, ConnectionStatus, inspect_connection, open_google_one_listing, poll_connection,
+)
 from stage_history import latest_history, read_history, record_history
 
 
@@ -133,6 +135,61 @@ class SetupNotice(ModalScreen[None]):
     @on(Button.Pressed, "#notice_close")
     def close_notice(self) -> None:
         self.dismiss(None)
+
+
+class MissingAppNotice(SetupNotice):
+    CSS = SetupNotice.CSS + """
+    MissingAppNotice { align: center middle; }
+    #app_notice_actions { height: 3; }
+    #app_notice_actions Button { width: 1fr; min-width: 0; }
+    """
+
+    def __init__(self, title: str, instruction: str, serial: str) -> None:
+        super().__init__(title, instruction)
+        self.serial = serial
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="notice_card"):
+            with VerticalScroll(id="notice_scroll"):
+                yield Static(self.notice_title, classes="section")
+                yield Static(self.instruction, id="app_notice_instruction")
+            with Horizontal(id="app_notice_actions"):
+                yield Button("Got it", id="notice_close")
+                yield Button("Open Google Play", id="open_google_play", variant="primary")
+
+    @on(Button.Pressed, "#open_google_play")
+    def open_play_pressed(self) -> None:
+        button = self.query_one("#open_google_play", Button)
+        if button.disabled:
+            return
+        button.disabled = True
+        self.query_one("#notice_close", Button).disabled = True
+        self.query_one("#app_notice_instruction", Static).update("Opening the Google One page on Android…")
+        self.open_listing()
+
+    @work(thread=True, exclusive=True, group="google-play-listing")
+    def open_listing(self) -> None:
+        outcome = open_google_one_listing(self.serial)
+        try:
+            self.app.call_from_thread(self.show_listing_result, outcome)
+        except RuntimeError:
+            pass  # The dashboard was closed while ADB was running.
+
+    def show_listing_result(self, outcome: str) -> None:
+        if not self.is_mounted:
+            return
+        guidance = {
+            "opened": "Switch to Android and install or enable Google One in Google Play. "
+                      "Open Google One once, then return here and run Check Device & Offers.",
+            "missing_adb": "ADB was not found. Reconnect Android or set ADB_PATH to an existing adb executable.",
+            "device_offline": "Reconnect the Android device, then try Open Google Play again.",
+            "multiple_devices": "Leave only the intended Android device connected over ADB, then try again.",
+            "store_unavailable": "Google Play is missing or disabled. Enable it in Android Settings, "
+                                 "or use an Android image that includes Google Play.",
+        }.get(outcome, "Could not open the listing. Open Google Play on Android and search for Google One.")
+        self.query_one("#app_notice_instruction", Static).update(guidance)
+        self.query_one("#open_google_play", Button).disabled = outcome == "opened"
+        self.query_one("#notice_close", Button).disabled = False
 
 
 class AccountPicker(ModalScreen[str | None]):
@@ -1998,7 +2055,10 @@ class GoogleAITUI(App[None]):
         if step <= 1 and outcome.code not in ("listed", "environment_ok", "cancelled"):
             # Step 0/1 errors are always actionable for non-technical users,
             # including unknown setup failures and newly added engine codes.
-            self.push_screen(SetupNotice(outcome.title, outcome.instruction))
+            if outcome.code == "app_missing":
+                self.push_screen(MissingAppNotice(outcome.title, outcome.instruction, self._checked_device or ""))
+            else:
+                self.push_screen(SetupNotice(outcome.title, outcome.instruction))
             return
         if outcome.code == "checkout_requested":
             self.notify("Review the actual subscription in Google Play.", severity="warning")

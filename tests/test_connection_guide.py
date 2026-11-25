@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 import unittest
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import device_diagnostics as diag
 
@@ -13,6 +13,36 @@ def result(stdout="", returncode=0):
 
 
 class ConnectionGuideTests(unittest.TestCase):
+    def test_google_one_listing_only_opens_play_on_the_checked_device(self):
+        with patch.object(diag, "locate_adb", return_value="adb"), \
+             patch.object(diag, "online_serials", return_value=["emulator-5554", "emulator-5556"]), \
+             patch.object(diag, "_run", side_effect=[
+                 result("package:com.android.vending\n"), result("Status: ok\n"),
+             ]) as run:
+            self.assertEqual(diag.open_google_one_listing("emulator-5556"), "opened")
+        self.assertEqual(run.call_args_list, [
+            call("adb", ["-s", "emulator-5556", "shell", "pm", "list", "packages", "-e", "com.android.vending"]),
+            call("adb", ["-s", "emulator-5556", "shell", "am", "start", "-W", "-a", "android.intent.action.VIEW",
+                         "-d", "https://play.google.com/store/apps/details?id=com.google.android.apps.subscriptions.red",
+                         "-p", "com.android.vending"]),
+        ])
+
+    def test_google_one_listing_rejects_disconnected_target_or_ambiguous_devices(self):
+        with patch.object(diag, "locate_adb", return_value="adb"), \
+             patch.object(diag, "online_serials", return_value=["emulator-5554", "emulator-5556"]), \
+             patch.object(diag, "same_boot_transports", return_value=False), \
+             patch.object(diag, "_run") as run:
+            self.assertEqual(diag.open_google_one_listing("offline"), "device_offline")
+            self.assertEqual(diag.open_google_one_listing(), "multiple_devices")
+        run.assert_not_called()
+
+    def test_google_one_listing_requires_enabled_play_store(self):
+        with patch.object(diag, "locate_adb", return_value="adb"), \
+             patch.object(diag, "online_serials", return_value=["emulator-5554"]), \
+             patch.object(diag, "_run", return_value=result()) as run:
+            self.assertEqual(diag.open_google_one_listing(), "store_unavailable")
+        run.assert_called_once()
+
     def test_poll_only_reads_adb_transports(self):
         with patch.object(diag, "locate_adb", return_value="adb"), \
              patch.object(diag, "_run", return_value=result(

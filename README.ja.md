@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — 日本語
 
-<!-- Source README.md git-blob: 7954de699c157a7f0ebbbe70f3c0df2a09e3c7f3 -->
+<!-- Source README.md git-blob: e36df89bfd4ccaa7588b264a6c8986345696a84f -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh-CN.md) · **日本語** · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -244,6 +244,8 @@ TUI とは異なり、個別の `-Step 2..5` には **PowerShell 側で追加の
 - **セキュリティエラー（例：OR-REH-04）：**課金ステップを止めて正規のアカウント保護手順に従う。
 
 ログは `logs/`、レポートは `ultra0-report/` に保存されます。**アカウント情報、トークン、決済情報を含む生データを共有しないでください。** CI では静的テストや模擬環境での検証のみを行い、実際の購入が成功するかどうかは確認していません。
+
+Android アプリが見つからない場合は、**Open Google Play** を選ぶと端末に Google One のストアページが開きます。Google Play でアプリをインストールまたは有効化し、Google One を一度開いてから Step 1 を再実行してください。Google Play ストアが無効なら Android の設定で有効化します。ストアが入っていないエミュレーターでは、Google Play 付きのイメージを使用してください。
 
 ## コミュニティサポートと関連プロジェクト
 

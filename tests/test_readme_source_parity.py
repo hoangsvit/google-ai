@@ -9,6 +9,7 @@ LOCALES = ("vi", "zh-CN", "ja", "ko", "es", "fr")
 MARKER = re.compile(r"<!-- Source README\.md git-blob: ([0-9a-f]{40}) -->")
 TECHNICAL = (
     "Check Device & Offers",
+    "Open Google Play",
     "Google Play", "MuMuPlayer", "Windows", "macOS", "ADB", "Frida",
     "tui_core.py", "macos_runner.py", "ultra0.py",
     "docs/README.md", "docs/MACOS-PREVIEW.md", "docs/INSTALLATION.md",

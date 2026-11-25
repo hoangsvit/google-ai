@@ -1,6 +1,6 @@
 # ePlus AI Toolkit — 简体中文
 
-<!-- Source README.md git-blob: 7954de699c157a7f0ebbbe70f3c0df2a09e3c7f3 -->
+<!-- Source README.md git-blob: e36df89bfd4ccaa7588b264a6c8986345696a84f -->
 
 [English](README.md) · [Tiếng Việt](README.vi.md) · **简体中文** · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md)
 
@@ -244,6 +244,8 @@ CLI 确认选项为 **1 = Continue（继续）、2 = End run（结束）、0 = S
 - **支付安全错误（如 OR-REH-04）：**停止付费步骤，按官方流程处理账号安全问题。
 
 日志位于 `logs/`，报告位于 `ultra0-report/`。**不要公开包含账户、token 或支付信息的原始文件。** CI 仅执行静态检查和模拟测试，**不会进行或验证真实的 Google Play 交易**。
+
+如果工具提示缺少 Android 应用，请点击 **Open Google Play**，在设备上打开 Google One 的商店页面。在 Google Play 中选择**安装**或**启用**，打开 Google One 一次，然后重新运行 Step 1。如果 Google Play 商店已停用，请在 Android 设置中启用；如果模拟器镜像未包含商店，请使用内置 Google Play 的镜像。
 
 ## 社区支持及相关项目
 
