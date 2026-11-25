@@ -37,6 +37,44 @@ class ConnectionGuideTests(unittest.TestCase):
                  patch.object(diag.shutil, "which", return_value=None):
                 self.assertEqual(diag.locate_adb("win32"), str(adb))
 
+    def test_androidzy_custom_home_supplies_adb(self):
+        with tempfile.TemporaryDirectory() as folder:
+            adb = Path(folder) / "sdk" / "platform-tools" / "adb.exe"
+            adb.parent.mkdir(parents=True)
+            adb.touch()
+            with patch.dict(diag.os.environ, {"ANDROIDZY_HOME": folder}, clear=True), \
+                 patch.object(diag.shutil, "which", return_value=None), \
+                 patch.object(diag.Path, "home", return_value=Path(folder)), \
+                 patch.object(diag, "__file__", str(Path(folder) / "device_diagnostics.py")):
+                self.assertEqual(diag.locate_adb("win32"), str(adb))
+
+    def test_stock_androidzy_explains_root_requirement(self):
+        def fake_run(adb, args):
+            if args == ["devices"]:
+                return result("List of devices attached\nemulator-5554 device\n")
+            command = tuple(args[2:])
+            return responses[command]
+
+        responses = {
+            ("shell", "getprop", "ro.product.cpu.abi"): result("x86_64\n"),
+            ("shell", "pm", "path", diag.GOOGLE_PLAY): result("package:/system/Play/base.apk\n"),
+            ("shell", "pm", "path", diag.GOOGLE_ONE): result("package:/data/One/base.apk\n"),
+            ("shell", "id"): result("uid=2000(shell) gid=2000(shell)\n"),
+            ("emu", "avd", "name"): result("Androidzy\nOK\n"),
+            ("shell", "getprop", "ro.debuggable"): result("0\n"),
+        }
+        with patch.object(diag, "locate_adb", return_value="adb"), \
+             patch.object(diag.metadata, "version", return_value=diag.FRIDA_REQUIRED), \
+             patch.object(diag, "_run", side_effect=fake_run):
+            found = diag.inspect_connection("win32")
+            self.assertEqual(found.status, "androidzy_root_unavailable")
+            self.assertIn("open Google One directly", found.guidance)
+            responses[("emu", "avd", "name")] = result("Another_AVD\nOK\n")
+            self.assertEqual(diag.inspect_connection("win32").status, "connected")
+            responses[("emu", "avd", "name")] = result("Androidzy\nOK\n")
+            responses[("shell", "getprop", "ro.debuggable")] = result("1\n")
+            self.assertEqual(diag.inspect_connection("win32").status, "connected")
+
     def test_missing_adb_gives_native_macos_guidance(self):
         with patch.object(diag, "locate_adb", return_value=None), \
              patch.object(diag.metadata, "version", side_effect=diag.metadata.PackageNotFoundError):

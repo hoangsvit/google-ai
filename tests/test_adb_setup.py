@@ -22,6 +22,17 @@ def fake_official_zip():
 
 
 class AdbSetupTests(unittest.TestCase):
+    def test_androidzy_sdk_is_reused_without_download(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            adb = root / "Androidzy" / "sdk" / "platform-tools" / "adb.exe"
+            with patch.dict(installer.os.environ, {"LOCALAPPDATA": temp}, clear=True), \
+                 patch.object(installer, "BASE", root), \
+                 patch.object(installer, "adb_is_working", side_effect=lambda path: Path(path) == adb), \
+                 patch.object(installer, "download_platform_tools") as download:
+                self.assertEqual(installer.find_adb(), str(adb))
+                download.assert_not_called()
+
     def test_existing_local_adb_is_reused_without_download(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

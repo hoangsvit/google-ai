@@ -3,7 +3,7 @@
 Steps:
     1. Check the installed Python version.
     2. Install the pinned Frida 16.5.9 build used by this implementation.
-    3. Locate ADB (environment, PATH, MuMu) or download platform-tools.
+    3. Locate ADB (environment, Android SDK, MuMu or PATH) or download platform-tools.
     4. Connect the emulator and run ultra0.py --check.
 
 Usage: run setup-environment.bat or python setup_env.py.
@@ -18,6 +18,7 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
+from device_diagnostics import windows_sdk_adb_candidates
 from device_selector import auto_select_device, online_serials
 
 BASE = Path(__file__).resolve().parent
@@ -160,6 +161,7 @@ def find_adb() -> str:
         os.environ.get("ADB_PATH", ""),
         str(BASE / "platform-tools" / "adb.exe"),
         str(user_platform_tools() / "adb.exe"),
+        *windows_sdk_adb_candidates(),
         *ADB_CANDIDATES,
         shutil.which("adb") or "",
     ]
