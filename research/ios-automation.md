@@ -2,6 +2,13 @@
 
 This is a separate research CLI; it does not alter the Android dashboard, numbered stages, or checkout behavior. No Shadowrocket installation is required to run the PoC. It does not acquire live offers, install certificates, intercept traffic, modify responses, automate sign-in or initiate subscriptions.
 
+## Choose a backend
+
+- **Windows without WSL2:** [ASoftware Windows-native adapter](ios-windows.md) (preferred Windows research path).
+- **Linux / WSL2:** vphone-linux adapter below.
+
+Neither backend has established Google App or StoreKit compatibility. The Android toolkit is unchanged.
+
 ## Run the offline prototype
 
 From the repository root with Python 3.10+:
