@@ -37,17 +37,39 @@ python -m unittest discover -s tests -p 'test_ios*.py' -v
 
 Without --execute, state-changing actions only print the planned command. List runs the upstream listing script. Setup and create require an interactive terminal and retain upstream prompts; they may download firmware, use sudo and change the host. Start requires an explicit named VM and requests no automatic unlock. Stop requests upstream shutdown, which can interrupt guest work. Save work first. Interrupted commands may leave a VM running: list before retrying. A successful upstream start exit code does not prove iOS boot or network readiness. No account or subscription actions are supported. This adapter is mock-tested by design and awaits real host validation.
 
+## Interactive console and daemon health
+
+```sh
+python -m research.ios_menu --vphone-dir ~/vphone-linux
+python -m research.ios_status --vphone-dir ~/vphone-linux --cid 3
+```
+
+Use the actual CID from the VM list, not necessarily 3. The menu groups diagnostics, setup, creation, listing, start, health, local report import and stop. Every state-changing action previews the command and asks for confirmation; upstream interactive prompts remain active. The health command calls only GET /v1/health through the local vphoned tool (20-second timeout). A positive result confirms a daemon response, not boot completion, screen readiness, Internet access, app installation, account identity or StoreKit. Raw daemon responses are not printed or stored. Run it only with a VM you own.
+
+### Hardware acceptance checklist
+
+After preparing a supported host and reviewing upstream licensing:
+
+- List the VM and confirm its unique guest CID.
+- Start the named VM, confirm screen responsiveness manually and run health.
+- Manually check basic network access and legitimate app installation; do not assume either works.
+- Validate StoreKit separately using an owned development app and Xcode StoreKit Testing, not live subscription checkout.
+- Import a synthetic or authorized local SKU report and confirm that all eligibility flags remain false.
+- Shut down the VM after saving work and verify the list.
+
+If a gate fails, retain its unverified status. Offline CI cannot replace this checklist.
+
 ## Research gates
 
 | Gate | Evidence required | Current status |
 | --- | --- | --- |
 | Host prerequisites | Supported OS, resources, trusted upstream setup | Partial local diagnostics |
-| VM boot | Explicit local user-started boot, UI and input | Lifecycle wrapper added; hardware untested |
+| VM boot | Explicit local user-started boot, UI and input | Lifecycle and daemon health tools added; hardware untested |
 | Networking | Authorized basic connectivity | Not tested |
 | Google app | Legitimate installation and supported operation | Not tested |
 | Account and StoreKit | User-controlled sign-in, official StoreKit availability | Not tested |
 | SKU reporting | Local sanitized export or authorized test fixtures | Offline prototype |
-| UI integration | Separate iOS adapter, no changes to Android checkout gates | Future |
+| UI integration | Separate iOS console, no changes to Android checkout gates | Interactive research console added; shared TUI deferred until hardware validation |
 
 Stop at a failed gate; never interpret a VM boot as proof of StoreKit compatibility. Use an owned development app with StoreKit Testing or mock data for automation tests; do not substitute product identifiers to obtain unintended pricing, bypass account eligibility or automate live checkout. Keep live accounts, tokens and payment data out of CI and reports.
 
