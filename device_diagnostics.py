@@ -166,13 +166,35 @@ def _open_official_offer_app(expected_serial: str, package: str) -> str:
     installed = _run(adb, [*target, "pm", "list", "packages", "-e", package])
     if installed is None or installed.returncode:
         return "launch_failed"
-    if f"package:{package}" not in installed.stdout.splitlines():
+    if f"package:{package}" not in {line.strip() for line in installed.stdout.splitlines()}:
         return "app_unavailable"
-    launched = _run(adb, [*target, "am", "start", "-W", "-a", "android.intent.action.MAIN",
-                          "-c", "android.intent.category.LAUNCHER", "-p", package])
-    if launched is None or launched.returncode or "Status: ok" not in launched.stdout.splitlines():
-        return "launch_failed"
-    return "opened"
+    intent = ["-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER"]
+    launched = _run(adb, [*target, "am", "start", "-W", *intent, "-p", package])
+    if _official_launch_ok(launched):
+        return "opened"
+    # Some emulator builds cannot resolve a package-only launcher intent.
+    # Resolve the normal launcher component from Android rather than guessing
+    # an internal activity or constructing a checkout intent.
+    resolved = _run(adb, [*target, "cmd", "package", "resolve-activity",
+                          "--brief", *intent, "-p", package])
+    if resolved is None or resolved.returncode:
+        return "launcher_unresolved"
+    components = [line.strip() for line in resolved.stdout.splitlines()
+                  if re.fullmatch(re.escape(package) + r"/[A-Za-z0-9_.$]+", line.strip())]
+    if len(set(components)) != 1:
+        return "launcher_unresolved"
+    launched = _run(adb, [*target, "am", "start", "-W", *intent, "-n", components[0]])
+    return "opened" if _official_launch_ok(launched) else "launcher_rejected"
+
+
+def _official_launch_ok(result) -> bool:
+    if result is None or result.returncode:
+        return False
+    lines = [line.strip() for line in result.stdout.splitlines()]
+    errors = (result.stderr or "") + "\n" + result.stdout
+    if re.search(r"(?im)^\s*(?:Error:|Error type|Exception|SecurityException)", errors):
+        return False
+    return "Status: ok" in lines
 
 
 def linux_frida_compatibility_issue(adb: str, serial: str) -> str:

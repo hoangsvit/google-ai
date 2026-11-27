@@ -24,6 +24,35 @@ class ResearchOfferTests(unittest.TestCase):
         self.assertEqual(run.call_count, 2)
         self.assertEqual(run.call_args.args[1][-2:], ["-p", diag.GOOGLE_ONE])
 
+    def test_normal_launcher_fallback_resolves_package_activity(self):
+        def response(stdout="", stderr="", returncode=0):
+            return subprocess.CompletedProcess([], returncode, stdout, stderr)
+        component = diag.GOOGLE_ONE + "/.MainActivity"
+        with patch.object(diag, "locate_adb", return_value="adb"), \
+             patch.object(diag, "online_serials", return_value=["test-device"]), \
+             patch.object(diag, "_run", side_effect=[
+                 response("package:" + diag.GOOGLE_ONE + "\n"),
+                 response("Error: unable to resolve Intent"),
+                 response(component + "\n"),
+                 response("  Status: ok\n"),
+             ]) as run:
+            self.assertEqual(diag.open_google_one_app("test-device"), "opened")
+        self.assertEqual(run.call_count, 4)
+        self.assertEqual(run.call_args.args[1][-2:], ["-n", component])
+
+    def test_fallback_never_starts_other_package(self):
+        def response(stdout):
+            return subprocess.CompletedProcess([], 0, stdout, "")
+        with patch.object(diag, "locate_adb", return_value="adb"), \
+             patch.object(diag, "online_serials", return_value=["test-device"]), \
+             patch.object(diag, "_run", side_effect=[
+                 response("package:" + diag.GOOGLE_ONE + "\n"),
+                 response("Error: unable to resolve Intent"),
+                 response("other.package/.MainActivity"),
+             ]) as run:
+            self.assertEqual(diag.open_google_one_app("test-device"), "launcher_unresolved")
+        self.assertEqual(run.call_count, 3)
+
     def test_disconnected_device_does_not_launch(self):
         with patch.object(diag, "locate_adb", return_value="adb"), \
              patch.object(diag, "online_serials", return_value=["other"]), \

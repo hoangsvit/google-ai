@@ -39,7 +39,7 @@ def main():
     if status == "not_confirmed":
         print("Cancelled. No app or purchase flow was opened.")
         return 2
-    print("Could not open the official app. Check Android, ADB and the installed application.")
+    print(f"Official app review failed: {status}. Check Android, ADB and the installed application.")
     return 1
 
 

@@ -293,8 +293,10 @@ class ResearchOffers(ModalScreen[bool]):
             "device_offline": "Connect the intended authorized Android device.",
             "multiple_devices": "Disconnect other Android devices and try again.",
             "app_unavailable": "Install or enable the required app in Google Play.",
+            "launcher_unresolved": "Android could not resolve the official app launcher. Update or enable the app in Google Play.",
+            "launcher_rejected": "Android rejected the official launcher activity. Check the emulator and app permissions.",
             "runner_failed": "The step launcher failed before returning a result. Try the same numbered -Step command in PowerShell to inspect the error.",
-        }.get(result, "Could not open Google One. Open it manually on Android.")
+        }.get(result, "Android app launch failed. Run the numbered step in PowerShell for its result code.")
         self.query_one("#research_message", Static).update(message)
         for selector in ("#research_open", "#research_close"):
             if len(self.query(selector)):
