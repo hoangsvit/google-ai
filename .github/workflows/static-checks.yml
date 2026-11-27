@@ -53,6 +53,7 @@ jobs:
           python -m compileall -q research_offer_catalog.py research_offer_runner.py device_diagnostics.py tui_core.py tui.py
           python -m unittest discover -s tests -p 'test_research_*.py' -v
           python -m unittest discover -s tests -p 'test_mumu_research_adb_paths.py' -v
+          python -m unittest discover -s tests -p 'test_ultra0_research_steps.py' -v
       - name: Bundled asset integrity tests (no Android)
         run: python -m unittest discover -s tests -p 'test_assets.py' -v
       - name: MuMu startup regressions (offline)

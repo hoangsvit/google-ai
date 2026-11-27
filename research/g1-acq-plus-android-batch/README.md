@@ -69,3 +69,7 @@ Research review steps resolve the installed official app's normal launcher activ
 ## Temporary manual-only checkout
 
 Automatic Subscribe taps are disabled in the existing engine. Even when the current checks match, the engine leaves checkout open and reports `manual_confirmation_required`; the user must review and confirm in Google Play. No automatic sequence advance is authorized by this status. Research steps 6–19 remain review-only.
+
+## Pricing phase review
+
+The existing read-only SKU report now warns about inconsistent currencies, unknown recurrence modes, invalid billing cycle counts and ongoing phases that are not last. The report remains metadata only and cannot authorize checkout or establish account eligibility. The engine-specific offline test file is included in Static checks. Missing product mappings and live validation remain outstanding.

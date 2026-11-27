@@ -58,6 +58,40 @@ class SKUMetadataTests(unittest.TestCase):
         self.assertIn("UNVERIFIED", text)
         self.assertNotIn("token", text.lower())
 
+    def test_pricing_phase_review_flags_inconsistent_currency_and_cycles(self):
+        row = {"sku": "g1.example", "offer_id": "fixture", "base_plan_id": "monthly",
+               "phases": [
+                   {"price_amount_micros": "1000000", "currency": "USD",
+                    "billing_period": "P1M", "recurrence_mode": 1, "billing_cycle_count": 2},
+                   {"price_amount_micros": "2000000", "currency": "EUR",
+                    "billing_period": "P1M", "recurrence_mode": 2, "billing_cycle_count": 0},
+               ]}
+        result = core.sanitize_offers([row], ["g1.example"])
+        warnings = result["items"][0]["pricing_phase_warnings"]
+        self.assertEqual(len(warnings), 4)
+        output = core.render_result(result)
+        self.assertIn("Currency changes across phases", output)
+        self.assertIn("ongoing phase is not last", output)
+        self.assertIn("finite billing cycle count missing or zero", output)
+        self.assertFalse(result["eligibility_verified"])
+        self.assertFalse(result["account_binding_verified"])
+
+    def test_complete_phases_do_not_verify_account_or_eligibility(self):
+        phases = [
+            {"price_amount_micros": "1990000", "currency": "USD",
+             "billing_period": "P1M", "billing_cycle_count": 3, "recurrence_mode": 2},
+            {"price_amount_micros": "19990000", "currency": "USD",
+             "billing_period": "P1M", "billing_cycle_count": 0, "recurrence_mode": 1},
+        ]
+        row = {"sku": "g1.example", "offer_id": "fixture",
+               "base_plan_id": "monthly", "phases": phases}
+        result = core.sanitize_offers([row], ["g1.example"])
+        self.assertEqual(result["items"][0]["pricing_phase_warnings"], [])
+        self.assertIn("3 cycle(s)", core.render_result(result))
+        self.assertIn("ongoing", core.render_result(result))
+        self.assertFalse(result["eligibility_verified"])
+        self.assertFalse(result["subscription_active_verified"])
+
     def test_rejects_missing_currency_and_malformed_phases(self):
         result = core.sanitize_offers([{
             "sku": "g1.play.20tb", "offer_id": "example",
