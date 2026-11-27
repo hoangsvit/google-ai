@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0..\.."
 echo Step 18: official app offer review. No automatic checkout.
-powershell.exe -NoProfile -File "%~dp0..\..\run-all.ps1" -Step 18
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\..\run-all.ps1" -Step 18
 set RESULT=%errorlevel%
 pause
 exit /b %RESULT%
