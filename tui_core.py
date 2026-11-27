@@ -333,11 +333,14 @@ def validate_step(step: int) -> int:
 
 
 def command_for_step(step: int, repo: Path, shell: str | None = None,
-                     account: str | None = None, device: str | None = None) -> list[str]:
+                     account: str | None = None, device: str | None = None,
+                     *, review_confirmed: bool = False) -> list[str]:
     from research_offer_catalog import STEP_REFERENCES
     if step in STEP_REFERENCES:
         if sys.platform in ("darwin", "linux") and shell is None:
             command = [sys.executable, str(repo / "research_offer_runner.py"), "--step", str(step)]
+            if review_confirmed:
+                command.append("--confirmed-review")
             if device:
                 command.append("--serial=" + device)
             return command
@@ -346,6 +349,8 @@ def command_for_step(step: int, repo: Path, shell: str | None = None,
             raise RuntimeError("PowerShell was not found.")
         command = [executable, "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass",
                    "-File", str(repo / "run-all.ps1"), "-Step", str(step)]
+        if review_confirmed:
+            command.append("-ConfirmOfferReview")
         if device:
             command.extend(["-Serial", device])
         return command

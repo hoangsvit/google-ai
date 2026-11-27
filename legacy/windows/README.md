@@ -7,3 +7,7 @@ Run the files from this directory in Windows Command Prompt with one authorized 
 The former `--force` account bypass is removed from these batch files. Original step names remain callable for compatibility but no longer execute the old purchase behavior. The separate root launcher and Python engine remain unchanged.
 
 See [research notes](../../research/g1-acq-plus-android-batch/README.md) and [security guidance](../../SECURITY.md).
+
+## Research Steps 6–19
+
+The named research offer batch files call `run-all.ps1 -Step N` and prompt for explicit confirmation before opening the official app. They are independently written wrappers, not imported upstream checkout scripts. The labels are unverified; no offer is selected automatically.

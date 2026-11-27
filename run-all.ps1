@@ -54,6 +54,7 @@ param(
     [switch]$Tui,
     [switch]$Cli,
     [switch]$ManageAndroidAccounts,
+    [switch]$ConfirmOfferReview,
     [switch]$Help
 )
 
@@ -243,8 +244,11 @@ if ($ManageAndroidAccounts) {
     return
 }
 # Research stages are single, manual official-app review operations only.
+if ($ConfirmOfferReview -and $Step -lt 6) {
+    Stop-Workflow "-ConfirmOfferReview is only for research Steps 6..19."
+}
 if ($Step -ge 6) {
-    $extra = @($PSBoundParameters.Keys | Where-Object { $_ -notin @("Step", "Serial", "Cli") })
+    $extra = @($PSBoundParameters.Keys | Where-Object { $_ -notin @("Step", "Serial", "Cli", "ConfirmOfferReview") })
     if ($extra.Count) {
         Stop-Workflow "Research Steps 6..19 are single steps. Use -Step with optional -Serial only."
     }
@@ -252,6 +256,7 @@ if ($Step -ge 6) {
     if (-not $pythonCommand) { Stop-Workflow "Python not found." }
     $researchArgs = @((Join-Path $PSScriptRoot "research_offer_runner.py"), "--step", [string]$Step)
     if ($Serial) { $researchArgs += @("--serial=$Serial") }
+    if ($ConfirmOfferReview) { $researchArgs += "--confirmed-review" }
     & $pythonCommand.Source @researchArgs
     exit $LASTEXITCODE
 }

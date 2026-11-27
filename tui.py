@@ -226,28 +226,28 @@ class ResearchOffers(ModalScreen[bool]):
     #research_actions Button { width: 1fr; min-width: 0; }
     """
 
-    def __init__(self, serial: str, step: int, repo: Path) -> None:
+    def __init__(self, serial: str, step: int, repo: Path, review_context: str) -> None:
         super().__init__()
         self.serial = serial
         self.step = step
         self.repo = repo
+        self.review_context = review_context
         self.opened = False
 
     def compose(self) -> ComposeResult:
         with Vertical(id="research_card"):
             with VerticalScroll(id="research_scroll"):
                 yield Static(f"Step {self.step}: {research_step_label(self.step)}", markup=False)
-                yield Static("Opening the official app for manual offer review. The advertised offer may not be available.")
+                yield Static("Confirm the selected offer reference before opening the official app. "
+                             "The advertised offer may not be available.")
+                yield Static(self.review_context, markup=False)
                 yield Static("No offer is selected in Android by this catalogue. "
                              "Confirm the correct account, price and renewal terms in the app.",
                              id="research_message")
                 yield Link("Official Google One website", url="https://one.google.com/")
             with Horizontal(id="research_actions"):
                 yield Button("Close", id="research_close")
-                yield Button("Retry opening app", id="research_open", variant="primary")
-
-    def on_mount(self) -> None:
-        self.open_pressed()
+                yield Button("Confirm & open app", id="research_open", variant="primary")
 
     @on(Button.Pressed, "#research_close")
     def close_catalogue(self) -> None:
@@ -267,7 +267,7 @@ class ResearchOffers(ModalScreen[bool]):
     @work(thread=True, exclusive=True, group="research-offer-app")
     def open_app(self) -> None:
         try:
-            command = command_for_step(self.step, self.repo, device=self.serial or None)
+            command = command_for_step(self.step, self.repo, device=self.serial or None, review_confirmed=True)
             child = subprocess.run(command, cwd=str(self.repo), capture_output=True,
                                    text=True, errors="replace", timeout=45, check=False)
             result = next((line.split(":", 1)[1].strip() for line in child.stdout.splitlines()
@@ -1242,10 +1242,10 @@ class GoogleAITUI(App[None]):
             if mode != "single":
                 self.query_one("#mode", Select).value = "single"
             self.query_one("#step", Select).disabled = False
-            self.query_one("#run", Button).label = "Open official app (manual)"
-            self.query_one("#run", Button).disabled = False
-            self.query_one("#refresh_offers", Button).display = False
-            self.query_one("#mode_hint", Static).update("Manual redemption in the official app only. No automatic checkout.")
+            self.query_one("#run", Button).label = "Review selected offer" if self._offer_check_ready else "Step 1 check required"
+            self.query_one("#run", Button).disabled = not self._offer_check_ready
+            self.query_one("#refresh_offers", Button).display = not self._offer_check_ready
+            self.query_one("#mode_hint", Static).update("Complete Step 1, then confirm review in the official app. No automatic checkout.")
             return
         if isinstance(step, int) and 5 <= step < 5 + len(self._extra_offers):
             offer = self._extra_offers[step - 5]
@@ -1383,8 +1383,24 @@ class GoogleAITUI(App[None]):
         if step in STEP_REFERENCES:
             if self._accounts_loading:
                 return
+            if not self._offer_check_ready or not self._offer_ready_account or not self._offer_ready_device:
+                self._set_message("Run Step 1 for the intended Google Play account and device before reviewing a research offer.")
+                return
+            if self._connection_state and (self._connection_state.state != "connected"
+                    or self._offer_ready_device not in self._connection_state.devices):
+                self._reset_account_verification()
+                self._update_run_mode()
+                self._set_message("Android device changed. Run Step 1 again.")
+                return
+            account = mask_email(self._offer_ready_account)
+            observed = parse_step1(self._offer_report, include_fixed=True)
+            observed_count = len(observed)
+            context = (f"Step 1 account: {account}. {observed_count} primary offer record(s) observed. "
+                       "No verified mapping to this reference; eligibility remains unverified.")
+            if isinstance(self._sku_report, dict) and self._sku_report.get("status") == "observed":
+                context += "\nAdditional device-bound metadata is available in Live Status; it does not verify eligibility."
             self._invalidate_connection_polls()
-            self.push_screen(ResearchOffers(self._offer_ready_device or "", step, self.repo),
+            self.push_screen(ResearchOffers(self._offer_ready_device, step, self.repo, context),
                              self._research_catalogue_closed)
             return
         if step >= 5:
@@ -1613,9 +1629,10 @@ class GoogleAITUI(App[None]):
     def _research_catalogue_closed(self, opened: bool) -> None:
         # External app actions may change the selected account or subscription.
         # Do not let an earlier offer report authorize a later stage.
-        self._reset_account_verification()
-        self._update_run_mode()
-        self._set_message("Run Check Device & Offers again before using any existing subscription step.")
+        if opened:
+            self._reset_account_verification()
+            self._update_run_mode()
+            self._set_message("Run Check Device & Offers again before using any existing subscription step.")
 
     @on(Button.Pressed, "#refresh_offers")
     def refresh_offers_pressed(self) -> None:

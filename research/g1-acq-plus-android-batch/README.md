@@ -53,3 +53,7 @@ Choose another step in the TUI or run `./run-all.ps1 -Step 6` (through 19). The 
 ## TUI cleanup
 
 The redundant Browse more offers button has been removed. Select a numbered research step and press Open official app (manual) to start its runner directly; the result dialog displays the launch status. No automatic offer selection or redemption is performed.
+
+## Confirmation and batch entrypoints
+
+The TUI requires a current Step 1 session and shows its observed-record count, account hint and explicit lack of a verified mapping before requiring Confirm & open app. Cancelling does not launch anything. CLI and English batch wrappers for Steps 6–19 ask for YES before opening the official app. The TUI passes its explicit review confirmation through the PowerShell launcher. This does not validate eligibility or initiate automatic checkout. Steps 0–5 remain unchanged. No hardware test was performed.
