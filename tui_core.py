@@ -334,6 +334,21 @@ def validate_step(step: int) -> int:
 
 def command_for_step(step: int, repo: Path, shell: str | None = None,
                      account: str | None = None, device: str | None = None) -> list[str]:
+    from research_offer_catalog import STEP_REFERENCES
+    if step in STEP_REFERENCES:
+        if sys.platform in ("darwin", "linux") and shell is None:
+            command = [sys.executable, str(repo / "research_offer_runner.py"), "--step", str(step)]
+            if device:
+                command.append("--serial=" + device)
+            return command
+        executable = shell or shutil.which("powershell.exe") or shutil.which("pwsh")
+        if not executable:
+            raise RuntimeError("PowerShell was not found.")
+        command = [executable, "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                   "-File", str(repo / "run-all.ps1"), "-Step", str(step)]
+        if device:
+            command.extend(["-Serial", device])
+        return command
     validate_step(step)
     if sys.platform in ("darwin", "linux") and shell is None:
         bridge = repo / "macos_runner.py"

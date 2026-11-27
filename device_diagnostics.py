@@ -144,6 +144,14 @@ def open_google_one_listing(expected_serial: str = "") -> str:
 
 
 def open_google_one_app(expected_serial: str = "") -> str:
+    return _open_official_offer_app(expected_serial, GOOGLE_ONE)
+
+
+def open_youtube_app(expected_serial: str = "") -> str:
+    return _open_official_offer_app(expected_serial, "com.google.android.youtube")
+
+
+def _open_official_offer_app(expected_serial: str, package: str) -> str:
     """Open the official app on an authorized Android device; never select an offer."""
     adb = locate_adb()
     if not adb:
@@ -155,13 +163,13 @@ def open_google_one_app(expected_serial: str = "") -> str:
     if not expected_serial and not same_boot_transports(adb, serial, online):
         return "multiple_devices"
     target = ["-s", serial, "shell"]
-    installed = _run(adb, [*target, "pm", "list", "packages", "-e", GOOGLE_ONE])
+    installed = _run(adb, [*target, "pm", "list", "packages", "-e", package])
     if installed is None or installed.returncode:
         return "launch_failed"
-    if f"package:{GOOGLE_ONE}" not in installed.stdout.splitlines():
+    if f"package:{package}" not in installed.stdout.splitlines():
         return "app_unavailable"
     launched = _run(adb, [*target, "am", "start", "-W", "-a", "android.intent.action.MAIN",
-                          "-c", "android.intent.category.LAUNCHER", "-p", GOOGLE_ONE])
+                          "-c", "android.intent.category.LAUNCHER", "-p", package])
     if launched is None or launched.returncode or "Status: ok" not in launched.stdout.splitlines():
         return "launch_failed"
     return "opened"

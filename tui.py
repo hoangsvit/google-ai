@@ -39,7 +39,7 @@ from device_diagnostics import (
     ConnectionDiagnosis, ConnectionStatus, inspect_connection, open_google_one_listing, poll_connection,
 )
 from stage_history import latest_history, read_history, record_history
-from research_offer_catalog import reference_options
+from research_offer_catalog import reference_options, STEP_REFERENCES, research_step_options, research_step_label
 from device_diagnostics import open_google_one_app
 
 
@@ -228,9 +228,11 @@ class ResearchOffers(ModalScreen[bool]):
     #research_actions Button { width: 1fr; min-width: 0; }
     """
 
-    def __init__(self, serial: str = "") -> None:
+    def __init__(self, serial: str = "", step: int | None = None, repo: Path | None = None) -> None:
         super().__init__()
         self.serial = serial
+        self.step = step
+        self.repo = repo
         self.opened = False
 
     def compose(self) -> ComposeResult:
@@ -239,14 +241,18 @@ class ResearchOffers(ModalScreen[bool]):
                 yield Static("RESEARCH OFFER CATALOGUE")
                 yield Static("Reported offers only. Availability, capacity, prices and terms are not verified. "
                              "Select a reference, then review offers in the official Google app.")
-                yield Select(reference_options(), value=0, allow_blank=False, id="research_choice")
+                if self.step is None:
+                    yield Select(reference_options(), value=0, allow_blank=False, id="research_choice")
+                else:
+                    yield Static(f"Step {self.step}: {research_step_label(self.step)}", markup=False)
                 yield Static("No offer is selected in Android by this catalogue. "
                              "Confirm the correct account, price and renewal terms in the app.",
                              id="research_message")
                 yield Link("Official Google One website", url="https://one.google.com/")
             with Horizontal(id="research_actions"):
                 yield Button("Close", id="research_close")
-                yield Button("Open Google One", id="research_open", variant="primary")
+                yield Button("Run step / open app" if self.step is not None else "Open Google One",
+                             id="research_open", variant="primary")
 
     @on(Button.Pressed, "#research_close")
     def close_catalogue(self) -> None:
@@ -258,14 +264,24 @@ class ResearchOffers(ModalScreen[bool]):
         if self.query_one("#research_open", Button).disabled:
             return
         for selector in ("#research_open", "#research_close", "#research_choice"):
-            self.query_one(selector).disabled = True
+            if len(self.query(selector)):
+                self.query_one(selector).disabled = True
         self.query_one("#research_message", Static).update("Opening Google One on Android...")
         self.open_app()
 
     @work(thread=True, exclusive=True, group="research-offer-app")
     def open_app(self) -> None:
         try:
-            result = open_google_one_app(self.serial)
+            if self.step is not None and self.repo is not None:
+                command = command_for_step(self.step, self.repo, device=self.serial or None)
+                child = subprocess.run(command, cwd=str(self.repo), capture_output=True,
+                                       text=True, errors="replace", timeout=45, check=False)
+                result = next((line.split(":", 1)[1].strip() for line in child.stdout.splitlines()
+                               if line.startswith("EPLUS_RESEARCH_RESULT:")), "launch_failed")
+                if child.returncode and result == "opened":
+                    result = "launch_failed"
+            else:
+                result = open_google_one_app(self.serial)
         except Exception:
             result = "launch_failed"
         try:
@@ -278,7 +294,7 @@ class ResearchOffers(ModalScreen[bool]):
             return
         self.opened = self.opened or result == "opened"
         message = {
-            "opened": "Google One opened. Review and redeem only offers actually displayed for your account. "
+            "opened": "Official app opened. Review and redeem only offers actually displayed for your account. "
                       "After any change, run Check Device & Offers again.",
             "missing_adb": "ADB not found. Install or configure Android platform-tools.",
             "device_offline": "Connect the intended authorized Android device.",
@@ -287,7 +303,8 @@ class ResearchOffers(ModalScreen[bool]):
         }.get(result, "Could not open Google One. Open it manually on Android.")
         self.query_one("#research_message", Static).update(message)
         for selector in ("#research_open", "#research_close", "#research_choice"):
-            self.query_one(selector).disabled = False
+            if len(self.query(selector)):
+                self.query_one(selector).disabled = False
 
 
 class AccountPicker(ModalScreen[str | None]):
@@ -1215,7 +1232,7 @@ class GoogleAITUI(App[None]):
             self.query_one("#step", Select).value = self._last_selected_step
             self.toggle_more_modes()
             return
-        if isinstance(event.value, int) and (event.value in range(5) or
+        if isinstance(event.value, int) and (event.value in STEP_REFERENCES or event.value in range(5) or
                                                5 <= event.value < 5 + len(self._extra_offers)):
             self._last_selected_step = event.value
         self._update_run_mode()
@@ -1232,6 +1249,15 @@ class GoogleAITUI(App[None]):
             return
         mode = self.query_one("#mode", Select).value
         step = self.query_one("#step", Select).value
+        if step in STEP_REFERENCES:
+            if mode != "single":
+                self.query_one("#mode", Select).value = "single"
+            self.query_one("#step", Select).disabled = False
+            self.query_one("#run", Button).label = "Run this offer step"
+            self.query_one("#run", Button).disabled = False
+            self.query_one("#refresh_offers", Button).display = False
+            self.query_one("#mode_hint", Static).update("Manual redemption in the official app only. No automatic checkout.")
+            return
         if isinstance(step, int) and 5 <= step < 5 + len(self._extra_offers):
             offer = self._extra_offers[step - 5]
             if mode != "single":
@@ -1323,6 +1349,8 @@ class GoogleAITUI(App[None]):
 
     def _selected(self) -> int:
         step = int(self.query_one("#step", Select).value)
+        if step in STEP_REFERENCES:
+            return step
         if 5 <= step < 5 + len(self._extra_offers):
             return step
         if step < 5:
@@ -1345,11 +1373,12 @@ class GoogleAITUI(App[None]):
                    for stage in STAGES[:5]]
         choices += [(offer_step_label(index + 5, offer), index + 5)
                     for index, offer in enumerate(self._extra_offers)]
+        choices.extend(research_step_options())
         choices.append(("More run options…", 99))
         selector = self.query_one("#step", Select)
         current = selector.value
         # Reset the selection when the optional offer changes.
-        if changed_keys and isinstance(current, int) and current >= 5:
+        if changed_keys and isinstance(current, int) and current >= 5 and current not in STEP_REFERENCES:
             current = 1
         selector.set_options(choices)
         # Textual Select.set_options resets the selection. Restore even when
@@ -1361,6 +1390,13 @@ class GoogleAITUI(App[None]):
     def _confirm_stage(self, step: int, sequence: bool,
                        previous_verified: bool = False) -> None:
         if self.busy or self._diagnosing or self._sku_pending:
+            return
+        if step in STEP_REFERENCES:
+            if self._accounts_loading:
+                return
+            self._invalidate_connection_polls()
+            self.push_screen(ResearchOffers(self._offer_ready_device or "", step, self.repo),
+                             self._research_catalogue_closed)
             return
         if step >= 5:
             if not (self._offer_check_ready and 5 <= step < 5 + len(self._extra_offers)):

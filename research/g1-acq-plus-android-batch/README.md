@@ -49,3 +49,7 @@ The existing Windows TUI invokes `setup_env.py` and `run-all.ps1`, whose runtime
 ## TUI offer catalogue
 
 Run `run-all.ps1` and open **Choose another step → Browse more offers**. The catalogue lists 16 upstream-reported reference offers, not live eligibility. Choose a reference and use Open Google One to review the account's official offers on Android; selecting a reference does not select a plan in the app. YouTube Premium references may require the official YouTube app. Close the catalogue and run Step 1 again before existing subscription steps. No hidden-SKU checkout, automated redemption or stacking was added. Existing numbered steps remain unchanged. Device and UI testing is still required.
+
+## Individual research steps 6–19
+
+Choose another step in the TUI or run `./run-all.ps1 -Step 6` (through 19). The original Steps 0–5 and 12+6+6 sequence are unchanged. Each research step launches the official app for manual review, not an automatic purchase or targeted offer selection. The final step opens YouTube; the others open Google One. The step labels are unverified upstream references. No eligibility bypass or automated redemption is implemented. Recheck Step 1 after returning from the app.

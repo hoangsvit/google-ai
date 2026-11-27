@@ -37,7 +37,7 @@
 param(
     [string]$Email = "",
     [string]$Serial = "",
-    [ValidateRange(0,5)]
+    [ValidateRange(0,19)]
     [int]$Step = 1,
     [switch]$AllStages,
     [ValidateRange(2,5)]
@@ -241,6 +241,19 @@ if ($ManageAndroidAccounts) {
         Pop-Location
     }
     return
+}
+# Research stages are single, manual official-app review operations only.
+if ($Step -ge 6) {
+    $extra = @($PSBoundParameters.Keys | Where-Object { $_ -notin @("Step", "Serial", "Cli") })
+    if ($extra.Count) {
+        Stop-Workflow "Research Steps 6..19 are single steps. Use -Step with optional -Serial only."
+    }
+    $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $pythonCommand) { Stop-Workflow "Python not found." }
+    $researchArgs = @((Join-Path $PSScriptRoot "research_offer_runner.py"), "--step", [string]$Step)
+    if ($Serial) { $researchArgs += @("--serial=$Serial") }
+    & $pythonCommand.Source @researchArgs
+    exit $LASTEXITCODE
 }
 if ($AllStages -and $PSBoundParameters.ContainsKey("Step") -and $Step -ne 1) {
     Stop-Workflow "Choose either -AllStages or -Step 0..5, not both."

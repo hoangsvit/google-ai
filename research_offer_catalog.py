@@ -27,3 +27,17 @@ OFFER_REFERENCES = (
 def reference_options():
     return [(f"{name} — {terms}", index)
             for index, (name, terms) in enumerate(OFFER_REFERENCES)]
+
+# Step 5 remains reserved for the existing optional extension. The new steps
+# omit the two references already covered by the original workflow.
+STEP_REFERENCES = dict(enumerate((5, 4, 3, 2, *range(6, 16)), start=6))
+
+
+def research_step_options():
+    return [(f"{step}. {OFFER_REFERENCES[index][0]} — {OFFER_REFERENCES[index][1]}", step)
+            for step, index in STEP_REFERENCES.items()]
+
+
+def research_step_label(step):
+    name, terms = OFFER_REFERENCES[STEP_REFERENCES[step]]
+    return f"{name} — {terms}"
