@@ -7,6 +7,7 @@ import codecs
 import fcntl
 import os
 import pty
+import re
 import select
 import signal
 import struct
@@ -121,9 +122,11 @@ def main():
                         matches = all(label in visible for label in expected)
                         if scenario.startswith("sku_"):
                             # Unsupported synthetic offers must not appear as purchasable steps.
-                            matches = matches and "6. Ultra" not in visible
+                            # Match the complete stage number, not Step 16's
+                            # static Ultra reference label.
+                            matches = matches and not re.search(r"(?<!\d)6\.\s+Ultra", visible)
                             if scenario != "sku_extra_steps":
-                                matches = matches and "5. Optional" not in visible
+                                matches = matches and not re.search(r"(?<!\d)5\.\s+Optional", visible)
                         if not matches:
                             found_at = None
                         elif found_at is None:
