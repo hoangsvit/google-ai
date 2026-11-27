@@ -4,7 +4,7 @@
 
 Usage:
         python ultra0.py --check            # Check Android, ADB, root and Frida
-        python research_offer_runner.py --step 9  # Official app review only
+        python ultra0.py --step 9           # Research Steps 6-19: exact reference offer
         python ultra0.py accounts.txt       # Legacy batch-account mode
         python ultra0.py --account address@example.com --no-add --no-switch
 
@@ -982,8 +982,21 @@ def build_js(plan: str = "auto", list_only: bool = False, stack: bool = False, o
         js = js.replace('var PRODUCTS=["g1.play.20tb","g1.play.ai.pro","g1.30tb"];',
                         'var PRODUCTS=["g1.2tb.ai.subs_variant"];')
         js = js.replace('var PREFER="";', 'var PREFER="%s";' % prefer, 1)
-    elif research_step_for_plan(plan) is not None:
-        raise ValueError("Research steps are review-only; use research_offer_runner.py.")
+    elif (step := research_step_for_plan(plan)) is not None:
+        # Research Steps 6-19: query only the step's verified product(s) and
+        # let billing.js select solely the offer whose first phase matches
+        # the reference period and price (TARGET_PERIOD / TARGET_MICROS).
+        spec = RESEARCH_STEPS[step]
+        if not spec["products"]:
+            raise ValueError(
+                f"Step {step} ({spec['label']}) has no verified product ID; "
+                "refusing to guess one for a billing query.")
+        products_js = json.dumps(list(spec["products"]))
+        js = js.replace('var PRODUCTS=["g1.play.20tb","g1.play.ai.pro","g1.30tb"];',
+                        f'var PRODUCTS={products_js};')
+        js = js.replace('var PREFER="";',
+                        'var PREFER=""; var TARGET_PERIOD="%s"; var TARGET_MICROS="%d";'
+                        % (spec["period"], spec["micros"]), 1)
     return js
 
 
@@ -1369,9 +1382,6 @@ def process(email, password="", totp_secret="", add=True, card=None, plan="auto"
                             "Google Play product ID in ultra0.py; no checkout was attempted.")
             warn(rec["error"])
             return rec
-        rec["status"] = "research_review_only"
-        rec["error"] = "Research checkout is disabled until eligibility and complete terms are verified."
-        return rec
     if add:
         try:
             if not add_account(email, password, totp_secret):
@@ -1593,11 +1603,20 @@ def main():
                     help="auto=query available products; 5x=Ultra 20TB; 20x=Ultra 30TB; "
                          "research6..research19=research Steps 6-19")
     ap.add_argument("--step", type=int, default=None, choices=list(range(6, 20)),
-                    help="Research step reference (use research_offer_runner.py for review)")
+                    help="Research Steps 6-19, integrated into ultra0.py: run the step's "
+                         "exact reference offer through the normal billing flow. "
+                         "Equivalent to --plan research<N>. Without --account, the "
+                         "current device account is verified (--no-add --no-switch).")
     a = ap.parse_args()
-    if a.step is not None or research_step_for_plan(a.plan) is not None:
-        ap.error("Research steps are review-only. Use research_offer_runner.py; "
-                 "direct billing is disabled.")
+    if a.step is not None:
+        step_plan = plan_for_research_step(a.step)
+        if a.plan not in ("auto", step_plan):
+            ap.error(f"--step {a.step} conflicts with --plan {a.plan}")
+        a.plan = step_plan
+        if not a.account and not a.accounts:
+            a.account = "current@device"
+            a.no_add = True
+            a.no_switch = True
 
     ADB = find_adb()
     globals()["SKIP_ACCOUNT_CHECK"] = bool(a.force)

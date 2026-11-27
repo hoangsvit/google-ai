@@ -30,6 +30,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Header, Link, RichLog, Select, Static
 
 from sku_check_core import render_result
+from tui_core import parse_research_result, research_result_message
 from offer_discovery import (ExtraOffer, parse_step1,
                              merge_extra_offers, offer_step_label, offer_details)
 from tui_core import STAGES, Outcome, command_for_step, mask_email, account_picker_options, redact_diagnostic, \
@@ -273,9 +274,7 @@ class ResearchOffers(ModalScreen[bool]):
             command = command_for_step(self.step, self.repo, device=self.serial or None, review_confirmed=True)
             child = subprocess.run(command, cwd=str(self.repo), capture_output=True,
                                    text=True, errors="replace", timeout=600, check=False)
-            # ultra0.py prints one "Result: <status>" line per account.
-            result = next((line.split(":", 1)[1].strip() for line in child.stdout.splitlines()
-                           if line.strip().startswith("Result:")), "runner_failed")
+            result = parse_research_result(child.stdout, child.returncode)
         except Exception:
             result = "launch_failed"
         try:
@@ -287,22 +286,7 @@ class ResearchOffers(ModalScreen[bool]):
         if not self.is_mounted:
             return
         self.opened = self.opened or result not in ("runner_failed", "launch_failed")
-        message = {
-            "manual_confirmation_required": "Checkout opened in Google Play for the exact reference offer. "
-                      "Review the account, price and renewal terms and confirm manually in Google Play. "
-                      "After any change, run Check Device & Offers again.",
-            "checkout_requested": "Checkout was submitted; the purchase is not verified. "
-                      "Check the subscription and renewal date in Google Play.",
-            "offer_not_available": "The exact reference offer was not returned by Google Play for this "
-                      "account (product, period and first-phase price must all match). No checkout was opened.",
-            "research_product_unverified": "This step has no verified Google Play product ID in ultra0.py, "
-                      "so no billing query or checkout was attempted.",
-            "today_price_unverified": "The checkout did not verify the expected terms, so it was left open "
-                      "in Google Play for manual review. No Subscribe tap was attempted.",
-            "trial_duration_unverified": "The checkout did not verify the expected duration, so it was left "
-                      "open in Google Play for manual review. No Subscribe tap was attempted.",
-            "runner_failed": "ultra0.py failed before returning a result. Try the same numbered -Step command in PowerShell to inspect the error.",
-        }.get(result, f"ultra0.py finished with status: {result}. Check Google Play before retrying.")
+        message = research_result_message(result, self.step, sys.platform)
         self.query_one("#research_message", Static).update(message)
         for selector in ("#research_open", "#research_close"):
             if len(self.query(selector)):
@@ -762,7 +746,7 @@ class GoogleAITUI(App[None]):
                         yield Static("Check the device and offers to begin.", id="message")
                         yield Static("", id="step_result")
                         yield Static("SUPPORTED OFFERS · FIRST PHASE ONLY", id="offers_title")
-                        yield RichLog(id="offer_view", wrap=True, highlight=False, markup=False)
+                        yield RichLog(id="offer_view", wrap=True, highlight=False, markup=False, auto_scroll=False)
                         yield Static("Elapsed: --", id="elapsed")
                         yield Button("Completed action on Android", id="manual", disabled=True)
                         yield Static("Review Google Play pricing and renewal terms "
@@ -1375,7 +1359,7 @@ class GoogleAITUI(App[None]):
             [] if replace else self._extra_offers,
             [item for item in new_items if item.source == "step1"
              and item.legacy_checkout_supported and item.price_micros == "0"]
-        )
+        )[:1]
         changed_keys = previous_keys != tuple(item.key for item in self._extra_offers)
         self.query_one("#stage_5", Static).display = bool(self._extra_offers)
         if self._extra_offers:
@@ -1418,8 +1402,7 @@ class GoogleAITUI(App[None]):
             observed = parse_step1(self._offer_report, include_fixed=True)
             observed_count = len(observed)
             context = (f"Step 1 account: {account}. {observed_count} primary offer record(s) observed. "
-                       "ultra0.py matches this step by exact product, period and first-phase price; "
-                       "eligibility remains unverified until Google Play returns that offer.")
+                       "ultra0.py matches this step by exact product, period and first-phase price; eligibility remains unverified until Google Play returns that offer.")
             if isinstance(self._sku_report, dict) and self._sku_report.get("status") == "observed":
                 context += "\nAdditional device-bound metadata is available in Live Status; it does not verify eligibility."
             self._invalidate_connection_polls()
@@ -1511,19 +1494,19 @@ class GoogleAITUI(App[None]):
                                                "period": extra.period, "micros": extra.price_micros})
         for line in (offer_explorer_lines({"offers": list(offers.values())}) if offers
                      else ["No supported offers found in this scan."]):
-            view.write(line)
+            view.write(line, scroll_end=False)
         # Step 1 observations without a supported operation remain inspect-only.
         unknown = [item for item in parse_step1(self._offer_report, include_fixed=True)
                    if not (item.product == "g1.2tb.ai.subs_variant"
                            and item.offer_id in offers and item.price_micros == "0")]
         if unknown:
-            view.write("ADDITIONAL OBSERVED OFFERS (READ-ONLY)")
+            view.write("ADDITIONAL OBSERVED OFFERS (READ-ONLY)", scroll_end=False)
             for item in unknown[:12]:
                 for line in offer_details(item).splitlines():
                     view.write(line, scroll_end=False)
         # Unknown offers are metadata only. Never add them to executable steps.
         if self._sku_report is not None:
-            view.write("")
+            view.write("", scroll_end=False)
             for line in render_result(self._sku_report).splitlines():
                 view.write(line, scroll_end=False)
         view.display = True
@@ -2273,7 +2256,7 @@ class GoogleAITUI(App[None]):
                 "wrong_account", "play_account_switch_failed",
                 "device_missing", "device_mismatch", "device_ambiguous", "adb_missing",
             )
-            if account_changed or device_changed or identity_invalid:
+            if account_changed or device_changed or identity_invalid or outcome.code == "manual_confirmation_required":
                 # Only a known account/device problem revokes the read-only
                 # selection gate. Idle ADB monitoring also revokes it if the
                 # previously checked device disconnects.
@@ -2367,7 +2350,10 @@ class GoogleAITUI(App[None]):
             else:
                 self.push_screen(SetupNotice(outcome.title, outcome.instruction))
             return
-        if outcome.code == "checkout_requested":
+        if outcome.code == "manual_confirmation_required":
+            self.notify("Checkout is awaiting your manual decision in Google Play. "
+                        "Verify the actual result there, then run Step 1 again.", severity="warning")
+        elif outcome.code == "checkout_requested":
             self.notify("Review the actual subscription in Google Play.", severity="warning")
         elif outcome.code not in ("listed", "environment_ok", "cancelled"):
             self.notify("Step stopped; check Google Play charges and subscription status "
