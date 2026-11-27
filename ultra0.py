@@ -110,6 +110,10 @@ def report_filename(email: str) -> str:
 ADB_CANDIDATES = [
     os.environ.get("ADB_PATH", ""),
     # Windows / MuMu
+    r"C:\Program Files\Netease\MuMuPlayer\nx_main\adb.exe",
+    r"C:\Program Files\Netease\MuMuPlayer\nx_device\12.0\shell\adb.exe",
+    r"D:\Program Files\Netease\MuMuPlayer\nx_main\adb.exe",
+    r"D:\Program Files\Netease\MuMuPlayer\nx_device\12.0\shell\adb.exe",
     r"C:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
     r"C:\Program Files\Netease\MuMuPlayerGlobal-12.0\shell\adb.exe",
     r"C:\Program Files\Netease\MuMu\emulator\nemu\vmonitor\bin\adb_server.exe",

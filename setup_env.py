@@ -23,6 +23,10 @@ from device_selector import auto_select_device, online_serials
 BASE = Path(__file__).resolve().parent
 ADB_CANDIDATES = [
     os.environ.get("ADB_PATH", ""),
+    r"C:\Program Files\Netease\MuMuPlayer\nx_main\adb.exe",
+    r"C:\Program Files\Netease\MuMuPlayer\nx_device\12.0\shell\adb.exe",
+    r"D:\Program Files\Netease\MuMuPlayer\nx_main\adb.exe",
+    r"D:\Program Files\Netease\MuMuPlayer\nx_device\12.0\shell\adb.exe",
     r"C:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
     r"C:\Program Files\Netease\MuMuPlayerGlobal-12.0\shell\adb.exe",
     r"C:\Program Files (x86)\Netease\MuMuPlayer-12.0\shell\adb.exe",

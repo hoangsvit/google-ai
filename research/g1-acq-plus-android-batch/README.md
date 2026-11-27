@@ -41,3 +41,7 @@ The original local-only `check-device.bat` checks Python, ADB availability and t
 Any future integration must preserve the existing approval gates and account validation. Use mock offer data for offline UI tests; do not perform real checkout in CI or circumvent eligibility. Confirm offers and renewal terms in Google Play itself.
 
 The six historical batch entrypoints in legacy/windows are compatibility wrappers in this branch. Root launchers, stage mappings, CI workflows and existing Python code are unchanged. The setup shortcut checks prerequisites only. The offer-specific shortcuts display a reference label and open the same official Google One app; they do not select the named offer.
+
+## TUI backend compatibility update
+
+The existing Windows TUI invokes `setup_env.py` and `run-all.ps1`, whose runtime lookup and Android engine use the ADB locators. This branch adds four MuMuPlayer `nx_main` / `nx_device` installation locations to the setup, connection diagnostic and engine locators. Existing device selection, checkout safeguards, reports and stage mappings are unchanged. This is an ADB compatibility change, not a port of the upstream offer or checkout engine. Steps 1–5 retain their existing offer and transaction behavior. No live device validation has been performed.
