@@ -58,6 +58,40 @@ class SKUMetadataTests(unittest.TestCase):
         self.assertIn("UNVERIFIED", text)
         self.assertNotIn("token", text.lower())
 
+    def test_pricing_phase_review_flags_inconsistent_currency_and_cycles(self):
+        row = {"sku": "g1.example", "offer_id": "fixture", "base_plan_id": "monthly",
+               "phases": [
+                   {"price_amount_micros": "1000000", "currency": "USD",
+                    "billing_period": "P1M", "recurrence_mode": 1, "billing_cycle_count": 2},
+                   {"price_amount_micros": "2000000", "currency": "EUR",
+                    "billing_period": "P1M", "recurrence_mode": 2, "billing_cycle_count": 0},
+               ]}
+        result = core.sanitize_offers([row], ["g1.example"])
+        warnings = result["items"][0]["pricing_phase_warnings"]
+        self.assertEqual(len(warnings), 4)
+        output = core.render_result(result)
+        self.assertIn("Currency changes across phases", output)
+        self.assertIn("ongoing phase is not last", output)
+        self.assertIn("finite billing cycle count missing or zero", output)
+        self.assertFalse(result["eligibility_verified"])
+        self.assertFalse(result["account_binding_verified"])
+
+    def test_complete_phases_do_not_verify_account_or_eligibility(self):
+        phases = [
+            {"price_amount_micros": "1990000", "currency": "USD",
+             "billing_period": "P1M", "billing_cycle_count": 3, "recurrence_mode": 2},
+            {"price_amount_micros": "19990000", "currency": "USD",
+             "billing_period": "P1M", "billing_cycle_count": 0, "recurrence_mode": 1},
+        ]
+        row = {"sku": "g1.example", "offer_id": "fixture",
+               "base_plan_id": "monthly", "phases": phases}
+        result = core.sanitize_offers([row], ["g1.example"])
+        self.assertEqual(result["items"][0]["pricing_phase_warnings"], [])
+        self.assertIn("3 cycle(s)", core.render_result(result))
+        self.assertIn("ongoing", core.render_result(result))
+        self.assertFalse(result["eligibility_verified"])
+        self.assertFalse(result["subscription_active_verified"])
+
     def test_rejects_missing_currency_and_malformed_phases(self):
         result = core.sanitize_offers([{
             "sku": "g1.play.20tb", "offer_id": "example",
@@ -218,6 +252,36 @@ class StepOneSKUUITests(unittest.IsolatedAsyncioTestCase):
                 self.assertIn("UNVERIFIED", rendered)
                 self.assertIn("12months-eft", rendered)
 
+    async def test_offer_catalog_starts_at_top_even_when_overflowing(self):
+        from tempfile import TemporaryDirectory
+        from textual.widgets import RichLog
+        from tui import GoogleAITUI
+
+        with TemporaryDirectory() as directory:
+            app = GoogleAITUI(repo=Path(directory))
+            async with app.run_test(size=(120, 55)) as pilot:
+                app._offer_report = {"status": "listed", "offers": [
+                    {"product": "g1.2tb.ai.subs_variant", "id": "12months-eft",
+                     "micros": "0", "period": "P1Y"},
+                    *({"product": "g1.example", "id": f"fixture-{i}",
+                       "micros": "0", "period": "P1M"} for i in range(5)),
+                ]}
+                view = app.query_one("#offer_view", RichLog)
+                view.styles.height = 8
+                app._render_offer_catalog()
+                await pilot.pause()
+                self.assertFalse(view.auto_scroll)
+                self.assertGreater(view.max_scroll_y, 0)
+                self.assertEqual(view.scroll_y, 0)
+                view.scroll_end(animate=False)
+                await pilot.pause()
+                self.assertGreater(view.scroll_y, 0)
+                app._render_offer_catalog()
+                await pilot.pause()
+                self.assertEqual(view.scroll_y, 0)
+                self.assertIn("PRODUCT / OFFER", "".join(
+                    segment.text for segment in view.lines[0]))
+
     async def test_real_step_one_launches_automatic_sku_scan(self):
         from tempfile import TemporaryDirectory
         from tui import GoogleAITUI
@@ -252,7 +316,8 @@ class StepOneSKUUITests(unittest.IsolatedAsyncioTestCase):
         from tempfile import TemporaryDirectory
         from textual.widgets import Button, Select, Static
         from offer_discovery import parse_step1
-        from tui import GoogleAITUI
+        from tui import GoogleAITUI, ResearchOffers
+        from device_diagnostics import ConnectionStatus
 
         with TemporaryDirectory() as directory:
             app = GoogleAITUI(repo=Path(directory))
@@ -260,6 +325,8 @@ class StepOneSKUUITests(unittest.IsolatedAsyncioTestCase):
                 self.assertFalse(app.query_one("#stage_5", Static).display)
                 app._offer_check_ready = True
                 app._offer_ready_device = "emulator-5554"
+                app._offer_ready_account = "fixture@example.invalid"
+                app._connection_state = ConnectionStatus("connected", ("emulator-5554",))
                 app._update_discovered(parse_step1({"offers": [
                     {"product": "g1.play.20tb", "id": "offer-a"},
                     {"product": "g1.30tb", "id": "offer-b"},
@@ -282,7 +349,15 @@ class StepOneSKUUITests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(str(app.query_one("#run", Button).label), "Run selected step")
                 with patch.object(app, "_start") as start:
                     app._confirm_stage(6, False)
+                    await pilot.pause()
+                    self.assertIsInstance(app.screen, ResearchOffers)
                     start.assert_not_called()
+                    with patch.object(app.screen, "open_app") as launch:
+                        app.screen.open_pressed()
+                        launch.assert_called_once()
+                        start.assert_not_called()
+                    app.screen.dismiss(False)
+                    await pilot.pause()
                 app.query_one("#step", Select).value = 1
                 await pilot.pause()
                 app._update_discovered([], replace=True)
