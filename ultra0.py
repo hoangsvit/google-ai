@@ -4,6 +4,7 @@
 
 Usage:
         python ultra0.py --check            # Check Android, ADB, root and Frida
+        python ultra0.py --step 9           # Research Steps 6-19: exact reference offer
         python ultra0.py accounts.txt       # Legacy batch-account mode
         python ultra0.py --account address@example.com --no-add --no-switch
 
@@ -90,6 +91,104 @@ VENDING = "com.android.vending"                     # Google Play Store
 GMS = "com.google.android.gms"
 PRODUCT = "g1.play.20tb"                            # Ultra 5x / 20TB
 OFFER = "eft-12month"                               # Historical promotional offer ID
+
+# ---------- Research Steps 6-19 (integrated directly into ultra0.py) ----------
+# These steps were previously handled only by research_offer_runner.py, which
+# opened the official app for manual review and never queried an offer.
+# They now run through this engine like Steps 2-5: the Frida billing query is
+# narrowed to the step's product(s), and an offer is selected only when its
+# product, first-phase billing period AND first-phase price all match the
+# step's reference terms exactly. Any mismatch fails closed with
+# ``offer_not_available``; no other offer is ever substituted.
+#
+# ``micros`` is the reference first-phase price in USD micros from the
+# upstream research catalogue. It therefore only matches accounts whose
+# Google Play prices are in USD; a local-currency price will (safely) not
+# match and the step stops instead of opening the wrong offer.
+#
+# Steps whose product ID has never been verified in this repository
+# (Google AI Plus, Google One storage plans, YouTube Premium) carry an empty
+# ``products`` tuple: ultra0 recognises the step, validates it and reports
+# ``research_product_unverified`` instead of guessing a product ID and
+# risking a checkout for the wrong subscription.
+_PRO_5TB = "g1.2tb.ai.subs_variant"  # Google AI Pro 5TB (same SKU as Steps 2-5)
+RESEARCH_STEPS = {
+    6:  {"label": "Google AI Pro 5TB — USD 0.99 for 1 month",
+         "products": (_PRO_5TB,), "period": "P1M", "micros": 990_000},
+    7:  {"label": "Google AI Pro 5TB — USD 1.99/month for 3 months",
+         "products": (_PRO_5TB,), "period": "P3M", "micros": 1_990_000},
+    8:  {"label": "Google AI Pro 5TB — USD 1.99/month for 12 months",
+         "products": (_PRO_5TB,), "period": "P1Y", "micros": 1_990_000},
+    9:  {"label": "Google AI Pro 5TB — 3 months free",
+         "products": (_PRO_5TB,), "period": "P3M", "micros": 0},
+    10: {"label": "Google AI Plus 400GB — USD 0.49/month for 12 months",
+         "products": (), "period": "P1Y", "micros": 490_000},
+    11: {"label": "Google AI Plus 2TB — USD 0.99/month for 3 months",
+         "products": (), "period": "P3M", "micros": 990_000},
+    12: {"label": "Google AI Plus 2TB — USD 1.49/month for 3 months",
+         "products": (), "period": "P3M", "micros": 1_490_000},
+    13: {"label": "Google AI Ultra 20TB — USD 9.99/month for 3 months",
+         "products": ("g1.play.20tb", "g1.play.ai.pro"), "period": "P3M", "micros": 9_990_000},
+    14: {"label": "Google AI Ultra 20TB — USD 19.99/month for 3 months",
+         "products": ("g1.play.20tb", "g1.play.ai.pro"), "period": "P3M", "micros": 19_990_000},
+    15: {"label": "Google AI Ultra 30TB — USD 19.99/month for 3 months",
+         "products": ("g1.30tb",), "period": "P3M", "micros": 19_990_000},
+    16: {"label": "Google AI Ultra 30TB — USD 49.99/month for 3 months",
+         "products": ("g1.30tb",), "period": "P3M", "micros": 49_990_000},
+    17: {"label": "Google One 100GB — 1 month free",
+         "products": (), "period": "P1M", "micros": 0},
+    18: {"label": "Google One 2TB — 1 month free",
+         "products": (), "period": "P1M", "micros": 0},
+    19: {"label": "YouTube Premium — 1 month free",
+         "products": (), "period": "P1M", "micros": 0},
+}
+
+
+def research_step_for_plan(plan: str):
+    """Return the research step number for plans like ``research9``, else None."""
+    if isinstance(plan, str) and plan.startswith("research"):
+        try:
+            step = int(plan[len("research"):])
+        except ValueError:
+            return None
+        return step if step in RESEARCH_STEPS else None
+    return None
+
+
+def plan_for_research_step(step: int) -> str:
+    if step not in RESEARCH_STEPS:
+        raise ValueError(f"Unknown research step: {step!r} (expected 6-19)")
+    return f"research{step}"
+
+
+def _period_matches(actual: str, expected: str) -> bool:
+    # Google Play reports a 12-month phase as either P1Y or P12M.
+    if expected == "P1Y":
+        return actual in ("P1Y", "P12M")
+    return actual == expected
+
+
+def match_research_offer(step: int, offers) -> dict | None:
+    """Pick the Step 6-19 offer from a Step 1-style offer list, or None.
+
+    Exact match only: product in the step's verified product tuple, billing
+    period equal to the reference period, and first-phase micros equal to
+    the reference USD price (0 for the free steps).
+    """
+    spec = RESEARCH_STEPS.get(step)
+    if not spec or not spec["products"] or not isinstance(offers, list):
+        return None
+    for offer in offers:
+        if not isinstance(offer, dict):
+            continue
+        if offer.get("product") not in spec["products"]:
+            continue
+        if not _period_matches(str(offer.get("period") or ""), spec["period"]):
+            continue
+        if str(offer.get("micros")) != str(spec["micros"]):
+            continue
+        return offer
+    return None
 MODULE_REMOTE = "/data/local/tmp/module_521.apk"
 FRIDA_REMOTE = "/data/local/tmp/frida-server"
 FRIDA_REQUIRED = "16.5.9"
@@ -883,6 +982,21 @@ def build_js(plan: str = "auto", list_only: bool = False, stack: bool = False, o
         js = js.replace('var PRODUCTS=["g1.play.20tb","g1.play.ai.pro","g1.30tb"];',
                         'var PRODUCTS=["g1.2tb.ai.subs_variant"];')
         js = js.replace('var PREFER="";', 'var PREFER="%s";' % prefer, 1)
+    elif (step := research_step_for_plan(plan)) is not None:
+        # Research Steps 6-19: query only the step's verified product(s) and
+        # let billing.js select solely the offer whose first phase matches
+        # the reference period and price (TARGET_PERIOD / TARGET_MICROS).
+        spec = RESEARCH_STEPS[step]
+        if not spec["products"]:
+            raise ValueError(
+                f"Step {step} ({spec['label']}) has no verified product ID; "
+                "refusing to guess one for a billing query.")
+        products_js = json.dumps(list(spec["products"]))
+        js = js.replace('var PRODUCTS=["g1.play.20tb","g1.play.ai.pro","g1.30tb"];',
+                        f'var PRODUCTS={products_js};')
+        js = js.replace('var PREFER="";',
+                        'var PREFER=""; var TARGET_PERIOD="%s"; var TARGET_MICROS="%d";'
+                        % (spec["period"], spec["micros"]), 1)
     return js
 
 
@@ -1011,7 +1125,18 @@ def run_trial(pid: int, wait=90, plan="auto", list_only=False, stack=False, old_
             chosen = res.get("chosen_offer")
             callback = res.get("purchase")
             rejected = isinstance(callback, dict) and str(callback.get("code")) not in ("0", "None")
-            if expected and isinstance(chosen, dict) and chosen.get("id") == expected and not rejected:
+            research_step = research_step_for_plan(plan)
+            research_match = (match_research_offer(research_step, res.get("offers"))
+                              if research_step is not None else None)
+            if research_step is not None:
+                # Research Steps 6-19: only the exact reference offer may
+                # proceed to the checkout-sheet inspection.
+                if (isinstance(chosen, dict) and isinstance(research_match, dict)
+                        and chosen.get("id") == research_match.get("id")
+                        and chosen.get("product") == research_match.get("product")
+                        and not rejected):
+                    res["sheet"] = post_launch()
+            elif expected and isinstance(chosen, dict) and chosen.get("id") == expected and not rejected:
                 res["sheet"] = post_launch()
     finally:
         try:
@@ -1144,6 +1269,17 @@ def assess_checkout_terms(text: str, expected_plan: str = "auto") -> dict:
         "pro6b": r"(?:6\s*[- ]?\s*months?|6\s*\u4e2a\s*\u6708|\u534a\u5e74|6\s*\u304b\u6708)",
         "pro6c": r"(?:6\s*[- ]?\s*months?|6\s*\u4e2a\s*\u6708|\u534a\u5e74|6\s*\u304b\u6708)",
     }
+    # Research Steps 6-19: the free steps are verified against their
+    # reference duration. Paid research steps never satisfy the $0-today
+    # check above, so their checkout stays open for manual review.
+    _research_step = research_step_for_plan(expected_plan)
+    if _research_step is not None:
+        _period = RESEARCH_STEPS[_research_step]["period"]
+        patterns[expected_plan] = {
+            "P1M": r"(?:1\s*[- ]?\s*months?|1\s*\u4e2a\s*\u6708|1\s*\u304b\u6708)",
+            "P3M": r"(?:3\s*[- ]?\s*months?|3\s*\u4e2a\s*\u6708|3\s*\u304b\u6708)",
+            "P1Y": patterns["pro12"],
+        }[_period]
     if not re.search(patterns.get(expected_plan, r"(?!x)x"), clean, re.I):
         result["reason"] = "trial_duration_unverified"
         return result
@@ -1233,6 +1369,19 @@ def process(email, password="", totp_secret="", add=True, card=None, plan="auto"
     print(f"  Processing account: {email}")
     print("=" * 56)
     rec = {"email": email, "at": time.strftime("%Y-%m-%dT%H:%M:%S"), "status": "unknown"}
+    research_step = research_step_for_plan(plan)
+    if research_step is not None:
+        spec = RESEARCH_STEPS[research_step]
+        rec["research_step"] = research_step
+        rec["research_label"] = spec["label"]
+        if not spec["products"]:
+            # Fail closed before any account/device mutation: this step's
+            # product ID was never verified, so no billing query is safe.
+            rec["status"] = "research_product_unverified"
+            rec["error"] = (f"Step {research_step} ({spec['label']}) has no verified "
+                            "Google Play product ID in ultra0.py; no checkout was attempted.")
+            warn(rec["error"])
+            return rec
     if add:
         try:
             if not add_account(email, password, totp_secret):
@@ -1310,6 +1459,21 @@ def process(email, password="", totp_secret="", add=True, card=None, plan="auto"
             rec["error"] = "The requested Google Play offer could not be verified in the billing response."
             warn("The selected offer did not match the requested step. No Subscribe tap was attempted.")
             return rec
+    if not list_only and research_step is not None:
+        matched = match_research_offer(research_step, fr.get("offers"))
+        chosen = fr.get("chosen_offer")
+        if (not isinstance(matched, dict) or not isinstance(chosen, dict)
+                or chosen.get("id") != matched.get("id")
+                or chosen.get("product") != matched.get("product")):
+            rec["status"] = "offer_not_available"
+            rec["error"] = (f"Step {research_step} reference offer "
+                            f"({RESEARCH_STEPS[research_step]['label']}) was not returned "
+                            "with the exact product, period and first-phase price. "
+                            "No Subscribe tap was attempted.")
+            warn("The selected offer did not match the requested research step. "
+                 "No Subscribe tap was attempted.")
+            return rec
+        rec["research_offer"] = {key: matched.get(key) for key in ("product", "id", "micros", "period")}
     if list_only:
         rec["status"] = "listed" if fr.get("offers") else "offer_query_failed"
         if not fr.get("offers"):
@@ -1433,9 +1597,26 @@ def main():
     ap.add_argument("--no-add", action="store_true", help="Do not add the account to Android")
     ap.add_argument("--no-switch", action="store_true",
                     help="Verify the current Google Play account without switching automatically")
-    ap.add_argument("--plan", default="auto", choices=["auto", "5x", "20x", "pro12", "pro6", "pro6b", "pro6c"],
-                    help="auto=query available products; 5x=Ultra 20TB; 20x=Ultra 30TB")
+    ap.add_argument("--plan", default="auto",
+                    choices=["auto", "5x", "20x", "pro12", "pro6", "pro6b", "pro6c"]
+                            + [f"research{step}" for step in range(6, 20)],
+                    help="auto=query available products; 5x=Ultra 20TB; 20x=Ultra 30TB; "
+                         "research6..research19=research Steps 6-19")
+    ap.add_argument("--step", type=int, default=None, choices=list(range(6, 20)),
+                    help="Research Steps 6-19, integrated into ultra0.py: run the step's "
+                         "exact reference offer through the normal billing flow. "
+                         "Equivalent to --plan research<N>. Without --account, the "
+                         "current device account is verified (--no-add --no-switch).")
     a = ap.parse_args()
+    if a.step is not None:
+        step_plan = plan_for_research_step(a.step)
+        if a.plan not in ("auto", step_plan):
+            ap.error(f"--step {a.step} conflicts with --plan {a.plan}")
+        a.plan = step_plan
+        if not a.account and not a.accounts:
+            a.account = "current@device"
+            a.no_add = True
+            a.no_switch = True
 
     ADB = find_adb()
     globals()["SKIP_ACCOUNT_CHECK"] = bool(a.force)

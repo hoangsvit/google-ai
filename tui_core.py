@@ -116,6 +116,11 @@ MESSAGES = {
         "Offer not available",
         "Use Step 1 to review current offers. Do not assume eligibility.",
     ),
+    "research_product_unverified": (
+        "Research step product is not verified",
+        "This Step 6-19 reference has no verified Google Play product ID in ultra0.py, "
+        "so no checkout was attempted. Review the offer manually in the official app.",
+    ),
     "launch_failed": (
         "Could not open Google Play checkout",
         "The app did not confirm that the checkout screen opened. Check Google One and "
