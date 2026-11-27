@@ -477,6 +477,30 @@ def outcome_for_stage(step: int, exit_code: int, report: dict | None) -> Outcome
                                and tapped_with_verified_terms))
 
 
+def parse_research_result(stdout: str, returncode: int) -> str:
+    results = [line.split(":", 1)[1].strip() for line in stdout.splitlines()
+               if line.startswith("EPLUS_RESEARCH_RESULT:")]
+    if len(results) != 1 or (returncode and results[0] == "opened"):
+        return "runner_failed"
+    return results[0]
+
+
+def research_result_message(code: str, step: int, platform: str) -> str:
+    command = (f"run-all.ps1 -Step {step}" if platform == "win32"
+               else f"python3 research_offer_runner.py --step {step}")
+    return {
+        "opened": "Official app opened. Review only offers displayed for your account. "
+                  "After any change, run Check Device & Offers again.",
+        "missing_adb": "ADB not found. Install or configure Android platform-tools.",
+        "device_offline": "Connect the intended authorized Android device.",
+        "multiple_devices": "Disconnect other Android devices and try again.",
+        "app_unavailable": "Install or enable the required app in Google Play.",
+        "launcher_unresolved": "Android could not resolve the official app launcher. Update or enable the app in Google Play.",
+        "launcher_rejected": "Android rejected the official launcher activity. Check emulator and app permissions.",
+        "runner_failed": f"The step launcher failed. Run {command} to inspect the error.",
+    }.get(code, f"Android app launch failed. Run {command} for its result code.")
+
+
 def mask_email(value: str) -> str:
     m = re.fullmatch(r"([^@\s]+)@([^@\s]+)", value.strip())
     if not m:

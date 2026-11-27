@@ -30,6 +30,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Header, Link, RichLog, Select, Static
 
 from sku_check_core import render_result
+from tui_core import parse_research_result, research_result_message
 from offer_discovery import (ExtraOffer, parse_step1,
                              merge_extra_offers, offer_step_label, offer_details)
 from tui_core import STAGES, Outcome, command_for_step, mask_email, account_picker_options, redact_diagnostic, \
@@ -271,10 +272,7 @@ class ResearchOffers(ModalScreen[bool]):
             command = command_for_step(self.step, self.repo, device=self.serial or None, review_confirmed=True)
             child = subprocess.run(command, cwd=str(self.repo), capture_output=True,
                                    text=True, errors="replace", timeout=45, check=False)
-            result = next((line.split(":", 1)[1].strip() for line in child.stdout.splitlines()
-                           if line.startswith("EPLUS_RESEARCH_RESULT:")), "runner_failed")
-            if child.returncode and result == "opened":
-                result = "runner_failed"
+            result = parse_research_result(child.stdout, child.returncode)
         except Exception:
             result = "launch_failed"
         try:
@@ -286,17 +284,7 @@ class ResearchOffers(ModalScreen[bool]):
         if not self.is_mounted:
             return
         self.opened = self.opened or result == "opened"
-        message = {
-            "opened": "Official app opened. Review and redeem only offers actually displayed for your account. "
-                      "After any change, run Check Device & Offers again.",
-            "missing_adb": "ADB not found. Install or configure Android platform-tools.",
-            "device_offline": "Connect the intended authorized Android device.",
-            "multiple_devices": "Disconnect other Android devices and try again.",
-            "app_unavailable": "Install or enable the required app in Google Play.",
-            "launcher_unresolved": "Android could not resolve the official app launcher. Update or enable the app in Google Play.",
-            "launcher_rejected": "Android rejected the official launcher activity. Check the emulator and app permissions.",
-            "runner_failed": "The step launcher failed before returning a result. Try the same numbered -Step command in PowerShell to inspect the error.",
-        }.get(result, "Android app launch failed. Run the numbered step in PowerShell for its result code.")
+        message = research_result_message(result, self.step, sys.platform)
         self.query_one("#research_message", Static).update(message)
         for selector in ("#research_open", "#research_close"):
             if len(self.query(selector)):
@@ -1369,7 +1357,7 @@ class GoogleAITUI(App[None]):
             [] if replace else self._extra_offers,
             [item for item in new_items if item.source == "step1"
              and item.legacy_checkout_supported and item.price_micros == "0"]
-        )
+        )[:1]
         changed_keys = previous_keys != tuple(item.key for item in self._extra_offers)
         self.query_one("#stage_5", Static).display = bool(self._extra_offers)
         if self._extra_offers:

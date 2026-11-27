@@ -4,10 +4,17 @@ from unittest.mock import patch
 
 import research_offer_runner as runner
 from research_offer_catalog import STEP_REFERENCES, research_step_options
-from tui_core import command_for_step
+from tui_core import command_for_step, parse_research_result, research_result_message
 
 
 class ResearchStepTests(unittest.TestCase):
+    def test_research_status_is_shared_and_platform_specific(self):
+        self.assertEqual(parse_research_result("EPLUS_RESEARCH_RESULT:opened", 0), "opened")
+        self.assertEqual(parse_research_result("EPLUS_RESEARCH_RESULT:opened", 1), "runner_failed")
+        self.assertEqual(parse_research_result("", 0), "runner_failed")
+        self.assertIn("research_offer_runner.py", research_result_message("runner_failed", 9, "darwin"))
+        self.assertIn("run-all.ps1", research_result_message("runner_failed", 9, "win32"))
+
     def test_stable_step_numbers(self):
         self.assertEqual(list(STEP_REFERENCES), list(range(6, 20)))
         self.assertEqual([step for _, step in research_step_options()], list(range(6, 20)))

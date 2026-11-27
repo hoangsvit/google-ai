@@ -1,17 +1,12 @@
 @echo off
 setlocal
 cd /d "%~dp0..\.."
-where adb >nul 2>&1
+where python >nul 2>&1
 if errorlevel 1 (
-  echo ADB not found. Install Android Platform Tools and add them to PATH.
+  echo Python not found on PATH.
   exit /b 1
 )
-adb get-state 2>nul | findstr /x /c:"device" >nul
-if errorlevel 1 (
-  echo Connect and authorize exactly one Android device.
-  exit /b 2
-)
-adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.google.android.apps.subscriptions.red
+python -c "from device_diagnostics import open_google_one_app; s=open_google_one_app(); print(s); raise SystemExit(0 if s == 'opened' else 3)"
 if errorlevel 1 (
   echo Open Google One manually on the Android device.
   exit /b 3

@@ -121,18 +121,6 @@ function query(){
           var micros=String(first.getPriceAmountMicros());
           var period=String(first.getBillingPeriod());
           S({ev:"offer", product:pid, id:oid, micros:micros, period:period, token:tok, title:String(pd.getTitle()), name:String(pd.getName())});
-          if (typeof TARGET_PERIOD !== "undefined" && TARGET_PERIOD) {
-            // Research Steps 6-19 (ultra0.py): select only the offer whose
-            // first phase matches the step's reference period and price
-            // exactly; never fall back to the longest free offer.
-            var periodOk = (period===TARGET_PERIOD) ||
-              (TARGET_PERIOD==="P1Y" && period==="P12M");
-            var priceOk = (typeof TARGET_MICROS === "undefined" || !TARGET_MICROS || micros===TARGET_MICROS);
-            if (periodOk && priceOk && (!best || !best.target)) {
-              best={pd:pd, offer:o, product:pid, id:oid, rank:periodRank(period), period:period, token:tok, target:true};
-            }
-            continue;
-          }
           if(micros!=="0") continue;
           var rank=periodRank(period);
           if(!best || rank>best.rank || (PREFER && oid===PREFER)){

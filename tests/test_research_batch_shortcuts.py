@@ -23,8 +23,15 @@ class ResearchBatchTests(unittest.TestCase):
 
     def test_offer_review_launches_google_one(self):
         content = (ROOT / NEW[2]).read_text(encoding="utf-8")
-        self.assertIn("com.google.android.apps.subscriptions.red", content)
-        self.assertIn("adb get-state", content)
+        self.assertIn("from device_diagnostics import open_google_one_app", content)
+        self.assertIn("s == 'opened' else 3", content)
+
+    def test_environment_check_requires_python_and_shared_diagnostics(self):
+        content = (ROOT.parents[1] / "research/g1-acq-plus-android-batch/check-device.bat").read_text(encoding="utf-8")
+        self.assertIn("where python", content)
+        self.assertIn("exit /b 1", content)
+        self.assertIn("from device_diagnostics import inspect_connection", content)
+        self.assertIn("exit /b %errorlevel%", content)
 
 if __name__ == "__main__":
     unittest.main()
