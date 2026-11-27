@@ -8,22 +8,20 @@ Status: static research only; no third-party executable code imported and no liv
 - Snapshot: 2026-11-26 23:22 UTC (2026-11-27 Vietnam time).
 - No repository license was declared in the GitHub metadata or root file listing at review time. Obtain permission or verify applicable licensing before redistributing any upstream script.
 
-The existing toolkit's upstream MIT notice is in [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md); it does not license the separate research source.
-
 ## English batch filename reference
 
 The English filenames below now have independently written executable counterparts in [legacy/windows](../../legacy/windows/README.md). They are prerequisite checks and manual offer-review launchers, not direct replacements for upstream billing behavior. Original upstream filenames can be inspected in the pinned source directory above. All durations, prices and stacking claims are unverified.
 
 | English filename | Description |
 | --- | --- |
-| `01_Pro5TB_Free_12_Months.bat` | Manual Google One review; upstream claims a 12-month free introductory offer |
-| `02_Pro5TB_Free_6_Month_Extension.bat` | Manual Google One review; upstream claims a six-month extension |
-| `03_List_Available_Free_And_Discounted_Offers.bat` | Opens Google One for manual offer review |
+| `01_Pro5TB_Free_12_Months.bat` | Claimed 12-month free introductory offer; opens checkout |
+| `02_Pro5TB_Free_6_Month_Extension.bat` | Claimed six-month extension, with a cumulative duration of up to 24 months |
+| `03_List_Available_Free_And_Discounted_Offers.bat` | Lists offers for the current account |
 | `00_Environment_Self_Check.bat` | Environment self-check |
 | `Pro5TB_1.99_Per_Month_12_Months.bat` | Claimed USD 1.99 per month for 12 months |
 | `Pro5TB_1.99_Per_Month_3_Months.bat` | Claimed USD 1.99 per month for three months |
 | `Pro5TB_0.99_For_1_Month.bat` | Claimed USD 0.99 for one month |
-| `One_Click_Environment_Setup.bat` | Prerequisite check only |
+| `One_Click_Environment_Setup.bat` | Automated environment setup |
 
 The upstream Chinese user guide translates to `User_Guide.txt`. The Python filenames are already in English: `setup_env.py`, `ultra0.py`, `query_sku.py`, `scan_hidden.py`, `scan_wide.py`, and `requirements.txt` is already in English.
 
@@ -38,7 +36,7 @@ The actual diagnostic launcher in this branch is `check-device.bat`, with Englis
 
 ## Research scope
 
-The local `check-device.bat` requires Python and calls the shared connection diagnostic, including bundled ADB discovery and app checks. It does not install dependencies, connect to arbitrary endpoints, modify device settings, inject code or invoke the billing engine. Run it from Command Prompt on Windows with a device you control and a supported ADB installation. Multiple devices or unauthorized devices require manual resolution in ADB.
+The original local-only `check-device.bat` checks Python, ADB availability and the presence of the two apps on one selected Android device. It does not install dependencies, connect to arbitrary endpoints, modify device settings, inject code or invoke the billing engine. Run it from Command Prompt on Windows with a device you control and ADB on PATH. Multiple devices or unauthorized devices require manual resolution in ADB.
 
 Any future integration must preserve the existing approval gates and account validation. Use mock offer data for offline UI tests; do not perform real checkout in CI or circumvent eligibility. Confirm offers and renewal terms in Google Play itself.
 
@@ -50,32 +48,24 @@ The existing Windows TUI invokes `setup_env.py` and `run-all.ps1`, whose runtime
 
 ## Individual research steps 6–19
 
-Choose another step in the TUI or run `./run-all.ps1 -Step 6` (through 19). The original stage numbers remain; automatic Subscribe is disabled. Each research step launches the official app for manual review, not an automatic purchase or targeted offer selection. The final step opens YouTube; the others open Google One. The step labels are unverified upstream references. No eligibility bypass or automated redemption is implemented. Recheck Step 1 after returning from the app.
+Choose another step in the TUI or run `./run-all.ps1 -Step 6` (through 19), or run `python ultra0.py --step 6` (through 19) directly. The original Steps 0–5 and 12+6+6 sequence are unchanged. Research steps are integrated directly into `ultra0.py`: the engine queries Google Play for the step's exact reference offer (product, first-phase period and first-phase price must all match) and opens that offer's checkout only on an exact match; otherwise it stops with `offer_not_available`. Steps whose product ID has never been verified (Google AI Plus, Google One storage plans, YouTube Premium) fail closed with `research_product_unverified` instead of guessing a product ID. The step labels are unverified upstream references. No eligibility bypass is implemented. Recheck Step 1 after any research step.
 
 ## TUI cleanup
 
-The redundant Browse more offers button has been removed. Select a numbered research step and press Review selected offer to start its runner directly; the result dialog displays the launch status. No automatic offer selection or redemption is performed.
+The redundant Browse more offers button has been removed. Select a numbered research step and press Run selected step to approve and run it in ultra0.py; the result dialog displays the engine's result status.
 
 ## Confirmation and batch entrypoints
 
-The TUI requires a current Step 1 session and shows its observed-record count, account hint and explicit lack of a verified mapping before requiring Confirm & open app. Cancelling does not launch anything. CLI and English batch wrappers for Steps 6–19 ask for YES before opening the official app. The TUI passes its explicit review confirmation through the PowerShell launcher. This does not validate eligibility or initiate automatic checkout. Existing stage numbering is retained. No hardware test was performed.
+The TUI requires a current Step 1 session and shows its observed-record count and account hint before requiring Confirm & run step. Cancelling does not run anything. CLI and English batch wrappers for Steps 6–19 ask for a numeric confirmation before invoking ultra0.py, unless the TUI's confirmation is passed through with `-ConfirmOfferReview`. Eligibility is only established when Google Play returns the exact reference offer. Steps 0–5 remain unchanged. No hardware test was performed.
 
 ## Sidebar step list
 
-The left STEPS panel retains Steps 0–5 (Step 5 remains conditional) and shows Steps 6–19 in the same responsive scrollable STEPS list, with navigation controls below. The separate MORE (REVIEW) header and fixed-height nested list were removed. Compact labels use full terms as tooltips. An exclamation marker means the official app was opened for review, not a completed subscription. No checkout logic was changed.
+The left STEPS panel retains Steps 0–5 (Step 5 remains conditional) and shows Steps 6–19 in the same responsive scrollable STEPS list, with navigation controls below. The separate MORE (REVIEW) header and fixed-height nested list were removed. Compact labels use full terms as tooltips. An exclamation marker means the step ran in ultra0.py, not a completed subscription.
 
 ## Android launcher compatibility
 
-Research review steps resolve the installed official app's normal launcher activity if the package-only intent fails. A component outside the expected package is rejected. The CLI reports launcher_unresolved or launcher_rejected instead of silently failing. This changes app launch only; no targeted checkout, offer eligibility verification or automatic claim is implemented.
+The legacy `research_offer_runner.py` app opener (kept for reference, no longer used by the TUI, `run-all.ps1` or the batch wrappers) resolves the installed official app's normal launcher activity if the package-only intent fails. A component outside the expected package is rejected. The CLI reports launcher_unresolved or launcher_rejected instead of silently failing.
 
 ## Temporary manual-only checkout
 
-Automatic Subscribe taps are disabled in the existing engine. Even when the current checks match, the engine leaves checkout open and reports `manual_confirmation_required`; the user must review and confirm in Google Play. No automatic sequence advance is authorized by this status. Research steps 6–19 remain review-only.
-
-## Pricing phase review
-
-The existing read-only SKU report now warns about inconsistent currencies, unknown recurrence modes, invalid billing cycle counts and ongoing phases that are not last. The report remains metadata only and cannot authorize checkout or establish account eligibility. The engine-specific offline test file is included in Static checks. Missing product mappings and live validation remain outstanding.
-
-## Review remediation
-
-Direct research engine checkout is disabled before device initialization. Reference prices and product mappings are not verified billing authorization. The CLI batch stops at a pending manual checkout to preserve the screen. The research runner reports official app launch only. No live checkout validation has been performed.
+Automatic Subscribe taps are disabled in the existing engine. Even when the current checks match, the engine leaves checkout open and reports `manual_confirmation_required`; the user must review and confirm in Google Play. No automatic sequence advance is authorized by this status. This applies to research Steps 6–19 as well: ultra0.py opens the exact-match checkout, but the Subscribe tap itself is always manual.
