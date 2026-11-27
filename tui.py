@@ -701,9 +701,10 @@ class GoogleAITUI(App[None]):
                         yield Static("MORE (REVIEW)", id="research_steps_title")
                         with VerticalScroll(id="research_workflow"):
                             for step in STEP_REFERENCES:
-                                yield Static(f"○  {research_sidebar_label(step)}", id=f"stage_{step}",
-                                             classes="research-step", markup=False,
-                                             tooltip=research_step_label(step))
+                                item = Static(f"○  {research_sidebar_label(step)}", id=f"stage_{step}",
+                                              classes="research-step", markup=False)
+                                item.tooltip = research_step_label(step)
+                                yield item
                     yield Button("Help & Guide", id="nav_help")
                     yield Button("Diagnose Android connection", id="diagnose")
                     yield Button("Show technical details", id="debug")
