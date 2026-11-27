@@ -11,7 +11,7 @@ spec.loader.exec_module(app)
 
 
 class CheckoutTests(unittest.TestCase):
-    def test_matching_checkout_account_allows_existing_price_and_duration_checks(self):
+    def test_matching_checkout_account_still_requires_manual_confirmation(self):
         with patch.object(app, "ui_xml", return_value="screen"), \
              patch.object(app, "nodes", return_value=[{
                  "text": "Google AI Pro Subscribe Today US$0 12-month free trial Google Play account: selected@example.com",
@@ -20,8 +20,9 @@ class CheckoutTests(unittest.TestCase):
              patch.object(app.time, "sleep"):
             result = app.confirm_zero(wait=2, expected_plan="pro12",
                                       expected_account="selected@example.com")
-        self.assertTrue(result["confirmed"])
-        tap.assert_called_once()
+        self.assertFalse(result["confirmed"])
+        self.assertEqual(result["reason"], "manual_confirmation_required")
+        tap.assert_not_called()
 
     def test_checkout_requires_exact_visible_billing_account_before_subscribe(self):
         for identity, expected in (("", "checkout_account_unverified"),
@@ -143,15 +144,16 @@ class CheckoutTests(unittest.TestCase):
         self.assertFalse(out["confirmed"])
         tap.assert_not_called()
 
-    def test_tap_must_succeed_to_claim_confirmation(self):
+    def test_automatic_subscribe_is_disabled_even_for_zero_price(self):
         with patch.object(app, "ui_xml", return_value=(
                  "Google AI Pro Subscribe Today $0 12-month free trial")), \
              patch.object(app, "nodes", side_effect=lambda xml: [
                  {"text": xml, "desc": ""}]), \
-             patch.object(app, "tap_text", return_value=False):
+             patch.object(app, "tap_text", return_value=True) as tap:
             out = app.confirm_zero(wait=2, expected_plan="pro12")
         self.assertFalse(out["confirmed"])
-        self.assertEqual(out["reason"], "subscribe_button_not_found")
+        self.assertEqual(out["reason"], "manual_confirmation_required")
+        tap.assert_not_called()
 
     def test_process_does_not_leave_checkout_when_unverified(self):
         fr = {"launched": {"code": 0}, "offers": [{"id": "12months-eft", "micros": "0"}],

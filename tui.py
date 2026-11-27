@@ -30,6 +30,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, Header, Link, RichLog, Select, Static
 
 from sku_check_core import render_result
+from tui_core import parse_research_result, research_result_message
 from offer_discovery import (ExtraOffer, parse_step1,
                              merge_extra_offers, offer_step_label, offer_details)
 from tui_core import STAGES, Outcome, command_for_step, mask_email, account_picker_options, redact_diagnostic, \
@@ -39,6 +40,8 @@ from device_diagnostics import (
     ConnectionDiagnosis, ConnectionStatus, inspect_connection, open_google_one_listing, poll_connection,
 )
 from stage_history import latest_history, read_history, record_history
+from research_offer_catalog import (STEP_REFERENCES, research_step_options,
+                                    research_step_label, research_sidebar_label)
 
 
 class LocalClock(Static):
@@ -211,6 +214,83 @@ class MissingAppNotice(SetupNotice):
         self.query_one("#app_notice_instruction", Static).update(guidance)
         self.query_one("#open_google_play", Button).disabled = outcome == "opened"
         self.query_one("#notice_close", Button).disabled = False
+
+
+class ResearchOffers(ModalScreen[bool]):
+    """Approve running a research step directly in ultra0.py's billing engine."""
+
+    CSS = """
+    ResearchOffers { align: center middle; }
+    #research_card { width: 76; max-width: 94%; height: auto; max-height: 90%;
+                     padding: 1 2; background: #15243a; border: round #2b97bc; }
+    #research_scroll { height: auto; max-height: 1fr; }
+    #research_actions { height: 3; }
+    #research_actions Button { width: 1fr; min-width: 0; }
+    """
+
+    def __init__(self, serial: str, step: int, repo: Path, review_context: str) -> None:
+        super().__init__()
+        self.serial = serial
+        self.step = step
+        self.repo = repo
+        self.review_context = review_context
+        self.opened = False
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="research_card"):
+            with VerticalScroll(id="research_scroll"):
+                yield Static(f"Step {self.step}: {research_step_label(self.step)}", markup=False)
+                yield Static("This runs the step directly in ultra0.py: it queries Google Play "
+                             "for this step's exact reference offer and opens its checkout only "
+                             "when the product, period and first-phase price all match. "
+                             "The advertised offer may not be available.")
+                yield Static(self.review_context, markup=False)
+                yield Static("Automatic Subscribe is disabled. If a checkout opens, review the "
+                             "account, price and renewal terms and confirm manually in Google Play.",
+                             id="research_message")
+                yield Link("Official Google One website", url="https://one.google.com/")
+            with Horizontal(id="research_actions"):
+                yield Button("Close", id="research_close")
+                yield Button("Confirm & run step", id="research_open", variant="primary")
+
+    @on(Button.Pressed, "#research_close")
+    def close_catalogue(self) -> None:
+        if not self.query_one("#research_close", Button).disabled:
+            self.dismiss(self.opened)
+
+    @on(Button.Pressed, "#research_open")
+    def open_pressed(self) -> None:
+        if self.query_one("#research_open", Button).disabled:
+            return
+        for selector in ("#research_open", "#research_close"):
+            if len(self.query(selector)):
+                self.query_one(selector).disabled = True
+        self.query_one("#research_message", Static).update("Running the step in ultra0.py...")
+        self.open_app()
+
+    @work(thread=True, exclusive=True, group="research-offer-app")
+    def open_app(self) -> None:
+        try:
+            command = command_for_step(self.step, self.repo, device=self.serial or None, review_confirmed=True)
+            child = subprocess.run(command, cwd=str(self.repo), capture_output=True,
+                                   text=True, errors="replace", timeout=600, check=False)
+            result = parse_research_result(child.stdout, child.returncode)
+        except Exception:
+            result = "launch_failed"
+        try:
+            self.app.call_from_thread(self.show_result, result)
+        except RuntimeError:
+            pass
+
+    def show_result(self, result: str) -> None:
+        if not self.is_mounted:
+            return
+        self.opened = self.opened or result not in ("runner_failed", "launch_failed")
+        message = research_result_message(result, self.step, sys.platform)
+        self.query_one("#research_message", Static).update(message)
+        for selector in ("#research_open", "#research_close"):
+            if len(self.query(selector)):
+                self.query_one(selector).disabled = False
 
 
 class AccountPicker(ModalScreen[str | None]):
@@ -430,8 +510,14 @@ class GoogleAITUI(App[None]):
     }
     #results { width: 1fr; min-width: 26; min-height: 0; margin-left: 1; overflow-y: auto; scrollbar-size: 1 1; }
     .section { color: #6cdbf8; text-style: bold; margin: 0 0 1 0; }
-    #workflow { height: auto; margin-bottom: 1; }
-    .workflow-step { color: #b4cbe0; height: 1; }
+    #workflow {
+        height: 1fr; min-height: 4; margin-bottom: 1;
+        overflow-y: auto; overflow-x: hidden; scrollbar-size: 1 1;
+    }
+    .workflow-step { color: #b4cbe0; height: auto; min-height: 1; }
+    .research-step { color: #a4c4df; }
+    Screen.compact #nav_help, Screen.compact #diagnose, Screen.compact #debug,
+    Screen.compact #reload, Screen.compact #exit { height: 1; min-height: 1; border: none; padding: 0; }
     #stage_5 { display: none; }
     .extra-offer-step { color: #9fc9e8; }
     #nav_help, #diagnose, #debug, #reload, #exit {
@@ -602,10 +688,15 @@ class GoogleAITUI(App[None]):
             with Horizontal(id="content"):
                 with Vertical(id="controls"):
                     yield Static("STEPS", classes="section")
-                    with Vertical(id="workflow"):
+                    with VerticalScroll(id="workflow"):
                         for stage in STAGES:
                             yield Static(f"○  {stage.number}. {stage.label}",
                                          id=f"stage_{stage.number}", classes="workflow-step")
+                        for step in STEP_REFERENCES:
+                            item = Static(f"○  {research_sidebar_label(step)}", id=f"stage_{step}",
+                                          classes="workflow-step research-step", markup=False)
+                            item.tooltip = research_step_label(step) + " (runs in ultra0.py; exact-offer checkout, manual confirmation)"
+                            yield item
                     yield Button("Help & Guide", id="nav_help")
                     yield Button("Diagnose Android connection", id="diagnose")
                     yield Button("Show technical details", id="debug")
@@ -655,7 +746,7 @@ class GoogleAITUI(App[None]):
                         yield Static("Check the device and offers to begin.", id="message")
                         yield Static("", id="step_result")
                         yield Static("SUPPORTED OFFERS · FIRST PHASE ONLY", id="offers_title")
-                        yield RichLog(id="offer_view", wrap=True, highlight=False, markup=False)
+                        yield RichLog(id="offer_view", wrap=True, highlight=False, markup=False, auto_scroll=False)
                         yield Static("Elapsed: --", id="elapsed")
                         yield Button("Completed action on Android", id="manual", disabled=True)
                         yield Static("Review Google Play pricing and renewal terms "
@@ -1134,7 +1225,7 @@ class GoogleAITUI(App[None]):
             self.query_one("#step", Select).value = self._last_selected_step
             self.toggle_more_modes()
             return
-        if isinstance(event.value, int) and (event.value in range(5) or
+        if isinstance(event.value, int) and (event.value in STEP_REFERENCES or event.value in range(5) or
                                                5 <= event.value < 5 + len(self._extra_offers)):
             self._last_selected_step = event.value
         self._update_run_mode()
@@ -1151,6 +1242,15 @@ class GoogleAITUI(App[None]):
             return
         mode = self.query_one("#mode", Select).value
         step = self.query_one("#step", Select).value
+        if step in STEP_REFERENCES:
+            if mode != "single":
+                self.query_one("#mode", Select).value = "single"
+            self.query_one("#step", Select).disabled = False
+            self.query_one("#run", Button).label = "Run selected step" if self._offer_check_ready else "Step 1 check required"
+            self.query_one("#run", Button).disabled = not self._offer_check_ready
+            self.query_one("#refresh_offers", Button).display = not self._offer_check_ready
+            self.query_one("#mode_hint", Static).update("Complete Step 1, then confirm to run the step in ultra0.py. Automatic Subscribe is disabled; confirm manually in Google Play.")
+            return
         if isinstance(step, int) and 5 <= step < 5 + len(self._extra_offers):
             offer = self._extra_offers[step - 5]
             if mode != "single":
@@ -1224,7 +1324,9 @@ class GoogleAITUI(App[None]):
 
     def _set_workflow(self, step: int, state: str) -> None:
         marker = {"running": "●", "done": "✓", "review": "!"}.get(state, "○")
-        if 5 <= step < 5 + len(self._extra_offers):
+        if step in STEP_REFERENCES:
+            label = research_sidebar_label(step)
+        elif 5 <= step < 5 + len(self._extra_offers):
             label = offer_step_label(step, self._extra_offers[step - 5])
         elif step < len(STAGES):
             label = f"{step}. {STAGES[step].label}"
@@ -1242,6 +1344,8 @@ class GoogleAITUI(App[None]):
 
     def _selected(self) -> int:
         step = int(self.query_one("#step", Select).value)
+        if step in STEP_REFERENCES:
+            return step
         if 5 <= step < 5 + len(self._extra_offers):
             return step
         if step < 5:
@@ -1255,7 +1359,7 @@ class GoogleAITUI(App[None]):
             [] if replace else self._extra_offers,
             [item for item in new_items if item.source == "step1"
              and item.legacy_checkout_supported and item.price_micros == "0"]
-        )
+        )[:1]
         changed_keys = previous_keys != tuple(item.key for item in self._extra_offers)
         self.query_one("#stage_5", Static).display = bool(self._extra_offers)
         if self._extra_offers:
@@ -1264,11 +1368,12 @@ class GoogleAITUI(App[None]):
                    for stage in STAGES[:5]]
         choices += [(offer_step_label(index + 5, offer), index + 5)
                     for index, offer in enumerate(self._extra_offers)]
+        choices.extend(research_step_options())
         choices.append(("More run options…", 99))
         selector = self.query_one("#step", Select)
         current = selector.value
         # Reset the selection when the optional offer changes.
-        if changed_keys and isinstance(current, int) and current >= 5:
+        if changed_keys and isinstance(current, int) and current >= 5 and current not in STEP_REFERENCES:
             current = 1
         selector.set_options(choices)
         # Textual Select.set_options resets the selection. Restore even when
@@ -1280,6 +1385,29 @@ class GoogleAITUI(App[None]):
     def _confirm_stage(self, step: int, sequence: bool,
                        previous_verified: bool = False) -> None:
         if self.busy or self._diagnosing or self._sku_pending:
+            return
+        if step in STEP_REFERENCES:
+            if self._accounts_loading:
+                return
+            if not self._offer_check_ready or not self._offer_ready_account or not self._offer_ready_device:
+                self._set_message("Run Step 1 for the intended Google Play account and device before running a research step.")
+                return
+            if self._connection_state and (self._connection_state.state != "connected"
+                    or self._offer_ready_device not in self._connection_state.devices):
+                self._reset_account_verification()
+                self._update_run_mode()
+                self._set_message("Android device changed. Run Step 1 again.")
+                return
+            account = mask_email(self._offer_ready_account)
+            observed = parse_step1(self._offer_report, include_fixed=True)
+            observed_count = len(observed)
+            context = (f"Step 1 account: {account}. {observed_count} primary offer record(s) observed. "
+                       "ultra0.py matches this step by exact product, period and first-phase price; eligibility remains unverified until Google Play returns that offer.")
+            if isinstance(self._sku_report, dict) and self._sku_report.get("status") == "observed":
+                context += "\nAdditional device-bound metadata is available in Live Status; it does not verify eligibility."
+            self._invalidate_connection_polls()
+            self.push_screen(ResearchOffers(self._offer_ready_device, step, self.repo, context),
+                             lambda opened: self._research_catalogue_closed(opened, step))
             return
         if step >= 5:
             if not (self._offer_check_ready and 5 <= step < 5 + len(self._extra_offers)):
@@ -1366,19 +1494,19 @@ class GoogleAITUI(App[None]):
                                                "period": extra.period, "micros": extra.price_micros})
         for line in (offer_explorer_lines({"offers": list(offers.values())}) if offers
                      else ["No supported offers found in this scan."]):
-            view.write(line)
+            view.write(line, scroll_end=False)
         # Step 1 observations without a supported operation remain inspect-only.
         unknown = [item for item in parse_step1(self._offer_report, include_fixed=True)
                    if not (item.product == "g1.2tb.ai.subs_variant"
                            and item.offer_id in offers and item.price_micros == "0")]
         if unknown:
-            view.write("ADDITIONAL OBSERVED OFFERS (READ-ONLY)")
+            view.write("ADDITIONAL OBSERVED OFFERS (READ-ONLY)", scroll_end=False)
             for item in unknown[:12]:
                 for line in offer_details(item).splitlines():
                     view.write(line, scroll_end=False)
         # Unknown offers are metadata only. Never add them to executable steps.
         if self._sku_report is not None:
-            view.write("")
+            view.write("", scroll_end=False)
             for line in render_result(self._sku_report).splitlines():
                 view.write(line, scroll_end=False)
         view.display = True
@@ -1503,6 +1631,16 @@ class GoogleAITUI(App[None]):
             self._confirm_stage(2, True)
         else:
             self._confirm_stage(1, False)
+
+    def _research_catalogue_closed(self, opened: bool, step: int | None = None) -> None:
+        # External app actions may change the selected account or subscription.
+        # Do not let an earlier offer report authorize a later stage.
+        if opened:
+            self._reset_account_verification()
+            self._update_run_mode()
+            self._set_message("The research step ran in ultra0.py. Run Check Device & Offers again before using any existing subscription step.")
+            if step in STEP_REFERENCES:
+                self._set_workflow(step, "review")
 
     @on(Button.Pressed, "#refresh_offers")
     def refresh_offers_pressed(self) -> None:
@@ -2118,7 +2256,7 @@ class GoogleAITUI(App[None]):
                 "wrong_account", "play_account_switch_failed",
                 "device_missing", "device_mismatch", "device_ambiguous", "adb_missing",
             )
-            if account_changed or device_changed or identity_invalid:
+            if account_changed or device_changed or identity_invalid or outcome.code == "manual_confirmation_required":
                 # Only a known account/device problem revokes the read-only
                 # selection gate. Idle ADB monitoring also revokes it if the
                 # previously checked device disconnects.
@@ -2212,7 +2350,10 @@ class GoogleAITUI(App[None]):
             else:
                 self.push_screen(SetupNotice(outcome.title, outcome.instruction))
             return
-        if outcome.code == "checkout_requested":
+        if outcome.code == "manual_confirmation_required":
+            self.notify("Checkout is awaiting your manual decision in Google Play. "
+                        "Verify the actual result there, then run Step 1 again.", severity="warning")
+        elif outcome.code == "checkout_requested":
             self.notify("Review the actual subscription in Google Play.", severity="warning")
         elif outcome.code not in ("listed", "environment_ok", "cancelled"):
             self.notify("Step stopped; check Google Play charges and subscription status "

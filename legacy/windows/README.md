@@ -1,9 +1,13 @@
-# Historical Windows shortcuts (not the supported launcher)
+# Android batch research shortcuts
 
-These batch files are preserved only for compatibility with the original author's workflow. **Do not use them as the normal installation or checkout entrypoint.** Use [`run-all.ps1`](../../run-all.ps1) from the repository root instead.
+This research branch replaces the six historical Windows batch entrypoints with compatibility wrappers and adds independently written English-named batch files. The upstream files were not copied because no license was identified.
 
-- `00-environment-check.bat` and `01-list-offers.bat` are diagnostic/offer-listing shortcuts, although the historical offer-listing script includes `--force` and bypasses the intended account check.
-- `02-*.bat` through `05-*.bat` may open **real Google Play subscription checkout** and invoke `--force` to bypass account verification. They are **not safe examples to run casually**. The historical 12+6+6 claim is unverified.
-- File locations changed in the development branch. Each batch file now changes its working directory to the repository root before invoking the unchanged Python engine, so direct execution from this folder still resolves `ultra0.py`.
+Run the files from this directory in Windows Command Prompt with one authorized Android device and a supported ADB installation. The environment shortcuts check prerequisites only; the offer shortcuts open Google One on Android for manual review. They do not query hidden SKU data, guarantee eligibility, select offers, stack subscriptions or initiate real Google Play checkout. The 14 numbered research shortcuts run the corresponding Step 6-19 in ultra0.py via run-all.ps1 after confirmation.
 
-See [historical step mapping](../../docs/ORIGINAL-STEPS.md) and [security guidance](../../SECURITY.md). Do not publish Android credentials, OTPs, account reports, payment details or purchase tokens.
+The former `--force` account bypass is removed from these batch files. Original step names remain callable for compatibility but no longer execute the old purchase behavior. The root launcher includes research review routing, and the engine now leaves Subscribe to the user. Direct research checkout remains disabled.
+
+See [research notes](../../research/g1-acq-plus-android-batch/README.md) and [security guidance](../../SECURITY.md).
+
+## Research Steps 6–19
+
+The named research offer batch files call `run-all.ps1 -Step N`, which runs the step directly in `ultra0.py` after an explicit numeric confirmation. They are independently written wrappers, not imported upstream checkout scripts. The labels are unverified; ultra0.py selects only the offer that exactly matches the step's product, period and first-phase price, and the Subscribe tap remains manual in Google Play.

@@ -170,7 +170,7 @@ class MacStageAdapterTests(unittest.TestCase):
 
 
 class MacTuiTests(unittest.IsolatedAsyncioTestCase):
-    async def test_macos_exposes_all_six_steps_but_never_auto_runs(self):
+    async def test_macos_exposes_checkout_and_review_steps_but_never_auto_runs(self):
         from textual.widgets import Button, Select
         from tui import GoogleAITUI
         with tempfile.TemporaryDirectory() as temp:
@@ -179,7 +179,9 @@ class MacTuiTests(unittest.IsolatedAsyncioTestCase):
             with patch("tui.subprocess.Popen") as child:
                 async with app.run_test(size=(100, 30)) as pilot:
                     self.assertEqual(app.query_one("#step", Select).value, 3)
-                    self.assertEqual(len(app.query("#workflow .workflow-step")), 6)
+                    from research_offer_catalog import STEP_REFERENCES
+                    self.assertEqual(len(app.query("#workflow .workflow-step")), 6 + len(STEP_REFERENCES))
+                    self.assertEqual(len(app.query("#workflow .research-step")), len(STEP_REFERENCES))
                     self.assertFalse(app.query_one("#mode", Select).disabled)
                     self.assertFalse(app.busy)
                     await pilot.pause()

@@ -50,6 +50,34 @@ def _number(value: object) -> int | None:
     return int(value)
 
 
+def pricing_phase_warnings(phases: list[dict]) -> list[str]:
+    """Describe incomplete or inconsistent pricing metadata for manual review.
+
+    This is a display-only audit. A clean result does not establish account
+    eligibility, the amount due today, or permission to open checkout.
+    """
+    warnings = []
+    if not phases:
+        return ["No pricing phases returned"]
+    if len({phase.get("currency") for phase in phases}) != 1:
+        warnings.append("Currency changes across phases")
+    for index, phase in enumerate(phases, 1):
+        mode = _number(phase.get("recurrence_mode"))
+        cycles = _number(phase.get("billing_cycle_count"))
+        if mode not in (1, 2, 3):
+            warnings.append(f"Phase {index}: recurrence mode unknown")
+        elif mode == 2 and not cycles:
+            warnings.append(f"Phase {index}: finite billing cycle count missing or zero")
+        elif mode == 1:
+            if cycles != 0:
+                warnings.append(f"Phase {index}: ongoing billing cycle count is not zero")
+            if index != len(phases):
+                warnings.append(f"Phase {index}: ongoing phase is not last")
+        elif mode == 3 and cycles not in (0, 1):
+            warnings.append(f"Phase {index}: one-time billing cycle count is unknown or inconsistent")
+    return warnings
+
+
 def sanitize_offers(raw: object, requested: list[str], *,
                     returned_skus: tuple[str, ...] = (),
                     no_offer_skus: tuple[str, ...] = (),
@@ -112,6 +140,7 @@ def sanitize_offers(raw: object, requested: list[str], *,
         offers.append({
             "sku": product, "offer_id": offer, "base_plan_id": base_plan,
             "phases": phases,
+            "pricing_phase_warnings": pricing_phase_warnings(phases),
             "eligibility_verified": False, "subscription_active_verified": False,
         })
     valid_products = {row["sku"] for row in offers}
@@ -189,6 +218,13 @@ def render_result(result: dict) -> str:
                 lines.append(f"  Phase {index}: {amount} {currency} / {period} ({recurrence})")
             except (KeyError, TypeError, ArithmeticError):
                 continue
+        warnings = pricing_phase_warnings([ph for ph in phases if isinstance(ph, dict)])
+        if warnings:
+            lines.append("  Pricing metadata incomplete or inconsistent:")
+            for warning in warnings:
+                lines.append(f"    - {warning}")
+        else:
+            lines.append("  Pricing phases observed; verify actual charges and renewal in Google Play.")
     if status in messages:
         lines.append(messages[status])
     missing = result.get("missing_skus")

@@ -373,6 +373,28 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
+    async def test_research_steps_are_in_scrollable_sidebar(self):
+        from tui import GoogleAITUI
+        from research_offer_catalog import STEP_REFERENCES, research_sidebar_label
+        from textual.containers import VerticalScroll
+
+        for size in ((90, 20), (110, 35)):
+            with self.subTest(size=size), tempfile.TemporaryDirectory() as directory:
+                app = GoogleAITUI(repo=Path(directory))
+                async with app.run_test(size=size) as pilot:
+                    await pilot.pause()
+                    scroll = app.query_one("#workflow", VerticalScroll)
+                    self.assertEqual(len(app.query("#research_workflow")), 0)
+                    self.assertEqual(len(app.query("#research_steps_title")), 0)
+                    for step in range(20):
+                        node = scroll.query_one(f"#stage_{step}")
+                        if step in STEP_REFERENCES:
+                            self.assertIn(research_sidebar_label(step), str(node.render()))
+                    self.assertLessEqual(scroll.region.bottom, app.query_one("#nav_help").region.y)
+                    self.assertGreater(scroll.region.height, 0)
+                    app._set_workflow(9, "review")
+                    self.assertIn("!", str(scroll.query_one("#stage_9").render()))
+
     async def test_header_clock_shows_local_date_time_and_utc_offset(self):
         from datetime import datetime, timedelta, timezone
         from tui import GoogleAITUI, LocalClock

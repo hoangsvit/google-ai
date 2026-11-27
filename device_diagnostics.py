@@ -86,6 +86,10 @@ def locate_adb(platform_name: str | None = None) -> str | None:
             Path(os.environ.get("LOCALAPPDATA") or home / ".cache") / "google-ai/platform-tools/adb.exe",
             home / "AppData/Local/Android/Sdk/platform-tools/adb.exe",
             Path(os.environ.get("LOCALAPPDATA") or home) / "Android/Sdk/platform-tools/adb.exe",
+            Path("C:/Program Files/Netease/MuMuPlayer/nx_main/adb.exe"),
+            Path("C:/Program Files/Netease/MuMuPlayer/nx_device/12.0/shell/adb.exe"),
+            Path("D:/Program Files/Netease/MuMuPlayer/nx_main/adb.exe"),
+            Path("D:/Program Files/Netease/MuMuPlayer/nx_device/12.0/shell/adb.exe"),
             Path("C:/Program Files/Netease/MuMuPlayer-12.0/shell/adb.exe"),
             Path("C:/Program Files/Netease/MuMuPlayerGlobal-12.0/shell/adb.exe"),
             Path("C:/Program Files (x86)/Netease/MuMuPlayer-12.0/shell/adb.exe"),
@@ -137,6 +141,60 @@ def open_google_one_listing(expected_serial: str = "") -> str:
     if listing is None or listing.returncode or "Status: ok" not in listing.stdout.splitlines():
         return "launch_failed"
     return "opened"
+
+
+def open_google_one_app(expected_serial: str = "") -> str:
+    return _open_official_offer_app(expected_serial, GOOGLE_ONE)
+
+
+def open_youtube_app(expected_serial: str = "") -> str:
+    return _open_official_offer_app(expected_serial, "com.google.android.youtube")
+
+
+def _open_official_offer_app(expected_serial: str, package: str) -> str:
+    """Open the official app on an authorized Android device; never select an offer."""
+    adb = locate_adb()
+    if not adb:
+        return "missing_adb"
+    online = online_serials(adb)
+    if not online or (expected_serial and expected_serial not in online):
+        return "device_offline"
+    serial = expected_serial or prefer_alias(online)
+    if not expected_serial and not same_boot_transports(adb, serial, online):
+        return "multiple_devices"
+    target = ["-s", serial, "shell"]
+    installed = _run(adb, [*target, "pm", "list", "packages", "-e", package])
+    if installed is None or installed.returncode:
+        return "launch_failed"
+    if f"package:{package}" not in {line.strip() for line in installed.stdout.splitlines()}:
+        return "app_unavailable"
+    intent = ["-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER"]
+    launched = _run(adb, [*target, "am", "start", "-W", *intent, "-p", package])
+    if _official_launch_ok(launched):
+        return "opened"
+    # Some emulator builds cannot resolve a package-only launcher intent.
+    # Resolve the normal launcher component from Android rather than guessing
+    # an internal activity or constructing a checkout intent.
+    resolved = _run(adb, [*target, "cmd", "package", "resolve-activity",
+                          "--brief", *intent, "-p", package])
+    if resolved is None or resolved.returncode:
+        return "launcher_unresolved"
+    components = [line.strip() for line in resolved.stdout.splitlines()
+                  if re.fullmatch(re.escape(package) + r"/[A-Za-z0-9_.$]+", line.strip())]
+    if len(set(components)) != 1:
+        return "launcher_unresolved"
+    launched = _run(adb, [*target, "am", "start", "-W", *intent, "-n", components[0]])
+    return "opened" if _official_launch_ok(launched) else "launcher_rejected"
+
+
+def _official_launch_ok(result) -> bool:
+    if result is None or result.returncode:
+        return False
+    lines = [line.strip() for line in result.stdout.splitlines()]
+    errors = (result.stderr or "") + "\n" + result.stdout
+    if re.search(r"(?im)^\s*(?:Error:|Error type|Exception|SecurityException)", errors):
+        return False
+    return "Status: ok" in lines
 
 
 def linux_frida_compatibility_issue(adb: str, serial: str) -> str:

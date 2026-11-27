@@ -100,6 +100,10 @@ MESSAGES = {
         "Google Play is processing a transaction",
         "Check payment history before another attempt.",
     ),
+    "manual_confirmation_required": (
+        "Confirm manually in Google Play",
+        "Automatic Subscribe is disabled. Review the account, price, duration and renewal terms on Android. Verify the subscription before starting another step.",
+    ),
     "checkout_not_confirmed": (
         "Checkout was not confirmed",
         "Check the Google Play subscription status before retrying.",
@@ -111,6 +115,15 @@ MESSAGES = {
     "offer_not_available": (
         "Offer not available",
         "Use Step 1 to review current offers. Do not assume eligibility.",
+    ),
+    "research_review_only": (
+        "Research step requires official app review",
+        "Direct research checkout is unavailable. Review the account and complete offer terms in the official app.",
+    ),
+    "research_product_unverified": (
+        "Research step product is not verified",
+        "This Step 6-19 reference has no verified Google Play product ID in ultra0.py, "
+        "so no checkout was attempted. Review the offer manually in the official app.",
     ),
     "launch_failed": (
         "Could not open Google Play checkout",
@@ -333,7 +346,28 @@ def validate_step(step: int) -> int:
 
 
 def command_for_step(step: int, repo: Path, shell: str | None = None,
-                     account: str | None = None, device: str | None = None) -> list[str]:
+                     account: str | None = None, device: str | None = None,
+                     *, review_confirmed: bool = False) -> list[str]:
+    from research_offer_catalog import STEP_REFERENCES
+    if step in STEP_REFERENCES:
+        if sys.platform in ("darwin", "linux") and shell is None:
+            # Research Steps 6-19 run directly in ultra0.py (integrated
+            # billing engine). The TUI approval modal is the confirmation;
+            # ultra0.py keeps its own manual checkout-confirmation gate.
+            command = [sys.executable, str(repo / "ultra0.py"), "--step", str(step)]
+            if device:
+                command.extend(["--serial", device])
+            return command
+        executable = shell or shutil.which("powershell.exe") or shutil.which("pwsh")
+        if not executable:
+            raise RuntimeError("PowerShell was not found.")
+        command = [executable, "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                   "-File", str(repo / "run-all.ps1"), "-Step", str(step)]
+        if review_confirmed:
+            command.append("-ConfirmOfferReview")
+        if device:
+            command.extend(["-Serial", device])
+        return command
     validate_step(step)
     if sys.platform in ("darwin", "linux") and shell is None:
         bridge = repo / "macos_runner.py"
@@ -446,6 +480,50 @@ def outcome_for_stage(step: int, exit_code: int, report: dict | None) -> Outcome
     return Outcome(code, title, instruction,
                    can_review=(step >= 2 and status == "checkout_requested"
                                and tapped_with_verified_terms))
+
+
+def parse_research_result(stdout: str, returncode: int) -> str:
+    # ultra0.py prints one "Result: <status>" line per account; that is the
+    # primary result for Steps 6-19 now that they run in the billing engine.
+    results = [line.split(":", 1)[1].strip() for line in stdout.splitlines()
+               if line.strip().startswith("Result:")]
+    if len(results) == 1:
+        return results[0]
+    # Legacy research_offer_runner.py protocol, kept for compatibility.
+    results = [line.split(":", 1)[1].strip() for line in stdout.splitlines()
+               if line.startswith("EPLUS_RESEARCH_RESULT:")]
+    if len(results) != 1 or (returncode and results[0] == "opened"):
+        return "runner_failed"
+    return results[0]
+
+
+def research_result_message(code: str, step: int, platform: str) -> str:
+    command = (f"run-all.ps1 -Step {step}" if platform == "win32"
+               else f"python3 ultra0.py --step {step}")
+    return {
+        "manual_confirmation_required": "Checkout opened in Google Play for the exact reference offer. "
+                  "Review the account, price and renewal terms and confirm manually in Google Play. "
+                  "After any change, run Check Device & Offers again.",
+        "checkout_requested": "Checkout was submitted; the purchase is not verified. "
+                  "Check the subscription and renewal date in Google Play.",
+        "offer_not_available": "The exact reference offer was not returned by Google Play for this "
+                  "account (product, period and first-phase price must all match). No checkout was opened.",
+        "research_product_unverified": "This step has no verified Google Play product ID in ultra0.py, "
+                  "so no billing query or checkout was attempted.",
+        "today_price_unverified": "The checkout did not verify the expected terms, so it was left open "
+                  "in Google Play for manual review. No Subscribe tap was attempted.",
+        "trial_duration_unverified": "The checkout did not verify the expected duration, so it was left "
+                  "open in Google Play for manual review. No Subscribe tap was attempted.",
+        "opened": "Official app opened. Review only offers displayed for your account. "
+                  "After any change, run Check Device & Offers again.",
+        "missing_adb": "ADB not found. Install or configure Android platform-tools.",
+        "device_offline": "Connect the intended authorized Android device.",
+        "multiple_devices": "Disconnect other Android devices and try again.",
+        "app_unavailable": "Install or enable the required app in Google Play.",
+        "launcher_unresolved": "Android could not resolve the official app launcher. Update or enable the app in Google Play.",
+        "launcher_rejected": "Android rejected the official launcher activity. Check emulator and app permissions.",
+        "runner_failed": f"ultra0.py failed before returning a result. Run {command} to inspect the error.",
+    }.get(code, f"ultra0.py finished with status: {code}. Run {command} for details and check Google Play before retrying.")
 
 
 def mask_email(value: str) -> str:
