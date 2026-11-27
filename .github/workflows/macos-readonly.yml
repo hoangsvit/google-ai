@@ -31,9 +31,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements-tui.txt
+            requirements.txt
       - name: Install pinned Textual and Frida on macOS host
         run: |
-          python -m pip install --disable-pip-version-check -r requirements-tui.txt "frida==16.5.9"
+          python -m pip install --disable-pip-version-check -r requirements-tui.txt -r requirements.txt
           python -c "import importlib.metadata as m; import textual, frida; assert m.version('frida') == '16.5.9'"
       - name: Check launcher syntax, help and Python
         run: |
