@@ -39,6 +39,8 @@ from device_diagnostics import (
     ConnectionDiagnosis, ConnectionStatus, inspect_connection, open_google_one_listing, poll_connection,
 )
 from stage_history import latest_history, read_history, record_history
+from research_offer_catalog import reference_options
+from device_diagnostics import open_google_one_app
 
 
 class LocalClock(Static):
@@ -211,6 +213,81 @@ class MissingAppNotice(SetupNotice):
         self.query_one("#app_notice_instruction", Static).update(guidance)
         self.query_one("#open_google_play", Button).disabled = outcome == "opened"
         self.query_one("#notice_close", Button).disabled = False
+
+
+class ResearchOffers(ModalScreen[bool]):
+    """Reference catalogue; official Android app handles any eligible redemption."""
+
+    CSS = """
+    ResearchOffers { align: center middle; }
+    #research_card { width: 76; max-width: 94%; height: auto; max-height: 90%;
+                     padding: 1 2; background: #15243a; border: round #2b97bc; }
+    #research_scroll { height: auto; max-height: 1fr; }
+    #research_choice { width: 100%; }
+    #research_actions { height: 3; }
+    #research_actions Button { width: 1fr; min-width: 0; }
+    """
+
+    def __init__(self, serial: str = "") -> None:
+        super().__init__()
+        self.serial = serial
+        self.opened = False
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="research_card"):
+            with VerticalScroll(id="research_scroll"):
+                yield Static("RESEARCH OFFER CATALOGUE")
+                yield Static("Reported offers only. Availability, capacity, prices and terms are not verified. "
+                             "Select a reference, then review offers in the official Google app.")
+                yield Select(reference_options(), value=0, allow_blank=False, id="research_choice")
+                yield Static("No offer is selected in Android by this catalogue. "
+                             "Confirm the correct account, price and renewal terms in the app.",
+                             id="research_message")
+                yield Link("Official Google One website", url="https://one.google.com/")
+            with Horizontal(id="research_actions"):
+                yield Button("Close", id="research_close")
+                yield Button("Open Google One", id="research_open", variant="primary")
+
+    @on(Button.Pressed, "#research_close")
+    def close_catalogue(self) -> None:
+        if not self.query_one("#research_close", Button).disabled:
+            self.dismiss(self.opened)
+
+    @on(Button.Pressed, "#research_open")
+    def open_pressed(self) -> None:
+        if self.query_one("#research_open", Button).disabled:
+            return
+        for selector in ("#research_open", "#research_close", "#research_choice"):
+            self.query_one(selector).disabled = True
+        self.query_one("#research_message", Static).update("Opening Google One on Android...")
+        self.open_app()
+
+    @work(thread=True, exclusive=True, group="research-offer-app")
+    def open_app(self) -> None:
+        try:
+            result = open_google_one_app(self.serial)
+        except Exception:
+            result = "launch_failed"
+        try:
+            self.app.call_from_thread(self.show_result, result)
+        except RuntimeError:
+            pass
+
+    def show_result(self, result: str) -> None:
+        if not self.is_mounted:
+            return
+        self.opened = self.opened or result == "opened"
+        message = {
+            "opened": "Google One opened. Review and redeem only offers actually displayed for your account. "
+                      "After any change, run Check Device & Offers again.",
+            "missing_adb": "ADB not found. Install or configure Android platform-tools.",
+            "device_offline": "Connect the intended authorized Android device.",
+            "multiple_devices": "Disconnect other Android devices and try again.",
+            "app_unavailable": "Install or enable Google One in Google Play.",
+        }.get(result, "Could not open Google One. Open it manually on Android.")
+        self.query_one("#research_message", Static).update(message)
+        for selector in ("#research_open", "#research_close", "#research_choice"):
+            self.query_one(selector).disabled = False
 
 
 class AccountPicker(ModalScreen[str | None]):
@@ -446,6 +523,7 @@ class GoogleAITUI(App[None]):
     }
     #advanced_toggle { width: 100%; height: 3; margin: 0; }
     #refresh_offers { display: none; width: 100%; height: 3; }
+    #research_offers { width: 100%; height: 3; }
     #workflow_actions { display: none; height: auto; margin-top: 1; border-top: solid #285d83; padding-top: 1; }
     #status_panel { min-height: 8; overflow-y: auto; scrollbar-size: 1 1; }
 
@@ -646,6 +724,7 @@ class GoogleAITUI(App[None]):
                                 yield Static("Runs one step; no next step is automatic.", id="mode_hint")
                             yield Button("Run sequence from step", id="sequence")
                             yield Button("Run all", id="run_all")
+                            yield Button("Browse more offers", id="research_offers")
                             yield Static("Steps 2–5 can open checkout and require confirmation.", id="read_only")
                     with Vertical(id="status_panel"):
                         yield Static("LIVE STATUS", classes="section")
@@ -856,7 +935,7 @@ class GoogleAITUI(App[None]):
         self._reset_account_verification()
         self._render_history(latest_history(self.repo), "Previous run · select an account and run Step 1 to verify")
         self.query_one("#account", Static).update("Account  •  Not checked")
-        for control in ("#choose_account", "#quickstart", "#diagnose", "#refresh_offers"):
+        for control in ("#choose_account", "#quickstart", "#diagnose", "#refresh_offers", "#research_offers"):
             self.query_one(control, Button).disabled = True
         self._update_run_mode()
         self._set_status("Opening Android account settings…")
@@ -894,7 +973,7 @@ class GoogleAITUI(App[None]):
 
     def _finish_account_settings(self, guidance: str) -> None:
         self._diagnosing = False
-        for control in ("#choose_account", "#quickstart", "#diagnose", "#refresh_offers"):
+        for control in ("#choose_account", "#quickstart", "#diagnose", "#refresh_offers", "#research_offers"):
             self.query_one(control, Button).disabled = False
         self._update_run_mode()
         self._set_message(guidance)
@@ -916,6 +995,7 @@ class GoogleAITUI(App[None]):
         self._offer_ready_device = None
         self.query_one("#quickstart", Button).label = "Check Device & Offers"
         self._diagnosing = True
+        self.query_one("#research_offers", Button).disabled = True
         self.query_one("#diagnose", Button).disabled = True
         self.query_one("#quickstart", Button).disabled = True
         self.query_one("#quickstart", Button).display = True
@@ -943,6 +1023,7 @@ class GoogleAITUI(App[None]):
 
     def _diagnosis_done(self, diagnosis: ConnectionDiagnosis) -> None:
         self._diagnosing = False
+        self.query_one("#research_offers", Button).disabled = False
         self.query_one("#diagnose", Button).disabled = False
         self.query_one("#quickstart", Button).disabled = False
         self.query_one("#run", Button).disabled = False
@@ -1472,7 +1553,7 @@ class GoogleAITUI(App[None]):
         if self.busy or self._diagnosing:
             return
         if was_pending:
-            for control in ("#quickstart", "#reload", "#diagnose", "#choose_account", "#refresh_offers", "#mode", "#sequence"):
+            for control in ("#quickstart", "#reload", "#diagnose", "#choose_account", "#refresh_offers", "#research_offers", "#mode", "#sequence"):
                 self.query_one(control).disabled = False
             self.query_one("#stop", Button).display = False
             self.query_one("#stop", Button).disabled = True
@@ -1503,6 +1584,21 @@ class GoogleAITUI(App[None]):
             self._confirm_stage(2, True)
         else:
             self._confirm_stage(1, False)
+
+    @on(Button.Pressed, "#research_offers")
+    def research_offers_pressed(self) -> None:
+        if self.busy or self._diagnosing or self._sku_pending or self._accounts_loading:
+            return
+        self._invalidate_connection_polls()
+        self.push_screen(ResearchOffers(self._offer_ready_device or ""),
+                         self._research_catalogue_closed)
+
+    def _research_catalogue_closed(self, opened: bool) -> None:
+        # External app actions may change the selected account or subscription.
+        # Do not let an earlier offer report authorize a later stage.
+        self._reset_account_verification()
+        self._update_run_mode()
+        self._set_message("Run Check Device & Offers again before using any existing subscription step.")
 
     @on(Button.Pressed, "#refresh_offers")
     def refresh_offers_pressed(self) -> None:
@@ -1747,6 +1843,7 @@ class GoogleAITUI(App[None]):
         self.busy = True
         self.query_one("#reload", Button).disabled = True
         self.query_one("#refresh_offers", Button).disabled = True
+        self.query_one("#research_offers", Button).disabled = True
         self.sequence = sequence
         self.current_step = step
         self._stop_after_step = False
@@ -2042,6 +2139,7 @@ class GoogleAITUI(App[None]):
         self.query_one("#reload", Button).disabled = False
         self.query_one("#run", Button).remove_class("checking")
         self.query_one("#refresh_offers", Button).disabled = False
+        self.query_one("#research_offers", Button).disabled = False
         history_account = self._history_account
         if step == 1:
             history_account = str((report or {}).get("detected_play_account") or "") or history_account
@@ -2188,7 +2286,7 @@ class GoogleAITUI(App[None]):
             self._sku_pending = True
             self._sku_cancel.clear()
             self._sku_exit = False
-            for control in ("#quickstart", "#reload", "#diagnose", "#choose_account", "#refresh_offers"):
+            for control in ("#quickstart", "#reload", "#diagnose", "#choose_account", "#refresh_offers", "#research_offers"):
                 self.query_one(control).disabled = True
             self._update_run_mode()
             self.query_one("#stop", Button).label = "Stop SKU scan"

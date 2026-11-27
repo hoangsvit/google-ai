@@ -143,6 +143,30 @@ def open_google_one_listing(expected_serial: str = "") -> str:
     return "opened"
 
 
+def open_google_one_app(expected_serial: str = "") -> str:
+    """Open the official app on an authorized Android device; never select an offer."""
+    adb = locate_adb()
+    if not adb:
+        return "missing_adb"
+    online = online_serials(adb)
+    if not online or (expected_serial and expected_serial not in online):
+        return "device_offline"
+    serial = expected_serial or prefer_alias(online)
+    if not expected_serial and not same_boot_transports(adb, serial, online):
+        return "multiple_devices"
+    target = ["-s", serial, "shell"]
+    installed = _run(adb, [*target, "pm", "list", "packages", "-e", GOOGLE_ONE])
+    if installed is None or installed.returncode:
+        return "launch_failed"
+    if f"package:{GOOGLE_ONE}" not in installed.stdout.splitlines():
+        return "app_unavailable"
+    launched = _run(adb, [*target, "am", "start", "-W", "-a", "android.intent.action.MAIN",
+                          "-c", "android.intent.category.LAUNCHER", "-p", GOOGLE_ONE])
+    if launched is None or launched.returncode or "Status: ok" not in launched.stdout.splitlines():
+        return "launch_failed"
+    return "opened"
+
+
 def linux_frida_compatibility_issue(adb: str, serial: str) -> str:
     """Fail closed if the pinned Frida version cannot support Android 16."""
     response = _run(adb, ["-s", serial, "shell", "getprop", "ro.build.version.sdk"])
