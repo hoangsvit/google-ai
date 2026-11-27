@@ -2254,7 +2254,7 @@ class GoogleAITUI(App[None]):
                 "wrong_account", "play_account_switch_failed",
                 "device_missing", "device_mismatch", "device_ambiguous", "adb_missing",
             )
-            if account_changed or device_changed or identity_invalid:
+            if account_changed or device_changed or identity_invalid or outcome.code == "manual_confirmation_required":
                 # Only a known account/device problem revokes the read-only
                 # selection gate. Idle ADB monitoring also revokes it if the
                 # previously checked device disconnects.
@@ -2348,7 +2348,10 @@ class GoogleAITUI(App[None]):
             else:
                 self.push_screen(SetupNotice(outcome.title, outcome.instruction))
             return
-        if outcome.code == "checkout_requested":
+        if outcome.code == "manual_confirmation_required":
+            self.notify("Checkout is awaiting your manual decision in Google Play. "
+                        "Verify the actual result there, then run Step 1 again.", severity="warning")
+        elif outcome.code == "checkout_requested":
             self.notify("Review the actual subscription in Google Play.", severity="warning")
         elif outcome.code not in ("listed", "environment_ok", "cancelled"):
             self.notify("Step stopped; check Google Play charges and subscription status "

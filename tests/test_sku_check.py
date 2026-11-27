@@ -316,7 +316,8 @@ class StepOneSKUUITests(unittest.IsolatedAsyncioTestCase):
         from tempfile import TemporaryDirectory
         from textual.widgets import Button, Select, Static
         from offer_discovery import parse_step1
-        from tui import GoogleAITUI
+        from tui import GoogleAITUI, ResearchOffers
+        from device_diagnostics import ConnectionStatus
 
         with TemporaryDirectory() as directory:
             app = GoogleAITUI(repo=Path(directory))
@@ -324,6 +325,8 @@ class StepOneSKUUITests(unittest.IsolatedAsyncioTestCase):
                 self.assertFalse(app.query_one("#stage_5", Static).display)
                 app._offer_check_ready = True
                 app._offer_ready_device = "emulator-5554"
+                app._offer_ready_account = "fixture@example.invalid"
+                app._connection_state = ConnectionStatus("connected", ("emulator-5554",))
                 app._update_discovered(parse_step1({"offers": [
                     {"product": "g1.play.20tb", "id": "offer-a"},
                     {"product": "g1.30tb", "id": "offer-b"},
@@ -346,7 +349,15 @@ class StepOneSKUUITests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(str(app.query_one("#run", Button).label), "Review selected offer")
                 with patch.object(app, "_start") as start:
                     app._confirm_stage(6, False)
+                    await pilot.pause()
+                    self.assertIsInstance(app.screen, ResearchOffers)
                     start.assert_not_called()
+                    with patch.object(app.screen, "open_app") as launch:
+                        app.screen.open_pressed()
+                        launch.assert_called_once()
+                        start.assert_not_called()
+                    app.screen.dismiss(False)
+                    await pilot.pause()
                 app.query_one("#step", Select).value = 1
                 await pilot.pause()
                 app._update_discovered([], replace=True)
