@@ -383,11 +383,15 @@ class TextualSmokeTests(unittest.IsolatedAsyncioTestCase):
                 app = GoogleAITUI(repo=Path(directory))
                 async with app.run_test(size=size) as pilot:
                     await pilot.pause()
-                    scroll = app.query_one("#research_workflow", VerticalScroll)
-                    for step in STEP_REFERENCES:
+                    scroll = app.query_one("#workflow", VerticalScroll)
+                    self.assertEqual(len(app.query("#research_workflow")), 0)
+                    self.assertEqual(len(app.query("#research_steps_title")), 0)
+                    for step in range(20):
                         node = scroll.query_one(f"#stage_{step}")
-                        self.assertIn(research_sidebar_label(step), str(node.render()))
-                    self.assertLess(scroll.region.height, len(STEP_REFERENCES))
+                        if step in STEP_REFERENCES:
+                            self.assertIn(research_sidebar_label(step), str(node.render()))
+                    self.assertLessEqual(scroll.region.bottom, app.query_one("#nav_help").region.y)
+                    self.assertGreater(scroll.region.height, 0)
                     app._set_workflow(9, "review")
                     self.assertIn("!", str(scroll.query_one("#stage_9").render()))
 

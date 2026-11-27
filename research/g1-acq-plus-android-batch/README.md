@@ -60,7 +60,7 @@ The TUI requires a current Step 1 session and shows its observed-record count, a
 
 ## Sidebar step list
 
-The left STEPS panel retains Steps 0–5 (Step 5 remains conditional) and shows Steps 6–19 in a separately scrollable MORE (REVIEW) section. Compact labels use full terms as tooltips. An exclamation marker means the official app was opened for review, not a completed subscription. No checkout logic was changed.
+The left STEPS panel retains Steps 0–5 (Step 5 remains conditional) and shows Steps 6–19 in the same responsive scrollable STEPS list, with navigation controls below. The separate MORE (REVIEW) header and fixed-height nested list were removed. Compact labels use full terms as tooltips. An exclamation marker means the official app was opened for review, not a completed subscription. No checkout logic was changed.
 
 ## Android launcher compatibility
 

@@ -520,12 +520,14 @@ class GoogleAITUI(App[None]):
     }
     #results { width: 1fr; min-width: 26; min-height: 0; margin-left: 1; overflow-y: auto; scrollbar-size: 1 1; }
     .section { color: #6cdbf8; text-style: bold; margin: 0 0 1 0; }
-    #workflow { height: auto; margin-bottom: 1; }
-    #research_workflow { height: 7; overflow-y: auto; scrollbar-size: 1 1; }
-    #research_steps_title { color: #8eb4ce; height: 1; }
-    .research-step { height: auto; min-height: 1; color: #b4cbe0; }
-    Screen.compact #research_workflow { height: 4; }
-    .workflow-step { color: #b4cbe0; height: 1; }
+    #workflow {
+        height: 1fr; min-height: 4; margin-bottom: 1;
+        overflow-y: auto; overflow-x: hidden; scrollbar-size: 1 1;
+    }
+    .workflow-step { color: #b4cbe0; height: auto; min-height: 1; }
+    .research-step { color: #a4c4df; }
+    Screen.compact #nav_help, Screen.compact #diagnose, Screen.compact #debug,
+    Screen.compact #reload, Screen.compact #exit { height: 1; min-height: 1; border: none; padding: 0; }
     #stage_5 { display: none; }
     .extra-offer-step { color: #9fc9e8; }
     #nav_help, #diagnose, #debug, #reload, #exit {
@@ -696,17 +698,15 @@ class GoogleAITUI(App[None]):
             with Horizontal(id="content"):
                 with Vertical(id="controls"):
                     yield Static("STEPS", classes="section")
-                    with Vertical(id="workflow"):
+                    with VerticalScroll(id="workflow"):
                         for stage in STAGES:
                             yield Static(f"○  {stage.number}. {stage.label}",
                                          id=f"stage_{stage.number}", classes="workflow-step")
-                        yield Static("MORE (REVIEW)", id="research_steps_title")
-                        with VerticalScroll(id="research_workflow"):
-                            for step in STEP_REFERENCES:
-                                item = Static(f"○  {research_sidebar_label(step)}", id=f"stage_{step}",
-                                              classes="research-step", markup=False)
-                                item.tooltip = research_step_label(step)
-                                yield item
+                        for step in STEP_REFERENCES:
+                            item = Static(f"○  {research_sidebar_label(step)}", id=f"stage_{step}",
+                                          classes="workflow-step research-step", markup=False)
+                            item.tooltip = research_step_label(step) + " (official app review only)"
+                            yield item
                     yield Button("Help & Guide", id="nav_help")
                     yield Button("Diagnose Android connection", id="diagnose")
                     yield Button("Show technical details", id="debug")
