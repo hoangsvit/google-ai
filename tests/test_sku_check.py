@@ -252,6 +252,36 @@ class StepOneSKUUITests(unittest.IsolatedAsyncioTestCase):
                 self.assertIn("UNVERIFIED", rendered)
                 self.assertIn("12months-eft", rendered)
 
+    async def test_offer_catalog_starts_at_top_even_when_overflowing(self):
+        from tempfile import TemporaryDirectory
+        from textual.widgets import RichLog
+        from tui import GoogleAITUI
+
+        with TemporaryDirectory() as directory:
+            app = GoogleAITUI(repo=Path(directory))
+            async with app.run_test(size=(120, 55)) as pilot:
+                app._offer_report = {"status": "listed", "offers": [
+                    {"product": "g1.2tb.ai.subs_variant", "id": "12months-eft",
+                     "micros": "0", "period": "P1Y"},
+                    *({"product": "g1.example", "id": f"fixture-{i}",
+                       "micros": "0", "period": "P1M"} for i in range(5)),
+                ]}
+                view = app.query_one("#offer_view", RichLog)
+                view.styles.height = 8
+                app._render_offer_catalog()
+                await pilot.pause()
+                self.assertFalse(view.auto_scroll)
+                self.assertGreater(view.max_scroll_y, 0)
+                self.assertEqual(view.scroll_y, 0)
+                view.scroll_end(animate=False)
+                await pilot.pause()
+                self.assertGreater(view.scroll_y, 0)
+                app._render_offer_catalog()
+                await pilot.pause()
+                self.assertEqual(view.scroll_y, 0)
+                self.assertIn("PRODUCT / OFFER", "".join(
+                    segment.text for segment in view.lines[0]))
+
     async def test_real_step_one_launches_automatic_sku_scan(self):
         from tempfile import TemporaryDirectory
         from tui import GoogleAITUI

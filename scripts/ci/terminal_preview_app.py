@@ -172,8 +172,10 @@ class PreviewApp(GoogleAITUI):
             self.query_one("#activity", Static).update(
                 "Synthetic scan complete; review supported offers below.")
             self.query_one("#status_panel").scroll_end(animate=False)
-            if scenario != "sku_extra_steps":
-                view = self.query_one("#offer_view")
+            view = self.query_one("#offer_view")
+            if scenario == "sku_extra_steps":
+                view.call_after_refresh(lambda: view.scroll_home(animate=False))
+            else:
                 view.call_after_refresh(lambda: view.scroll_end(animate=False))
             return
         if scenario == "disconnected":

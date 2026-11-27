@@ -756,7 +756,7 @@ class GoogleAITUI(App[None]):
                         yield Static("Check the device and offers to begin.", id="message")
                         yield Static("", id="step_result")
                         yield Static("SUPPORTED OFFERS · FIRST PHASE ONLY", id="offers_title")
-                        yield RichLog(id="offer_view", wrap=True, highlight=False, markup=False)
+                        yield RichLog(id="offer_view", wrap=True, highlight=False, markup=False, auto_scroll=False)
                         yield Static("Elapsed: --", id="elapsed")
                         yield Button("Completed action on Android", id="manual", disabled=True)
                         yield Static("Review Google Play pricing and renewal terms "
@@ -1504,19 +1504,19 @@ class GoogleAITUI(App[None]):
                                                "period": extra.period, "micros": extra.price_micros})
         for line in (offer_explorer_lines({"offers": list(offers.values())}) if offers
                      else ["No supported offers found in this scan."]):
-            view.write(line)
+            view.write(line, scroll_end=False)
         # Step 1 observations without a supported operation remain inspect-only.
         unknown = [item for item in parse_step1(self._offer_report, include_fixed=True)
                    if not (item.product == "g1.2tb.ai.subs_variant"
                            and item.offer_id in offers and item.price_micros == "0")]
         if unknown:
-            view.write("ADDITIONAL OBSERVED OFFERS (READ-ONLY)")
+            view.write("ADDITIONAL OBSERVED OFFERS (READ-ONLY)", scroll_end=False)
             for item in unknown[:12]:
                 for line in offer_details(item).splitlines():
                     view.write(line, scroll_end=False)
         # Unknown offers are metadata only. Never add them to executable steps.
         if self._sku_report is not None:
-            view.write("")
+            view.write("", scroll_end=False)
             for line in render_result(self._sku_report).splitlines():
                 view.write(line, scroll_end=False)
         view.display = True
