@@ -75,37 +75,28 @@ class OriginalFlowGuardrails(unittest.TestCase):
         result = mod.assess_checkout_terms("Error The item you requested is not available for purchase. Got it")
         self.assertEqual(result["reason"], "purchase_unavailable")
 
-    def test_error_after_subscribe_is_not_reported_as_submitted(self):
-        # Google Play can present ITEM_UNAVAILABLE after the Subscribe tap.
-        pages = iter([
-            "Google AI Pro Subscribe Due today US$0 12-month trial",
-            "Error The item you requested is not available for purchase. Got it",
-        ])
-        with patch.object(mod, "ui_xml", side_effect=lambda: next(pages)), \
-             patch.object(mod, "nodes", side_effect=lambda page: [{"text": page, "desc": ""}]), \
-             patch.object(mod, "tap_text", return_value=True) as tapped, \
-             patch.object(mod.time, "sleep"):
+    def test_checkout_never_taps_even_if_terms_match(self):
+        page = "Google AI Pro Subscribe Due today US$0 12-month trial"
+        with patch.object(mod, "ui_xml", return_value=page), \
+             patch.object(mod, "nodes", return_value=[{"text": page, "desc": ""}]), \
+             patch.object(mod, "tap_text") as tapped:
             result = mod.confirm_zero(wait=4, expected_plan="pro12")
-        tapped.assert_called_once()
-        self.assertEqual(result["reason"], "purchase_unavailable")
+        tapped.assert_not_called()
         self.assertFalse(result["confirmed"])
-        self.assertTrue(result["ineligible"])
+        self.assertEqual(result["reason"], "manual_confirmation_required")
 
-    def test_unverified_terms_after_subscribe_revoke_confirmation(self):
+    def test_unverified_terms_never_allow_automatic_confirmation(self):
         for screen, reason in (
                 ("Google AI Pro Subscribe Due today US$1 12-month trial", "today_price_unverified"),
                 ("Google AI Pro Subscribe Due today US$0 limited trial", "trial_duration_unverified")):
-            with self.subTest(reason=reason):
-                pages = iter([
-                    "Google AI Pro Subscribe Due today US$0 12-month trial", screen,
-                ])
-                with patch.object(mod, "ui_xml", side_effect=lambda: next(pages)), \
-                     patch.object(mod, "nodes", side_effect=lambda page: [{"text": page, "desc": ""}]), \
-                     patch.object(mod, "tap_text", return_value=True), \
-                     patch.object(mod.time, "sleep"):
-                    result = mod.confirm_zero(wait=4, expected_plan="pro12")
+            with self.subTest(reason=reason), \
+                 patch.object(mod, "ui_xml", return_value=screen), \
+                 patch.object(mod, "nodes", return_value=[{"text": screen, "desc": ""}]), \
+                 patch.object(mod, "tap_text") as tapped:
+                result = mod.confirm_zero(wait=4, expected_plan="pro12")
                 self.assertEqual(result["reason"], reason)
                 self.assertFalse(result["confirmed"])
+                tapped.assert_not_called()
 
     def test_checkout_refuses_account_without_explicit_payer_label(self):
         page = "Google AI Pro alice@example.com Subscribe Due today US$0 12-month trial"
@@ -116,18 +107,15 @@ class OriginalFlowGuardrails(unittest.TestCase):
         self.assertEqual(result["reason"], "checkout_account_unverified")
         tapped.assert_not_called()
 
-    def test_backup_payment_prompt_after_subscribe_is_not_success(self):
-        screens = iter([
-            "Google AI Pro Subscribe Today US$0 12-month free trial",
-            "Google Play Turn on backup payment methods? Manage Turn on",
-        ])
-        with patch.object(mod, "ui_xml", side_effect=lambda: next(screens)), \
-             patch.object(mod, "nodes", side_effect=lambda page: [{"text": page, "desc": ""}]), \
-             patch.object(mod, "tap_text", return_value=True), \
-             patch.object(mod.time, "sleep"):
+    def test_backup_payment_prompt_is_not_success(self):
+        page = "Google Play Turn on backup payment methods? Manage Turn on"
+        with patch.object(mod, "ui_xml", return_value=page), \
+             patch.object(mod, "nodes", return_value=[{"text": page, "desc": ""}]), \
+             patch.object(mod, "tap_text") as tapped:
             result = mod.confirm_zero(wait=4, expected_plan="pro12")
         self.assertEqual(result["reason"], "backup_payment_methods_prompt")
         self.assertFalse(result["confirmed"])
+        tapped.assert_not_called()
 
     def test_posttap_error_status_is_preserved_without_verification_navigation(self):
         with patch.object(mod, "current_play_account", return_value="test@example.com"), \

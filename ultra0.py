@@ -15,7 +15,7 @@ Requirements:
         - Google Play Store and Google One with the intended account
         - Python 3 and a compatible Frida client and server
 
-WARNING: non-list mode can open Google Play checkout and tap Subscribe.
+WARNING: non-list mode can open Google Play checkout. Subscribe requires manual confirmation.
 Offer metadata does not prove eligibility or subscription activation.
 """
 import argparse, base64, hashlib, hmac, json, os, re, struct, subprocess, sys, threading, time
@@ -1202,31 +1202,10 @@ def confirm_zero(wait=40, password="", expected_plan="auto", expected_account=""
                     warn("Google Play does not explicitly identify the purchase payer. "
                          "No automatic Subscribe tap; verify manually in Google Play.")
                     return out
-            if tap_text("\u8ba2\u9605", "Subscribe", "Đăng ký"):
-                out["confirmed"] = True
-                ok("Tapped Subscribe after verifying today's zero total and expected trial period.")
-                # A tap is not a purchase. Play can reject it *after* the button
-                # was pressed. Inspect the real Play UI before navigating away.
-                for _ in range(4):
-                    time.sleep(1)
-                    after = " ".join(n["text"] or n["desc"] for n in nodes(ui_xml())
-                                     if n["text"] or n["desc"])
-                    observed = assess_checkout_terms(after, expected_plan)
-                    if observed["reason"] in (
-                            "purchase_unavailable", "ineligible", "already_subscribed",
-                            "payment_security_blocked", "processing",
-                            "backup_payment_methods_prompt",
-                            "today_price_unverified", "trial_duration_unverified"):
-                        out["confirmed"] = False
-                        out["reason"] = observed["reason"]
-                        out["text"] = observed["text"]
-                        out["ineligible"] = observed["reason"] in ("purchase_unavailable", "ineligible")
-                        warn("Google Play rejected or held checkout after the tap; "
-                             "no subscription or renewal was verified.")
-                        return out
-            else:
-                out["reason"] = "subscribe_button_not_found"
-                warn("Subscribe control not found; no transaction confirmed.")
+            # Temporary manual-only checkout: never press the purchase control.
+            out["reason"] = "manual_confirmation_required"
+            note("Checkout terms inspected. Automatic Subscribe is disabled. "
+                 "Review all terms and confirm manually in Google Play.")
             return out
         if reason in ("today_price_unverified", "trial_duration_unverified"):
             warn("Checkout does not explicitly verify BOTH today's $0 total and the expected duration. "
@@ -1376,7 +1355,8 @@ def process(email, password="", totp_secret="", add=True, card=None, plan="auto"
                 "processing", "backup_payment_methods_prompt",
                 "today_price_unverified", "trial_duration_unverified",
                 "subscribe_button_not_found", "checkout_not_visible",
-                "checkout_account_mismatch", "checkout_account_unverified"):
+                "checkout_account_mismatch", "checkout_account_unverified",
+                "manual_confirmation_required"):
             rec["status"] = reason
         else:
             rec["status"] = "checkout_not_confirmed"

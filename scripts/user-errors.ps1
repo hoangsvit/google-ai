@@ -268,6 +268,12 @@ function Get-UserIssue {
                 Action = "Check today's amount and the renewal price in Google Play."
             }
         }
+        "manual_confirmation_required" {
+            return [pscustomobject]@{
+                Title = "Manual confirmation required in Google Play"
+                Action = "Automatic Subscribe is disabled. Review the terms and confirm on Android. Verify the subscription before starting another step."
+            }
+        }
         "checkout_not_confirmed" {
             return [pscustomobject]@{
                 Title = "The purchase was not confirmed"

@@ -100,6 +100,10 @@ MESSAGES = {
         "Google Play is processing a transaction",
         "Check payment history before another attempt.",
     ),
+    "manual_confirmation_required": (
+        "Confirm manually in Google Play",
+        "Automatic Subscribe is disabled. Review the account, price, duration and renewal terms on Android. Verify the subscription before starting another step.",
+    ),
     "checkout_not_confirmed": (
         "Checkout was not confirmed",
         "Check the Google Play subscription status before retrying.",

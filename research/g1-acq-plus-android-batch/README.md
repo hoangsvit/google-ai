@@ -65,3 +65,7 @@ The left STEPS panel retains Steps 0–5 (Step 5 remains conditional) and shows 
 ## Android launcher compatibility
 
 Research review steps resolve the installed official app's normal launcher activity if the package-only intent fails. A component outside the expected package is rejected. The CLI reports launcher_unresolved or launcher_rejected instead of silently failing. This changes app launch only; no targeted checkout, offer eligibility verification or automatic claim is implemented.
+
+## Temporary manual-only checkout
+
+Automatic Subscribe taps are disabled in the existing engine. Even when the current checks match, the engine leaves checkout open and reports `manual_confirmation_required`; the user must review and confirm in Google Play. No automatic sequence advance is authorized by this status. Research steps 6–19 remain review-only.
