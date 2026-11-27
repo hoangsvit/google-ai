@@ -46,10 +46,10 @@ The six historical batch entrypoints in legacy/windows are compatibility wrapper
 
 The existing Windows TUI invokes `setup_env.py` and `run-all.ps1`, whose runtime lookup and Android engine use the ADB locators. This branch adds four MuMuPlayer `nx_main` / `nx_device` installation locations to the setup, connection diagnostic and engine locators. Existing device selection, checkout safeguards, reports and stage mappings are unchanged. This is an ADB compatibility change, not a port of the upstream offer or checkout engine. Steps 1–5 retain their existing offer and transaction behavior. No live device validation has been performed.
 
-## TUI offer catalogue
-
-Run `run-all.ps1` and open **Choose another step → Browse more offers**. The catalogue lists 16 upstream-reported reference offers, not live eligibility. Choose a reference and use Open Google One to review the account's official offers on Android; selecting a reference does not select a plan in the app. YouTube Premium references may require the official YouTube app. Close the catalogue and run Step 1 again before existing subscription steps. No hidden-SKU checkout, automated redemption or stacking was added. Existing numbered steps remain unchanged. Device and UI testing is still required.
-
 ## Individual research steps 6–19
 
 Choose another step in the TUI or run `./run-all.ps1 -Step 6` (through 19). The original Steps 0–5 and 12+6+6 sequence are unchanged. Each research step launches the official app for manual review, not an automatic purchase or targeted offer selection. The final step opens YouTube; the others open Google One. The step labels are unverified upstream references. No eligibility bypass or automated redemption is implemented. Recheck Step 1 after returning from the app.
+
+## TUI cleanup
+
+The redundant Browse more offers button has been removed. Select a numbered research step and press Open official app (manual) to start its runner directly; the result dialog displays the launch status. No automatic offer selection or redemption is performed.
