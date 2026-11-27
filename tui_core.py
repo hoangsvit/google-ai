@@ -116,6 +116,10 @@ MESSAGES = {
         "Offer not available",
         "Use Step 1 to review current offers. Do not assume eligibility.",
     ),
+    "research_review_only": (
+        "Research step requires official app review",
+        "Direct research checkout is unavailable. Review the account and complete offer terms in the official app.",
+    ),
     "research_product_unverified": (
         "Research step product is not verified",
         "This Step 6-19 reference has no verified Google Play product ID in ultra0.py, "

@@ -268,6 +268,12 @@ function Get-UserIssue {
                 Action = "Check today's amount and the renewal price in Google Play."
             }
         }
+        "research_review_only" {
+            return [pscustomobject]@{
+                Title = "Research step requires official app review"
+                Action = "Direct research checkout is unavailable. Verify offer availability and full terms in the official app."
+            }
+        }
         "manual_confirmation_required" {
             return [pscustomobject]@{
                 Title = "Manual confirmation required in Google Play"
