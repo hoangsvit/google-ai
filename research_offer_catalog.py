@@ -41,3 +41,17 @@ def research_step_options():
 def research_step_label(step):
     name, terms = OFFER_REFERENCES[STEP_REFERENCES[step]]
     return f"{name} — {terms}"
+
+
+# Compact labels for the narrow workflow sidebar; full reference terms stay
+# in the selector and confirmation dialog.
+SIDEBAR_LABELS = (
+    "Pro $0.99 1m", "Pro $1.99 3m", "Pro $1.99 12m", "Pro free 3m",
+    "Plus 400GB 12m", "Plus 2TB $0.99", "Plus 2TB $1.49",
+    "Ultra20 $9.99", "Ultra20 $19.99", "Ultra30 $19.99", "Ultra30 $49.99",
+    "One 100GB 1m", "One 2TB 1m", "YouTube 1m",
+)
+
+
+def research_sidebar_label(step):
+    return f"{step}. {SIDEBAR_LABELS[step - 6]}"

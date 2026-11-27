@@ -39,7 +39,8 @@ from device_diagnostics import (
     ConnectionDiagnosis, ConnectionStatus, inspect_connection, open_google_one_listing, poll_connection,
 )
 from stage_history import latest_history, read_history, record_history
-from research_offer_catalog import STEP_REFERENCES, research_step_options, research_step_label
+from research_offer_catalog import (STEP_REFERENCES, research_step_options,
+                                    research_step_label, research_sidebar_label)
 
 
 class LocalClock(Static):
@@ -518,6 +519,10 @@ class GoogleAITUI(App[None]):
     #results { width: 1fr; min-width: 26; min-height: 0; margin-left: 1; overflow-y: auto; scrollbar-size: 1 1; }
     .section { color: #6cdbf8; text-style: bold; margin: 0 0 1 0; }
     #workflow { height: auto; margin-bottom: 1; }
+    #research_workflow { height: 7; overflow-y: auto; scrollbar-size: 1 1; }
+    #research_steps_title { color: #8eb4ce; height: 1; }
+    .research-step { height: auto; min-height: 1; color: #b4cbe0; }
+    Screen.compact #research_workflow { height: 4; }
     .workflow-step { color: #b4cbe0; height: 1; }
     #stage_5 { display: none; }
     .extra-offer-step { color: #9fc9e8; }
@@ -693,6 +698,12 @@ class GoogleAITUI(App[None]):
                         for stage in STAGES:
                             yield Static(f"○  {stage.number}. {stage.label}",
                                          id=f"stage_{stage.number}", classes="workflow-step")
+                        yield Static("MORE (REVIEW)", id="research_steps_title")
+                        with VerticalScroll(id="research_workflow"):
+                            for step in STEP_REFERENCES:
+                                yield Static(f"○  {research_sidebar_label(step)}", id=f"stage_{step}",
+                                             classes="research-step", markup=False,
+                                             tooltip=research_step_label(step))
                     yield Button("Help & Guide", id="nav_help")
                     yield Button("Diagnose Android connection", id="diagnose")
                     yield Button("Show technical details", id="debug")
@@ -1320,7 +1331,9 @@ class GoogleAITUI(App[None]):
 
     def _set_workflow(self, step: int, state: str) -> None:
         marker = {"running": "●", "done": "✓", "review": "!"}.get(state, "○")
-        if 5 <= step < 5 + len(self._extra_offers):
+        if step in STEP_REFERENCES:
+            label = research_sidebar_label(step)
+        elif 5 <= step < 5 + len(self._extra_offers):
             label = offer_step_label(step, self._extra_offers[step - 5])
         elif step < len(STAGES):
             label = f"{step}. {STAGES[step].label}"
@@ -1401,7 +1414,7 @@ class GoogleAITUI(App[None]):
                 context += "\nAdditional device-bound metadata is available in Live Status; it does not verify eligibility."
             self._invalidate_connection_polls()
             self.push_screen(ResearchOffers(self._offer_ready_device, step, self.repo, context),
-                             self._research_catalogue_closed)
+                             lambda opened: self._research_catalogue_closed(opened, step))
             return
         if step >= 5:
             if not (self._offer_check_ready and 5 <= step < 5 + len(self._extra_offers)):
@@ -1626,13 +1639,15 @@ class GoogleAITUI(App[None]):
         else:
             self._confirm_stage(1, False)
 
-    def _research_catalogue_closed(self, opened: bool) -> None:
+    def _research_catalogue_closed(self, opened: bool, step: int | None = None) -> None:
         # External app actions may change the selected account or subscription.
         # Do not let an earlier offer report authorize a later stage.
         if opened:
             self._reset_account_verification()
             self._update_run_mode()
             self._set_message("Run Check Device & Offers again before using any existing subscription step.")
+            if step in STEP_REFERENCES:
+                self._set_workflow(step, "review")
 
     @on(Button.Pressed, "#refresh_offers")
     def refresh_offers_pressed(self) -> None:

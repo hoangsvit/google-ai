@@ -57,3 +57,7 @@ The redundant Browse more offers button has been removed. Select a numbered rese
 ## Confirmation and batch entrypoints
 
 The TUI requires a current Step 1 session and shows its observed-record count, account hint and explicit lack of a verified mapping before requiring Confirm & open app. Cancelling does not launch anything. CLI and English batch wrappers for Steps 6–19 ask for YES before opening the official app. The TUI passes its explicit review confirmation through the PowerShell launcher. This does not validate eligibility or initiate automatic checkout. Steps 0–5 remain unchanged. No hardware test was performed.
+
+## Sidebar step list
+
+The left STEPS panel retains Steps 0–5 (Step 5 remains conditional) and shows Steps 6–19 in a separately scrollable MORE (REVIEW) section. Compact labels use full terms as tooltips. An exclamation marker means the official app was opened for review, not a completed subscription. No checkout logic was changed.
