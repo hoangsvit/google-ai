@@ -35,11 +35,12 @@ class RepositoryLayoutTests(unittest.TestCase):
                 self.assertTrue(path.is_file())
                 content = path.read_text(encoding="utf-8")
                 self.assertIn('cd /d "%~dp0..\\.."', content)
-                self.assertIn(
-                    "python setup_env.py" if path.name == "setup-environment.bat"
-                    else "python ultra0.py",
-                    content,
-                )
+                if path.name == "setup-environment.bat":
+                    self.assertIn("python setup_env.py", content)
+                else:
+                    self.assertIn('call "%~dp0', content)
+                    self.assertNotIn("python ultra0.py", content)
+                    self.assertNotIn("--force", content)
 
     def test_new_docs_explain_historical_checkout_risks(self):
         root_readme = (ROOT / "README.md").read_text(encoding="utf-8")

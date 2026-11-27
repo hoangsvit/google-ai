@@ -10,7 +10,7 @@ Status: static research only; no third-party executable code imported and no liv
 
 ## English batch filename reference
 
-The English filenames below are translations for research and documentation, not executable files in this branch. The original Chinese filenames are retained as upstream references. All durations, prices and stacking claims are unverified.
+The English filenames below now have independently written executable counterparts in [legacy/windows](../../legacy/windows/README.md). They are prerequisite checks and manual offer-review launchers, not direct replacements for upstream billing behavior. The original Chinese filenames are retained as upstream references. All durations, prices and stacking claims are unverified.
 
 | English filename (reference only) | Original upstream filename | Description |
 | --- | --- | --- |
@@ -40,4 +40,4 @@ The original local-only `check-device.bat` checks Python, ADB availability and t
 
 Any future integration must preserve the existing approval gates and account validation. Use mock offer data for offline UI tests; do not perform real checkout in CI or circumvent eligibility. Confirm offers and renewal terms in Google Play itself.
 
-No changes to production launchers, stage mappings, CI or existing Python code.
+The six historical batch entrypoints in legacy/windows are compatibility wrappers in this branch. Root launchers, stage mappings, CI workflows and existing Python code are unchanged. The setup shortcut checks prerequisites only. The offer-specific shortcuts display a reference label and open the same official Google One app; they do not select the named offer.
