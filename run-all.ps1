@@ -243,7 +243,10 @@ if ($ManageAndroidAccounts) {
     }
     return
 }
-# Research stages are single, manual official-app review operations only.
+# Research Steps 6..19 run directly through ultra0.py (integrated billing
+# engine): the step's exact reference offer is queried and its checkout is
+# opened only on an exact product/period/price match. Automatic Subscribe
+# remains disabled; the user confirms manually in Google Play.
 if ($ConfirmOfferReview -and $Step -lt 6) {
     Stop-Workflow "-ConfirmOfferReview is only for research Steps 6..19."
 }
@@ -254,11 +257,21 @@ if ($Step -ge 6) {
     }
     $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
     if (-not $pythonCommand) { Stop-Workflow "Python not found." }
-    $researchArgs = @((Join-Path $PSScriptRoot "research_offer_runner.py"), "--step", [string]$Step)
-    if ($Serial) { $researchArgs += @("--serial=$Serial") }
-    if ($ConfirmOfferReview) { $researchArgs += "--confirmed-review" }
-    & $pythonCommand.Source @researchArgs
-    exit $LASTEXITCODE
+    if (-not $ConfirmOfferReview) {
+        if (-not (Confirm-Exact ("Run research Step {0} in ultra0.py? It can open Google Play checkout for the step's exact reference offer" -f $Step) "RUN")) {
+            Write-Host "Stopped before running the research step. No checkout was opened."
+            exit 2
+        }
+    }
+    $researchArgs = @((Join-Path $PSScriptRoot "ultra0.py"), "--step", [string]$Step)
+    if ($Serial) { $researchArgs += @("--serial", $Serial) }
+    Push-Location $PSScriptRoot
+    try {
+        & $pythonCommand.Source @researchArgs
+        exit $LASTEXITCODE
+    } finally {
+        Pop-Location
+    }
 }
 if ($AllStages -and $PSBoundParameters.ContainsKey("Step") -and $Step -ne 1) {
     Stop-Workflow "Choose either -AllStages or -Step 0..5, not both."

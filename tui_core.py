@@ -116,10 +116,6 @@ MESSAGES = {
         "Offer not available",
         "Use Step 1 to review current offers. Do not assume eligibility.",
     ),
-    "research_review_only": (
-        "Research step requires official app review",
-        "Direct research checkout is unavailable. Review the account and complete offer terms in the official app.",
-    ),
     "research_product_unverified": (
         "Research step product is not verified",
         "This Step 6-19 reference has no verified Google Play product ID in ultra0.py, "
@@ -351,11 +347,12 @@ def command_for_step(step: int, repo: Path, shell: str | None = None,
     from research_offer_catalog import STEP_REFERENCES
     if step in STEP_REFERENCES:
         if sys.platform in ("darwin", "linux") and shell is None:
-            command = [sys.executable, str(repo / "research_offer_runner.py"), "--step", str(step)]
-            if review_confirmed:
-                command.append("--confirmed-review")
+            # Research Steps 6-19 run directly in ultra0.py (integrated
+            # billing engine). The TUI approval modal is the confirmation;
+            # ultra0.py keeps its own manual checkout-confirmation gate.
+            command = [sys.executable, str(repo / "ultra0.py"), "--step", str(step)]
             if device:
-                command.append("--serial=" + device)
+                command.extend(["--serial", device])
             return command
         executable = shell or shutil.which("powershell.exe") or shutil.which("pwsh")
         if not executable:
@@ -479,30 +476,6 @@ def outcome_for_stage(step: int, exit_code: int, report: dict | None) -> Outcome
     return Outcome(code, title, instruction,
                    can_review=(step >= 2 and status == "checkout_requested"
                                and tapped_with_verified_terms))
-
-
-def parse_research_result(stdout: str, returncode: int) -> str:
-    results = [line.split(":", 1)[1].strip() for line in stdout.splitlines()
-               if line.startswith("EPLUS_RESEARCH_RESULT:")]
-    if len(results) != 1 or (returncode and results[0] == "opened"):
-        return "runner_failed"
-    return results[0]
-
-
-def research_result_message(code: str, step: int, platform: str) -> str:
-    command = (f"run-all.ps1 -Step {step}" if platform == "win32"
-               else f"python3 research_offer_runner.py --step {step}")
-    return {
-        "opened": "Official app opened. Review only offers displayed for your account. "
-                  "After any change, run Check Device & Offers again.",
-        "missing_adb": "ADB not found. Install or configure Android platform-tools.",
-        "device_offline": "Connect the intended authorized Android device.",
-        "multiple_devices": "Disconnect other Android devices and try again.",
-        "app_unavailable": "Install or enable the required app in Google Play.",
-        "launcher_unresolved": "Android could not resolve the official app launcher. Update or enable the app in Google Play.",
-        "launcher_rejected": "Android rejected the official launcher activity. Check emulator and app permissions.",
-        "runner_failed": f"The step launcher failed. Run {command} to inspect the error.",
-    }.get(code, f"Android app launch failed. Run {command} for its result code.")
 
 
 def mask_email(value: str) -> str:
