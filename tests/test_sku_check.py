@@ -190,7 +190,9 @@ class StepOneSKUUITests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(app.query_one("#step", Select).value, 1)
                 self.assertEqual(len(app.query("#sku_explorer")), 0)
                 self.assertGreater(app.query_one("#quickstart", Button).region.width, 25)
-                self.assertEqual(len(app.query("#workflow .workflow-step")), 6)
+                from research_offer_catalog import STEP_REFERENCES
+                self.assertEqual(len(app.query("#workflow .workflow-step")), 6 + len(STEP_REFERENCES))
+                self.assertEqual(len(app.query("#workflow .research-step")), len(STEP_REFERENCES))
                 self.assertFalse(app.query_one("#stage_5", Static).display)
                 app._offer_report = {"offers": [
                     {"id": "12months-eft", "product": "g1.2tb.ai.subs_variant",
@@ -270,7 +272,19 @@ class StepOneSKUUITests(unittest.IsolatedAsyncioTestCase):
                 ]}))
                 await pilot.pause()
                 self.assertTrue(app.query_one("#stage_5", Static).display)
-                self.assertFalse(list(app.query("#stage_6")))
+                # Static research references must not become executable
+                # checkout offers merely because metadata was observed.
+                self.assertEqual(len(app._extra_offers), 1)
+                self.assertTrue(app._extra_offers[0].legacy_checkout_supported)
+                self.assertTrue(app.query_one("#stage_6", Static).has_class("research-step"))
+                app.query_one("#step", Select).value = 6
+                await pilot.pause()
+                self.assertEqual(str(app.query_one("#run", Button).label), "Review selected offer")
+                with patch.object(app, "_start") as start:
+                    app._confirm_stage(6, False)
+                    start.assert_not_called()
+                app.query_one("#step", Select).value = 1
+                await pilot.pause()
                 app._update_discovered([], replace=True)
                 await pilot.pause()
                 self.assertFalse(app.query_one("#stage_5", Static).display)
